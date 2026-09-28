@@ -1,0 +1,54 @@
+.demo-banner {
+  background: var(--brand-ink); color: #fff; text-align: center;
+  font-size: .82rem; padding: 7px 12px;
+}
+
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(255,255,255,.9); backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border);
+}
+.nav-inner { height: var(--header-h); display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+
+.nav-links { display: flex; align-items: center; gap: 26px; }
+.nav-links a {
+  font-family: var(--font-head); font-weight: 600; font-size: .95rem;
+  color: var(--text-soft); position: relative; padding: 4px 0;
+}
+.nav-links a:hover { color: var(--text); }
+.nav-links a.active { color: var(--primary); }
+.nav-links a.active::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: -6px;
+  height: 2px; background: var(--primary); border-radius: 2px;
+}
+
+.nav-actions { display: flex; align-items: center; gap: 14px; }
+
+.nav-cart { position: relative; font-size: 1.35rem; line-height: 1; }
+.nav-cart-badge {
+  position: absolute; top: -8px; right: -10px;
+  background: var(--primary); color: #fff; font-size: .68rem; font-weight: 700;
+  min-width: 18px; height: 18px; padding: 0 4px; border-radius: 999px;
+  display: grid; place-items: center;
+}
+
+.nav-user, .nav-auth { display: flex; align-items: center; gap: 10px; }
+.nav-user-name { font-size: .85rem; color: var(--text-soft); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.nav-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
+
+@media (max-width: 860px) {
+  .nav-links {
+    position: absolute; top: var(--header-h); left: 0; right: 0;
+    flex-direction: column; align-items: flex-start; gap: 4px;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 20px; box-shadow: var(--shadow);
+    display: none;
+  }
+  .nav-links.open { display: flex; }
+  .nav-links a { width: 100%; padding: 10px 0; }
+  .nav-links a.active::after { display: none; }
+  .nav-toggle { display: block; }
+  .nav-auth .btn, .nav-user-name { display: none; }
+  .nav-user .btn { display: inline-flex; }
+}

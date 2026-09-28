@@ -1,38 +1,53 @@
 // src/App.jsx
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
-import PrivateRoute from './components/common/PrivateRoute';
+import { CartProvider } from './context/CartContext';
+import AdminRoute from './components/common/AdminRoute';
 
-// Pages
-import Login    from './pages/Login';
-import Home     from './pages/Home';
-// import Dashboard from './pages/Dashboard';  // ← agregar páginas acá
+// Tienda (público)
+import Home from './pages/store/Home';
+import Catalog from './pages/store/Catalog';
+import ProductDetail from './pages/store/ProductDetail';
+import Cart from './pages/store/Cart';
 
-const App = () => {
-  return (
-    <AuthProvider>
+// Auth
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+
+// Admin
+import Dashboard from './pages/admin/Dashboard';
+import AdminProducts from './pages/admin/AdminProducts';
+import ProductForm from './pages/admin/ProductForm';
+import AdminOrders from './pages/admin/AdminOrders';
+
+const App = () => (
+  <AuthProvider>
+    <CartProvider>
       <BrowserRouter>
         <Routes>
+          {/* Tienda pública */}
+          <Route path="/" element={<Home />} />
+          <Route path="/catalogo" element={<Catalog />} />
+          <Route path="/producto/:id" element={<ProductDetail />} />
+          <Route path="/carrito" element={<Cart />} />
 
-          {/* Pública */}
+          {/* Autenticación */}
           <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Register />} />
 
-          {/* Privadas */}
-          <Route path="/" element={
-            <PrivateRoute><Home /></PrivateRoute>
-          } />
-
-          {/* <Route path="/dashboard" element={
-            <PrivateRoute><Dashboard /></PrivateRoute>
-          } /> */}
+          {/* Panel de administración */}
+          <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
+          <Route path="/admin/productos" element={<AdminRoute><AdminProducts /></AdminRoute>} />
+          <Route path="/admin/productos/nuevo" element={<AdminRoute><ProductForm /></AdminRoute>} />
+          <Route path="/admin/productos/:id" element={<AdminRoute><ProductForm /></AdminRoute>} />
+          <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
-
         </Routes>
       </BrowserRouter>
-    </AuthProvider>
-  );
-};
+    </CartProvider>
+  </AuthProvider>
+);
 
 export default App;

@@ -1,0 +1,14 @@
+.footer { background: var(--surface); border-top: 1px solid var(--border); margin-top: 64px; }
+.footer-inner {
+  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px;
+  padding-block: 48px;
+}
+.footer-col { display: flex; flex-direction: column; gap: 8px; }
+.footer-col h4 { font-size: .95rem; margin-bottom: 4px; }
+.footer-col a { color: var(--text-soft); font-size: .9rem; }
+.footer-col a:hover { color: var(--primary); }
+.footer-bottom { border-top: 1px solid var(--border); padding: 18px 0; text-align: center; font-size: .82rem; }
+
+@media (max-width: 700px) {
+  .footer-inner { grid-template-columns: 1fr; gap: 24px; }
+}

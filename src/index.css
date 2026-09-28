@@ -1,45 +1,156 @@
-/* src/index.css */
+/* ============================================
+   Papel & Fiesta — Design System
+   Paleta tomada del logo: naranja + gris + tinta
+   ============================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
 :root {
-  --color-bg:      #0f1117;
-  --color-surface: #1a1d27;
-  --color-border:  #2a2d3e;
-  --color-primary: #6366f1;
-  --color-text:    #e2e8f0;
-  --color-muted:   #64748b;
+  /* Marca */
+  --brand-orange:      #F7941E;
+  --brand-orange-dark: #E07E0A;
+  --brand-orange-soft: #FEF1E1;
+  --brand-gray:        #6D6E71;
+  --brand-ink:         #262322;
+
+  /* Superficies (tema claro) */
+  --bg:            #FAFAF8;
+  --surface:       #FFFFFF;
+  --surface-alt:   #F4F4F1;
+  --border:        #E7E6E1;
+  --border-strong: #D6D5CF;
+
+  /* Texto */
+  --text:      #262322;
+  --text-soft: #5C5A57;
+  --muted:     #908E8A;
+
+  /* Semánticos */
+  --primary:      var(--brand-orange);
+  --primary-dark: var(--brand-orange-dark);
+  --success:      #2E9E5B;
+  --success-soft: #E6F4EC;
+  --warning:      #E0A400;
+  --warning-soft: #FBF2D9;
+  --danger:       #D64545;
+  --danger-soft:  #FBE7E7;
+  --info:         #3B82C4;
+  --info-soft:    #E4EFF8;
+
+  /* Formas */
+  --radius-sm: 8px;
+  --radius:    14px;
+  --radius-lg: 22px;
+  --shadow-sm: 0 1px 2px rgba(38,35,34,.06), 0 1px 3px rgba(38,35,34,.05);
+  --shadow:    0 4px 14px rgba(38,35,34,.08);
+  --shadow-lg: 0 18px 40px rgba(38,35,34,.14);
+
+  --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-head: 'Poppins', var(--font-body);
+
+  --header-h: 72px;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+
+html, body, #root { height: 100%; }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  font-size: 15px;
-  line-height: 1.5;
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.55;
   -webkit-font-smoothing: antialiased;
 }
 
+h1, h2, h3, h4 { font-family: var(--font-head); line-height: 1.2; color: var(--brand-ink); }
+
 a { color: inherit; text-decoration: none; }
+img { max-width: 100%; display: block; }
+button, input, select, textarea { font: inherit; }
 
-button { font-family: inherit; }
+/* ---------- Utilidades ---------- */
+.container { width: 100%; max-width: 1200px; margin-inline: auto; padding-inline: 20px; }
+.stack   { display: flex; flex-direction: column; }
+.row     { display: flex; align-items: center; }
+.spread  { display: flex; align-items: center; justify-content: space-between; }
+.gap-8  { gap: 8px; }  .gap-12 { gap: 12px; } .gap-16 { gap: 16px; } .gap-24 { gap: 24px; }
+.muted  { color: var(--muted); }
+.text-soft { color: var(--text-soft); }
 
-input, textarea, select {
-  font-family: inherit;
-  font-size: inherit;
+/* ---------- Botones ---------- */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-head); font-weight: 600; font-size: .95rem;
+  padding: 11px 20px; border-radius: var(--radius-sm);
+  border: 1px solid transparent; cursor: pointer;
+  transition: transform .08s ease, background .15s ease, box-shadow .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.btn:active { transform: translateY(1px); }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+
+.btn-primary { background: var(--primary); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-primary:hover:not(:disabled) { background: var(--primary-dark); }
+
+.btn-ghost { background: transparent; color: var(--text); border-color: var(--border-strong); }
+.btn-ghost:hover:not(:disabled) { background: var(--surface-alt); }
+
+.btn-soft { background: var(--brand-orange-soft); color: var(--primary-dark); }
+.btn-soft:hover:not(:disabled) { background: #fde4c8; }
+
+.btn-danger { background: var(--danger); color: #fff; }
+.btn-block { width: 100%; }
+.btn-sm { padding: 7px 13px; font-size: .85rem; }
+
+/* ---------- Inputs ---------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-size: .82rem; font-weight: 600; color: var(--text-soft); }
+.input, .select, .textarea {
+  width: 100%; padding: 11px 13px;
+  background: var(--surface); color: var(--text);
+  border: 1px solid var(--border-strong); border-radius: var(--radius-sm);
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+.input:focus, .select:focus, .textarea:focus {
+  outline: none; border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--brand-orange-soft);
+}
+.textarea { resize: vertical; min-height: 90px; }
+
+/* ---------- Badges / chips ---------- */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .72rem; font-weight: 700; letter-spacing: .02em;
+  padding: 4px 10px; border-radius: 999px; text-transform: uppercase;
+}
+.badge-success { background: var(--success-soft); color: var(--success); }
+.badge-warning { background: var(--warning-soft); color: #9a7100; }
+.badge-danger  { background: var(--danger-soft);  color: var(--danger); }
+.badge-muted   { background: var(--surface-alt);  color: var(--muted); }
+
+/* ---------- Cards ---------- */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); box-shadow: var(--shadow-sm);
 }
 
-/* Scrollbar */
-::-webkit-scrollbar       { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--color-bg); }
-::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 3px; }
+/* ---------- Marca (logo textual) ---------- */
+.brand { display: inline-flex; align-items: baseline; gap: 2px; font-family: var(--font-head); font-weight: 800; font-size: 1.35rem; letter-spacing: -.02em; }
+.brand .b-papel { color: var(--brand-ink); }
+.brand .b-amp   { color: var(--brand-gray); }
+.brand .b-fiesta{ color: var(--primary); }
 
-/* Spinner reutilizable */
+/* ---------- Spinner ---------- */
+.loader { display: grid; place-items: center; min-height: 60vh; }
 .spinner {
-  width: 28px; height: 28px;
-  border: 3px solid var(--color-border);
-  border-top-color: var(--color-primary);
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
+  width: 42px; height: 42px; border-radius: 50%;
+  border: 4px solid var(--surface-alt); border-top-color: var(--primary);
+  animation: spin .8s linear infinite;
 }
-
 @keyframes spin { to { transform: rotate(360deg); } }
+
+.page-title { font-size: 1.7rem; font-weight: 700; }
+.section-title { font-size: 1.35rem; font-weight: 700; }
