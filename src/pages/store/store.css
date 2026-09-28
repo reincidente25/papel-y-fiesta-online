@@ -38,6 +38,7 @@
 
 /* Grilla de productos */
 .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; }
+@media (min-width: 1300px) { .product-grid { grid-template-columns: repeat(5, 1fr); } }
 
 /* Banda promocional */
 .promo {
