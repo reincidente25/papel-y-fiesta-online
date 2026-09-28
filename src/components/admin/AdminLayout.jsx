@@ -8,6 +8,7 @@ import './admin.css';
 const NAV = [
   { path: '/admin',          label: 'Dashboard', icon: '📊', end: true },
   { path: '/admin/productos', label: 'Productos', icon: '📦' },
+  { path: '/admin/importar',  label: 'Importar',  icon: '⬇️' },
   { path: '/admin/pedidos',   label: 'Pedidos',   icon: '🧾' },
 ];
 

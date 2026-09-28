@@ -18,6 +18,7 @@ import Register from './pages/auth/Register';
 import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import ProductForm from './pages/admin/ProductForm';
+import ImportProducts from './pages/admin/ImportProducts';
 import AdminOrders from './pages/admin/AdminOrders';
 
 const App = () => (
@@ -40,6 +41,7 @@ const App = () => (
           <Route path="/admin/productos" element={<AdminRoute><AdminProducts /></AdminRoute>} />
           <Route path="/admin/productos/nuevo" element={<AdminRoute><ProductForm /></AdminRoute>} />
           <Route path="/admin/productos/:id" element={<AdminRoute><ProductForm /></AdminRoute>} />
+          <Route path="/admin/importar" element={<AdminRoute><ImportProducts /></AdminRoute>} />
           <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
 
           {/* Catch-all */}

@@ -2,6 +2,7 @@
 import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
+import { getFunctions } from 'firebase/functions';
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
@@ -15,14 +16,19 @@ const firebaseConfig = {
 // Flag: ¿está Firebase configurado? Si no, la app corre en modo demo (mock).
 export const isFirebaseConfigured = Boolean(firebaseConfig.apiKey && firebaseConfig.projectId);
 
+// Región donde se despliegan las Cloud Functions (São Paulo, cercana a AR).
+export const FUNCTIONS_REGION = 'southamerica-east1';
+
 let app = null;
 let db = null;
 let auth = null;
+let functions = null;
 
 if (isFirebaseConfigured) {
   app  = initializeApp(firebaseConfig);
   db   = getFirestore(app);
   auth = getAuth(app);
+  functions = getFunctions(app, FUNCTIONS_REGION);
 } else {
   // eslint-disable-next-line no-console
   console.warn(
@@ -31,5 +37,5 @@ if (isFirebaseConfigured) {
   );
 }
 
-export { db, auth };
+export { db, auth, functions };
 export default app;

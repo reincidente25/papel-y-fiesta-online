@@ -1,0 +1,29 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() &&
+        get(/databases/$(db)/documents/usuarios/$(request.auth.uid)).data.rol == 'admin';
+    }
+
+    // Catálogo público (incluye productos importados del POS).
+    match /productos/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Perfiles: cada quien el suyo; el admin, todos.
+    match /usuarios/{uid} {
+      allow read, write: if (isSignedIn() && request.auth.uid == uid) || isAdmin();
+    }
+
+    // Pedidos: crea cualquier usuario logueado; lee/actualiza su dueño o el admin.
+    match /pedidos/{id} {
+      allow create: if isSignedIn();
+      allow read, update: if isAdmin() ||
+        (isSignedIn() && resource.data.usuarioId == request.auth.uid);
+    }
+  }
+}
