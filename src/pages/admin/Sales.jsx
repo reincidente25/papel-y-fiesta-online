@@ -205,31 +205,47 @@ const Sales = () => {
         </div>
       </Modal>
 
-      {/* Detalle / ticket de la venta */}
-      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title={detail ? `Venta #${detail.id.slice(-4)}` : ''} width={440}>
+      {/* Consulta de venta realizada (comprobante) */}
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={460}>
         {detail && (
           <div>
-            <div className="spread" style={{ marginBottom: 12 }}>
-              <span className="muted">{formatDate(detail.fecha)}</span>
-              <span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span>
+            <div className="ticket-head">
+              <span className="brand" style={{ fontSize: '1.1rem' }}>
+                <span className="b-papel">Papel</span><span className="b-amp">&amp;</span><span className="b-fiesta">Fiesta</span>
+              </span>
+              <div className="t-num">Venta #{detail.id.slice(-6)}</div>
+              <div className="t-date">{formatDate(detail.fecha)}</div>
             </div>
-            {detail.cliente && <p style={{ marginBottom: 10 }}>Cliente: <strong>{detail.cliente}</strong></p>}
+
+            <div className="ticket-info">
+              <div className="ti"><span className="k">Canal</span><span className="v">{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></div>
+              <div className="ti"><span className="k">Medio de pago</span><span className="v">{PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</span></div>
+              <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
+              <div className="ti"><span className="k">Unidades</span><span className="v">{detail.items.reduce((n, i) => n + i.cantidad, 0)}</span></div>
+            </div>
+
             <table className="table" style={{ marginBottom: 12 }}>
-              <thead><tr><th>Producto</th><th>Cant.</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
+              <thead><tr><th>Producto</th><th style={{ textAlign: 'center' }}>Cant.</th><th style={{ textAlign: 'right' }}>P. unit.</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
               <tbody>
                 {detail.items.map((i, idx) => (
                   <tr key={idx}>
                     <td>{i.nombre}</td>
-                    <td>{i.cantidad}</td>
+                    <td style={{ textAlign: 'center' }}>{i.cantidad}</td>
+                    <td style={{ textAlign: 'right' }}>{formatMoney(i.precioUnit)}</td>
                     <td style={{ textAlign: 'right' }}>{formatMoney(i.precioUnit * i.cantidad)}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
+
             <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
             {detail.descuento > 0 && <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Descuento</span><span>− {formatMoney(detail.descuento)}</span></div>}
             <div className="pos-total"><span>Total</span><span>{formatMoney(detail.total)}</span></div>
-            <p className="hint" style={{ marginTop: 8 }}>Pago: {PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</p>
+
+            <div className="ticket-actions">
+              <button className="btn btn-ghost btn-block" onClick={() => window.print()}>🖨️ Imprimir</button>
+              <button className="btn btn-primary btn-block" onClick={() => setDetail(null)}>Cerrar</button>
+            </div>
           </div>
         )}
       </Modal>

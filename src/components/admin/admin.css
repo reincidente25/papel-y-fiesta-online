@@ -90,6 +90,16 @@
 .preview-card .pc-price { font-family: var(--font-head); font-weight: 800; font-size: 1.3rem; color: var(--brand-ink); }
 .preview-card .pc-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: .85rem; }
 
+/* Ticket / comprobante de venta */
+.ticket-head { text-align: center; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px dashed var(--border-strong); }
+.ticket-head .t-num { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; margin-top: 4px; }
+.ticket-head .t-date { color: var(--muted); font-size: .85rem; }
+.ticket-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 16px; }
+.ticket-info .ti { display: flex; flex-direction: column; }
+.ticket-info .ti .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
+.ticket-info .ti .v { font-weight: 600; font-family: var(--font-head); }
+.ticket-actions { display: flex; gap: 10px; margin-top: 18px; }
+
 /* Modal POS a dos columnas */
 .pos-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
 .pos-aside { background: var(--surface-alt); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }
