@@ -25,6 +25,17 @@ export const MOCK_CASH_MOVEMENTS = [
   { id: 'm-3', fecha: '2026-09-29T12:40:00', tipo: 'egreso',  concepto: 'Pago flete', metodoPago: 'efectivo', monto: 3500 },
 ];
 
+export const MOCK_ORDERS = [
+  { id: 'p-3001', email: 'laura.g@mail.com', cliente: 'Laura G.', usuarioId: 'u1', items: [{ nombre: 'Set 12 fibras acuarelables', precio: 9500, cantidad: 1 }], total: 9500, estado: 'pendiente', creadoEn: '2026-09-28T16:05:00' },
+  { id: 'p-3002', email: 'martin.p@mail.com', cliente: 'Martín P.', usuarioId: 'u2', items: [{ nombre: 'Kit cumpleaños temático', precio: 11900, cantidad: 1 }, { nombre: 'Globos metalizados x50', precio: 5900, cantidad: 2 }], total: 23700, estado: 'pagado', creadoEn: '2026-09-27T12:30:00' },
+];
+
+export const MOCK_CUSTOMERS = [
+  { id: 'cli-1', nombre: 'Laura Gómez', telefono: '+54 9 351 444-1122', email: 'laura.g@mail.com', tipo: 'minorista', saldoCtaCte: 0, notas: '' },
+  { id: 'cli-2', nombre: 'Escuela San Martín', telefono: '+54 9 351 444-3344', email: 'compras@sanmartin.edu', tipo: 'mayorista', saldoCtaCte: 45200, notas: 'Compra por temporada escolar.' },
+  { id: 'cli-3', nombre: 'Martín Pérez', telefono: '+54 9 351 444-5566', email: 'martin.p@mail.com', tipo: 'minorista', saldoCtaCte: 0, notas: '' },
+];
+
 // Sesión de caja actual (mock)
 export const MOCK_CASH_SESSION = {
   id: 'caja-1', estado: 'abierta', aperturaFecha: '2026-09-29T09:00:00', montoInicial: 20000, cierreFecha: null, montoFinal: null,

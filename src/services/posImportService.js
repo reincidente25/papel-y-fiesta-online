@@ -1,6 +1,7 @@
 // src/services/posImportService.js
 import { httpsCallable } from 'firebase/functions';
 import { functions, isFirebaseConfigured } from '../config/firebase';
+import { MOCK_MODE } from '../config/app';
 
 // Datos de ejemplo para modo demo (simula el catálogo del POS).
 const DEMO_POS = [
@@ -16,7 +17,7 @@ const DEMO_POS = [
  * En modo demo devuelve datos de ejemplo.
  */
 export async function listPosProducts(search = '') {
-  if (!isFirebaseConfigured || !functions) {
+  if (MOCK_MODE || !isFirebaseConfigured || !functions) {
     const q = search.trim().toLowerCase();
     const items = q ? DEMO_POS.filter((p) => p.nombre.toLowerCase().includes(q)) : DEMO_POS;
     return { items, total: items.length, demo: true };

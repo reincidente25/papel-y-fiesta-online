@@ -8,8 +8,11 @@ import {
   signOut,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../config/firebase';
+import { MOCK_MODE } from '../config/app';
 import { createUserProfile, getUserProfile } from '../services/usersService';
 import { ROLES } from '../constants';
+
+const DEMO = MOCK_MODE || !isFirebaseConfigured;
 
 const AuthContext = createContext(null);
 
@@ -19,7 +22,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!isFirebaseConfigured) {
+    if (DEMO) {
       setLoading(false);
       return undefined;
     }
@@ -52,7 +55,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, isAdmin, loading, login, register, logout, demoMode: !isFirebaseConfigured }}
+      value={{ user, profile, isAdmin, loading, login, register, logout, demoMode: DEMO }}
     >
       {!loading && children}
     </AuthContext.Provider>

@@ -62,6 +62,13 @@ export const PURCHASE_STATUS = {
 };
 export const PURCHASE_STATUS_LIST = Object.values(PURCHASE_STATUS);
 
+// Tipos de cliente
+export const CUSTOMER_TYPES = {
+  minorista: { value: 'minorista', label: 'Minorista' },
+  mayorista: { value: 'mayorista', label: 'Mayorista' },
+};
+export const CUSTOMER_TYPES_LIST = Object.values(CUSTOMER_TYPES);
+
 // Tipos de movimiento de caja
 export const CASH_TYPES = {
   venta:   { value: 'venta',   label: 'Venta',   signo: 1 },

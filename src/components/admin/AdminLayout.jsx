@@ -8,11 +8,13 @@ import './admin.css';
 const NAV = [
   { section: 'Principal', items: [
     { path: '/admin', label: 'Dashboard', icon: '📊', end: true },
+    { path: '/admin/reportes', label: 'Reportes', icon: '📈' },
   ]},
   { section: 'Gestión', items: [
     { path: '/admin/ventas',      label: 'Ventas',      icon: '🧾' },
     { path: '/admin/compras',     label: 'Compras',     icon: '🛒' },
     { path: '/admin/proveedores', label: 'Proveedores', icon: '🚚' },
+    { path: '/admin/clientes',    label: 'Clientes',    icon: '👥' },
     { path: '/admin/caja',        label: 'Caja',        icon: '💰' },
   ]},
   { section: 'Catálogo', items: [

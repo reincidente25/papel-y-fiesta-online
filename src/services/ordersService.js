@@ -4,14 +4,17 @@ import {
   query, orderBy, where, serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
+import { MOCK_MODE } from '../config/app';
+import { MOCK_ORDERS } from '../data/mockManagement';
 
 const COL = 'pedidos';
+const useMock = MOCK_MODE || !isFirebaseConfigured;
 
 export async function createOrder(order) {
-  if (!isFirebaseConfigured) {
-    // eslint-disable-next-line no-console
-    console.info('[demo] Pedido simulado:', order);
-    return `demo-order-${Date.now()}`;
+  if (useMock) {
+    const nuevo = { id: `p-${Date.now()}`, estado: 'pendiente', creadoEn: new Date().toISOString(), ...order };
+    MOCK_ORDERS.unshift(nuevo);
+    return nuevo.id;
   }
   const ref = await addDoc(collection(db, COL), {
     ...order,
@@ -22,18 +25,22 @@ export async function createOrder(order) {
 }
 
 export async function getOrders() {
-  if (!isFirebaseConfigured) return [];
+  if (useMock) return [...MOCK_ORDERS];
   const snap = await getDocs(query(collection(db, COL), orderBy('creadoEn', 'desc')));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getOrdersByUser(uid) {
-  if (!isFirebaseConfigured) return [];
+  if (useMock) return MOCK_ORDERS.filter((o) => o.usuarioId === uid);
   const snap = await getDocs(query(collection(db, COL), where('usuarioId', '==', uid)));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function updateOrderStatus(id, estado) {
-  if (!isFirebaseConfigured) return;
+  if (useMock) {
+    const i = MOCK_ORDERS.findIndex((o) => o.id === id);
+    if (i >= 0) MOCK_ORDERS[i] = { ...MOCK_ORDERS[i], estado };
+    return;
+  }
   await updateDoc(doc(db, COL, id), { estado, actualizadoEn: serverTimestamp() });
 }

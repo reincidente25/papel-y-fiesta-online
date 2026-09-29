@@ -9,7 +9,7 @@ const StoreLayout = ({ children }) => {
     <div className="store">
       {demoMode && (
         <div className="demo-banner">
-          🧪 Modo demo — Firebase no configurado. Los datos son de ejemplo.
+          🧪 Modo mockup — datos de ejemplo (sin backend conectado).
         </div>
       )}
       <Navbar />

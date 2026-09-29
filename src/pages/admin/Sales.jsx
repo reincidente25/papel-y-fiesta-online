@@ -23,6 +23,11 @@ const Sales = () => {
   const [cliente, setCliente] = useState('');
   const [picker, setPicker] = useState('');
 
+  // Filtro por fecha y detalle
+  const [desde, setDesde] = useState('');
+  const [hasta, setHasta] = useState('');
+  const [detail, setDetail] = useState(null);
+
   const load = () => {
     setLoading(true);
     Promise.all([getSales(), getProducts()])
@@ -69,6 +74,13 @@ const Sales = () => {
     .filter((s) => new Date(s.fecha).toDateString() === new Date().toDateString())
     .reduce((n, s) => n + s.total, 0);
 
+  const filtered = sales.filter((s) => {
+    const f = new Date(s.fecha);
+    if (desde && f < new Date(desde)) return false;
+    if (hasta && f > new Date(hasta + 'T23:59:59')) return false;
+    return true;
+  });
+
   return (
     <AdminLayout title="Ventas">
       <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -78,7 +90,15 @@ const Sales = () => {
       </div>
 
       <div className="toolbar">
-        <h2 className="section-title">Historial</h2>
+        <div className="row gap-12">
+          <h2 className="section-title">Historial</h2>
+          <div className="row gap-8">
+            <input className="input" type="date" value={desde} onChange={(e) => setDesde(e.target.value)} title="Desde" />
+            <span className="muted">→</span>
+            <input className="input" type="date" value={hasta} onChange={(e) => setHasta(e.target.value)} title="Hasta" />
+            {(desde || hasta) && <button className="btn btn-ghost btn-sm" onClick={() => { setDesde(''); setHasta(''); }}>Limpiar</button>}
+          </div>
+        </div>
         <button className="btn btn-primary" onClick={openNew}>+ Nueva venta</button>
       </div>
 
@@ -89,10 +109,10 @@ const Sales = () => {
               <tr><th>N°</th><th>Fecha</th><th>Canal</th><th>Ítems</th><th>Pago</th><th>Cliente</th><th>Total</th></tr>
             </thead>
             <tbody>
-              {sales.length === 0 ? (
-                <tr><td colSpan={7} className="muted">No hay ventas todavía.</td></tr>
-              ) : sales.map((s) => (
-                <tr key={s.id}>
+              {filtered.length === 0 ? (
+                <tr><td colSpan={7} className="muted">No hay ventas en el período.</td></tr>
+              ) : filtered.map((s) => (
+                <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => setDetail(s)}>
                   <td>#{s.id.slice(-4)}</td>
                   <td>{formatDate(s.fecha)}</td>
                   <td><span className={`badge ${SALE_CHANNELS[s.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[s.canal]?.label || s.canal}</span></td>
@@ -159,6 +179,35 @@ const Sales = () => {
           </button>
           <button className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
         </div>
+      </Modal>
+
+      {/* Detalle / ticket de la venta */}
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title={detail ? `Venta #${detail.id.slice(-4)}` : ''} width={440}>
+        {detail && (
+          <div>
+            <div className="spread" style={{ marginBottom: 12 }}>
+              <span className="muted">{formatDate(detail.fecha)}</span>
+              <span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span>
+            </div>
+            {detail.cliente && <p style={{ marginBottom: 10 }}>Cliente: <strong>{detail.cliente}</strong></p>}
+            <table className="table" style={{ marginBottom: 12 }}>
+              <thead><tr><th>Producto</th><th>Cant.</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
+              <tbody>
+                {detail.items.map((i, idx) => (
+                  <tr key={idx}>
+                    <td>{i.nombre}</td>
+                    <td>{i.cantidad}</td>
+                    <td style={{ textAlign: 'right' }}>{formatMoney(i.precioUnit * i.cantidad)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
+            {detail.descuento > 0 && <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Descuento</span><span>− {formatMoney(detail.descuento)}</span></div>}
+            <div className="pos-total"><span>Total</span><span>{formatMoney(detail.total)}</span></div>
+            <p className="hint" style={{ marginTop: 8 }}>Pago: {PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</p>
+          </div>
+        )}
       </Modal>
     </AdminLayout>
   );

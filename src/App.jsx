@@ -23,7 +23,9 @@ import AdminOrders from './pages/admin/AdminOrders';
 import Sales from './pages/admin/Sales';
 import Purchases from './pages/admin/Purchases';
 import Suppliers from './pages/admin/Suppliers';
+import Customers from './pages/admin/Customers';
 import Cash from './pages/admin/Cash';
+import Reports from './pages/admin/Reports';
 
 const App = () => (
   <AuthProvider>
@@ -49,7 +51,9 @@ const App = () => (
           <Route path="/admin/ventas" element={<AdminRoute><Sales /></AdminRoute>} />
           <Route path="/admin/compras" element={<AdminRoute><Purchases /></AdminRoute>} />
           <Route path="/admin/proveedores" element={<AdminRoute><Suppliers /></AdminRoute>} />
+          <Route path="/admin/clientes" element={<AdminRoute><Customers /></AdminRoute>} />
           <Route path="/admin/caja" element={<AdminRoute><Cash /></AdminRoute>} />
+          <Route path="/admin/reportes" element={<AdminRoute><Reports /></AdminRoute>} />
           <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
 
           {/* Catch-all */}

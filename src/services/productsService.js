@@ -4,9 +4,11 @@ import {
   query, where, orderBy, serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
+import { MOCK_MODE } from '../config/app';
 import { MOCK_PRODUCTS } from '../data/mockProducts';
 
 const COL = 'productos';
+const useMock = MOCK_MODE || !isFirebaseConfigured;
 
 /**
  * Capa de acceso a productos.
@@ -15,7 +17,7 @@ const COL = 'productos';
  */
 
 export async function getProducts() {
-  if (!isFirebaseConfigured) return [...MOCK_PRODUCTS];
+  if (useMock) return [...MOCK_PRODUCTS];
   const snap = await getDocs(query(collection(db, COL), orderBy('nombre')));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
@@ -27,7 +29,7 @@ export async function getPublicProducts() {
 }
 
 export async function getProductById(id) {
-  if (!isFirebaseConfigured) return MOCK_PRODUCTS.find((p) => p.id === id) || null;
+  if (useMock) return MOCK_PRODUCTS.find((p) => p.id === id) || null;
   const ref = doc(db, COL, id);
   const snap = await getDoc(ref);
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
@@ -39,7 +41,7 @@ export async function getFeaturedProducts() {
 }
 
 export async function createProduct(data) {
-  if (!isFirebaseConfigured) {
+  if (useMock) {
     const nuevo = { id: `demo-${Date.now()}`, ...data };
     MOCK_PRODUCTS.push(nuevo);
     return nuevo.id;
@@ -53,7 +55,7 @@ export async function createProduct(data) {
 }
 
 export async function updateProduct(id, data) {
-  if (!isFirebaseConfigured) {
+  if (useMock) {
     const i = MOCK_PRODUCTS.findIndex((p) => p.id === id);
     if (i >= 0) MOCK_PRODUCTS[i] = { ...MOCK_PRODUCTS[i], ...data };
     return;
@@ -62,7 +64,7 @@ export async function updateProduct(id, data) {
 }
 
 export async function deleteProduct(id) {
-  if (!isFirebaseConfigured) {
+  if (useMock) {
     const i = MOCK_PRODUCTS.findIndex((p) => p.id === id);
     if (i >= 0) MOCK_PRODUCTS.splice(i, 1);
     return;
@@ -71,7 +73,7 @@ export async function deleteProduct(id) {
 }
 
 export async function getProductsByCategory(categoria) {
-  if (!isFirebaseConfigured) return MOCK_PRODUCTS.filter((p) => p.categoria === categoria);
+  if (useMock) return MOCK_PRODUCTS.filter((p) => p.categoria === categoria);
   const snap = await getDocs(query(collection(db, COL), where('categoria', '==', categoria)));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
