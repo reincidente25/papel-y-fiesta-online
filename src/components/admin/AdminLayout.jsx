@@ -6,10 +6,22 @@ import Brand from '../common/Brand';
 import './admin.css';
 
 const NAV = [
-  { path: '/admin',          label: 'Dashboard', icon: '📊', end: true },
-  { path: '/admin/productos', label: 'Productos', icon: '📦' },
-  { path: '/admin/importar',  label: 'Importar',  icon: '⬇️' },
-  { path: '/admin/pedidos',   label: 'Pedidos',   icon: '🧾' },
+  { section: 'Principal', items: [
+    { path: '/admin', label: 'Dashboard', icon: '📊', end: true },
+  ]},
+  { section: 'Gestión', items: [
+    { path: '/admin/ventas',      label: 'Ventas',      icon: '🧾' },
+    { path: '/admin/compras',     label: 'Compras',     icon: '🛒' },
+    { path: '/admin/proveedores', label: 'Proveedores', icon: '🚚' },
+    { path: '/admin/caja',        label: 'Caja',        icon: '💰' },
+  ]},
+  { section: 'Catálogo', items: [
+    { path: '/admin/productos', label: 'Productos', icon: '📦' },
+    { path: '/admin/importar',  label: 'Importar',  icon: '⬇️' },
+  ]},
+  { section: 'Tienda online', items: [
+    { path: '/admin/pedidos', label: 'Pedidos web', icon: '🛍️' },
+  ]},
 ];
 
 const AdminLayout = ({ children, title }) => {
@@ -28,12 +40,17 @@ const AdminLayout = ({ children, title }) => {
         <Link to="/admin" className="admin-logo"><Brand size="1.2rem" /></Link>
         <span className="admin-tag">Panel</span>
         <nav className="admin-nav">
-          {NAV.map((item) => (
-            <NavLink key={item.path} to={item.path} end={item.end}
-              className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setOpen(false)}>
-              <span>{item.icon}</span> {item.label}
-            </NavLink>
+          {NAV.map((group) => (
+            <div key={group.section} className="admin-nav-group">
+              <span className="admin-nav-section">{group.section}</span>
+              {group.items.map((item) => (
+                <NavLink key={item.path} to={item.path} end={item.end}
+                  className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => setOpen(false)}>
+                  <span>{item.icon}</span> {item.label}
+                </NavLink>
+              ))}
+            </div>
           ))}
         </nav>
         <div className="admin-side-foot">
