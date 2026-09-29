@@ -7,7 +7,7 @@ import Brand from '../common/Brand';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { user, isAdmin, logout } = useAuth();
+  const { user, isAdmin, demoMode, logout } = useAuth();
   const { count } = useCart();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -27,7 +27,7 @@ const Navbar = () => {
         <nav className={`nav-links ${open ? 'open' : ''}`}>
           <NavLink to="/" end onClick={() => setOpen(false)}>Inicio</NavLink>
           <NavLink to="/catalogo" onClick={() => setOpen(false)}>Catálogo</NavLink>
-          {isAdmin && <NavLink to="/admin" onClick={() => setOpen(false)}>Panel</NavLink>}
+          {(isAdmin || demoMode) && <NavLink to="/admin" onClick={() => setOpen(false)}>Panel</NavLink>}
         </nav>
 
         <div className="nav-actions">
