@@ -1,11 +1,11 @@
 // src/pages/store/Cart.jsx
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
 import { formatMoney } from '../../utils/format';
-import { useState } from 'react';
 import './store.css';
 
 const Cart = () => {
@@ -13,23 +13,33 @@ const Cart = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
+  const [checkout, setCheckout] = useState(false);
+  const [form, setForm] = useState({
+    nombre: user?.displayName || '',
+    email: user?.email || '',
+    telefono: '',
+    entrega: 'retiro',
+    notas: '',
+  });
 
-  const handleCheckout = async () => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  const handleCheckout = async (e) => {
+    e.preventDefault();
     setPlacing(true);
     try {
-      await createOrder({
-        usuarioId: user.uid,
-        email: user.email,
+      const id = await createOrder({
+        usuarioId: user?.uid || null,
+        cliente: form.nombre,
+        email: form.email,
+        telefono: form.telefono,
+        entrega: form.entrega,
+        notas: form.notas,
         items,
         total,
       });
       clearCart();
-      alert('¡Pedido creado! Te contactaremos para coordinar el pago y envío.');
-      navigate('/');
+      navigate(`/pedido/${id}`);
     } finally {
       setPlacing(false);
     }
@@ -67,12 +77,8 @@ const Cart = () => {
                   </div>
                 </div>
                 <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700 }}>
-                    {formatMoney(item.precio * item.cantidad)}
-                  </div>
-                  <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => removeItem(item.id)}>
-                    Quitar
-                  </button>
+                  <div style={{ fontFamily: 'var(--font-head)', fontWeight: 700 }}>{formatMoney(item.precio * item.cantidad)}</div>
+                  <button className="btn btn-ghost btn-sm" style={{ marginTop: 8 }} onClick={() => removeItem(item.id)}>Quitar</button>
                 </div>
               </div>
             ))}
@@ -80,22 +86,40 @@ const Cart = () => {
 
           <aside className="cart-summary card">
             <h3 className="section-title" style={{ fontSize: '1.15rem', marginBottom: 16 }}>Resumen</h3>
-            <div className="cart-summary-row">
-              <span className="muted">Subtotal</span>
-              <span>{formatMoney(total)}</span>
-            </div>
-            <div className="cart-summary-row">
-              <span className="muted">Envío</span>
-              <span>A coordinar</span>
-            </div>
-            <div className="cart-summary-row cart-summary-total">
-              <span>Total</span>
-              <span>{formatMoney(total)}</span>
-            </div>
-            <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={handleCheckout} disabled={placing}>
-              {placing ? 'Procesando...' : user ? 'Finalizar pedido' : 'Iniciá sesión para comprar'}
-            </button>
-            <Link to="/catalogo" className="btn btn-ghost btn-block" style={{ marginTop: 10 }}>Seguir comprando</Link>
+            <div className="cart-summary-row"><span className="muted">Subtotal</span><span>{formatMoney(total)}</span></div>
+            <div className="cart-summary-row"><span className="muted">Envío</span><span>A coordinar</span></div>
+            <div className="cart-summary-row cart-summary-total"><span>Total</span><span>{formatMoney(total)}</span></div>
+
+            {!checkout ? (
+              <>
+                <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setCheckout(true)}>
+                  Continuar
+                </button>
+                <p className="hint" style={{ marginTop: 10, textAlign: 'center' }}>
+                  💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.
+                </p>
+              </>
+            ) : (
+              <form onSubmit={handleCheckout} className="stack gap-12" style={{ marginTop: 16 }}>
+                <div className="field"><label>Nombre y apellido *</label>
+                  <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required /></div>
+                <div className="field"><label>Teléfono / WhatsApp *</label>
+                  <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
+                <div className="field"><label>Email</label>
+                  <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
+                <div className="field"><label>Entrega</label>
+                  <select className="select" value={form.entrega} onChange={(e) => set('entrega', e.target.value)}>
+                    <option value="retiro">Retiro en el local</option>
+                    <option value="envio">Envío a domicilio</option>
+                  </select></div>
+                <div className="field"><label>Notas (opcional)</label>
+                  <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} /></div>
+                <button type="submit" className="btn btn-primary btn-block" disabled={placing}>
+                  {placing ? 'Enviando...' : 'Confirmar pedido'}
+                </button>
+                <button type="button" className="btn btn-ghost btn-block" onClick={() => setCheckout(false)}>Volver</button>
+              </form>
+            )}
           </aside>
         </div>
       </div>

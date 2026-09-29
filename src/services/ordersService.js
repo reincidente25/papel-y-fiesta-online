@@ -30,6 +30,12 @@ export async function getOrders() {
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
+export async function getOrderById(id) {
+  if (useMock) return MOCK_ORDERS.find((o) => o.id === id) || null;
+  const snap = await getDocs(query(collection(db, COL), where('__name__', '==', id)));
+  return snap.docs.length ? { id: snap.docs[0].id, ...snap.docs[0].data() } : null;
+}
+
 export async function getOrdersByUser(uid) {
   if (useMock) return MOCK_ORDERS.filter((o) => o.usuarioId === uid);
   const snap = await getDocs(query(collection(db, COL), where('usuarioId', '==', uid)));

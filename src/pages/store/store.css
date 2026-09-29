@@ -83,6 +83,28 @@
 .cart-summary-row { display: flex; justify-content: space-between; margin-bottom: 12px; }
 .cart-summary-total { font-family: var(--font-head); font-weight: 800; font-size: 1.4rem; border-top: 1px solid var(--border); padding-top: 14px; margin-top: 6px; }
 
+/* Seguimiento de pedido */
+.order-page { max-width: 760px; margin-inline: auto; padding-block: 40px; }
+.order-head { text-align: center; margin-bottom: 8px; }
+.order-num { font-family: var(--font-head); font-weight: 800; font-size: 1.6rem; }
+.order-desc { text-align: center; color: var(--text-soft); max-width: 520px; margin: 0 auto 28px; }
+
+.timeline { display: flex; justify-content: space-between; position: relative; margin: 32px 0 40px; }
+.timeline::before { content: ''; position: absolute; top: 15px; left: 6%; right: 6%; height: 3px; background: var(--border); }
+.tl-step { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1; text-align: center; }
+.tl-dot { width: 32px; height: 32px; border-radius: 50%; background: var(--surface); border: 3px solid var(--border); display: grid; place-items: center; font-size: .85rem; color: var(--muted); }
+.tl-step.done .tl-dot { background: var(--success); border-color: var(--success); color: #fff; }
+.tl-step.current .tl-dot { background: var(--primary); border-color: var(--primary); color: #fff; box-shadow: 0 0 0 4px var(--brand-orange-soft); }
+.tl-label { font-size: .72rem; color: var(--text-soft); max-width: 80px; }
+.tl-step.current .tl-label { color: var(--primary); font-weight: 700; }
+
+.order-box { padding: 24px; margin-bottom: 18px; }
+.pay-row { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px dashed var(--border); font-size: .95rem; }
+.pay-row:last-child { border-bottom: none; }
+.pay-row .k { color: var(--muted); }
+.pay-row .v { font-weight: 600; font-family: var(--font-head); }
+.order-cancel { background: var(--danger-soft); color: var(--danger); padding: 16px; border-radius: var(--radius); text-align: center; }
+
 /* Estado vacío */
 .empty { text-align: center; padding: 80px 20px; }
 .empty-icon { font-size: 3rem; margin-bottom: 12px; }

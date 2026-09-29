@@ -9,6 +9,7 @@ import Home from './pages/store/Home';
 import Catalog from './pages/store/Catalog';
 import ProductDetail from './pages/store/ProductDetail';
 import Cart from './pages/store/Cart';
+import OrderStatus from './pages/store/OrderStatus';
 
 // Auth
 import Login from './pages/auth/Login';
@@ -37,6 +38,7 @@ const App = () => (
           <Route path="/catalogo" element={<Catalog />} />
           <Route path="/producto/:id" element={<ProductDetail />} />
           <Route path="/carrito" element={<Cart />} />
+          <Route path="/pedido/:id" element={<OrderStatus />} />
 
           {/* Autenticación */}
           <Route path="/login" element={<Login />} />
