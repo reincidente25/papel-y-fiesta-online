@@ -130,7 +130,9 @@ const Sales = () => {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={620}>
+      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={880}>
+        <div className="pos-grid">
+        <div>
         <div className="field pos-search" style={{ marginBottom: 6 }}>
           <label>Agregar productos</label>
           <input className="input" placeholder="🔎 Buscá por nombre y hacé clic para agregar..."
@@ -174,8 +176,10 @@ const Sales = () => {
             <p className="hint" style={{ textAlign: 'right' }}>{totalItems} unidad(es) · {lines.length} producto(s)</p>
           </div>
         )}
+        </div>
 
-        <div className="form-grid">
+        {/* Resumen / cobro */}
+        <aside className="pos-aside">
           <div className="field"><label>Canal</label>
             <select className="select" value={canal} onChange={(e) => setCanal(e.target.value)}>
               {Object.values(SALE_CHANNELS).map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
@@ -188,15 +192,16 @@ const Sales = () => {
             <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} /></div>
           <div className="field"><label>Cliente (opcional)</label>
             <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} /></div>
-        </div>
 
-        <div className="pos-total"><span>Total</span><span>{formatMoney(total)}</span></div>
+          <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
+          {Number(descuento) > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Descuento</span><span>− {formatMoney(descuento)}</span></div>}
+          <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
 
-        <div className="form-actions">
-          <button className="btn btn-primary" onClick={save} disabled={saving || lines.length === 0}>
+          <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0}>
             {saving ? 'Registrando...' : 'Registrar venta'}
           </button>
-          <button className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
+          <button className="btn btn-ghost btn-block" onClick={() => setModal(false)}>Cancelar</button>
+        </aside>
         </div>
       </Modal>
 

@@ -79,6 +79,27 @@
 .col-label { font-size: .72rem; color: var(--muted); }
 .col-value { font-size: .7rem; font-weight: 700; color: var(--text-soft); }
 
+/* Editor de producto (form + panel de imagen/preview) */
+.editor-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
+.editor-aside { position: sticky; top: 92px; display: flex; flex-direction: column; gap: 16px; }
+.img-preview { aspect-ratio: 1/1; border-radius: var(--radius); overflow: hidden; background: var(--surface-alt); border: 1px dashed var(--border-strong); display: grid; place-items: center; }
+.img-preview img { width: 100%; height: 100%; object-fit: cover; }
+.img-preview .ph { color: var(--muted); font-size: .85rem; text-align: center; padding: 20px; }
+.preview-card { padding: 16px; }
+.preview-card .pc-name { font-family: var(--font-head); font-weight: 600; margin-bottom: 4px; }
+.preview-card .pc-price { font-family: var(--font-head); font-weight: 800; font-size: 1.3rem; color: var(--brand-ink); }
+.preview-card .pc-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: .85rem; }
+
+/* Modal POS a dos columnas */
+.pos-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+.pos-aside { background: var(--surface-alt); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }
+
+@media (max-width: 780px) {
+  .editor-grid { grid-template-columns: 1fr; }
+  .editor-aside { position: static; }
+  .pos-grid { grid-template-columns: 1fr; }
+}
+
 /* Modal */
 .modal-overlay { position: fixed; inset: 0; background: rgba(38,35,34,.5); display: grid; place-items: center; z-index: 100; padding: 20px; }
 .modal { width: 100%; background: var(--surface); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); max-height: 90vh; display: flex; flex-direction: column; }
