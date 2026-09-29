@@ -21,7 +21,7 @@ const Sales = () => {
   const [metodoPago, setMetodoPago] = useState('efectivo');
   const [canal, setCanal] = useState('local');
   const [cliente, setCliente] = useState('');
-  const [picker, setPicker] = useState('');
+  const [query, setQuery] = useState('');
 
   // Filtro por fecha y detalle
   const [desde, setDesde] = useState('');
@@ -37,23 +37,26 @@ const Sales = () => {
   useEffect(load, []);
 
   const openNew = () => {
-    setLines([]); setDescuento(0); setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setPicker('');
+    setLines([]); setDescuento(0); setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setQuery('');
     setModal(true);
   };
 
-  const addLine = (productId) => {
-    const p = products.find((x) => x.id === productId);
-    if (!p) return;
+  const addLine = (p) => {
     setLines((ls) => {
       const ex = ls.find((l) => l.productoId === p.id);
       if (ex) return ls.map((l) => l.productoId === p.id ? { ...l, cantidad: l.cantidad + 1 } : l);
-      return [...ls, { productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnit: p.precioVenta }];
+      return [...ls, { productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnit: p.precioVenta, stock: p.stock }];
     });
-    setPicker('');
+    setQuery('');
   };
 
-  const setLine = (id, patch) => setLines((ls) => ls.map((l) => l.productoId === id ? { ...l, ...patch } : l));
+  const changeQty = (id, delta) => setLines((ls) => ls.map((l) => l.productoId === id ? { ...l, cantidad: Math.max(1, l.cantidad + delta) } : l));
   const delLine = (id) => setLines((ls) => ls.filter((l) => l.productoId !== id));
+
+  const results = query.trim()
+    ? products.filter((p) => p.nombre.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    : [];
+  const totalItems = lines.reduce((n, l) => n + l.cantidad, 0);
 
   const subtotal = lines.reduce((n, l) => n + l.precioUnit * l.cantidad, 0);
   const total = subtotal - (Number(descuento) || 0);
@@ -128,31 +131,47 @@ const Sales = () => {
       )}
 
       <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={620}>
-        <div className="field" style={{ marginBottom: 14 }}>
-          <label>Agregar producto</label>
-          <select className="select" value={picker} onChange={(e) => addLine(e.target.value)}>
-            <option value="">Seleccioná un producto...</option>
-            {products.map((p) => <option key={p.id} value={p.id}>{p.nombre} — {formatMoney(p.precioVenta)} (stock {p.stock})</option>)}
-          </select>
+        <div className="field pos-search" style={{ marginBottom: 6 }}>
+          <label>Agregar productos</label>
+          <input className="input" placeholder="🔎 Buscá por nombre y hacé clic para agregar..."
+            value={query} onChange={(e) => setQuery(e.target.value)} />
+          {results.length > 0 && (
+            <div className="pos-results">
+              {results.map((p) => {
+                const sinStock = p.stock <= 0;
+                return (
+                  <div key={p.id} className={`pos-result ${sinStock ? 'disabled' : ''}`}
+                    onClick={() => !sinStock && addLine(p)}>
+                    {p.imagen && <img src={p.imagen} alt="" />}
+                    <span className="pos-result-name">{p.nombre}</span>
+                    <span className="pos-result-meta">{formatMoney(p.precioVenta)} · stock {p.stock}</span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {lines.length === 0 ? (
-          <p className="muted" style={{ padding: '12px 0' }}>Agregá productos a la venta.</p>
+          <div className="pos-empty">Todavía no agregaste productos. Buscá arriba y hacé clic para sumarlos.</div>
         ) : (
-          <div style={{ marginBottom: 12 }}>
-            <div className="pos-line" style={{ fontSize: '.75rem', color: 'var(--muted)', fontWeight: 600 }}>
-              <span>Producto</span><span>Cant.</span><span>Precio</span><span></span>
-            </div>
+          <div className="pos-cart">
             {lines.map((l) => (
-              <div className="pos-line" key={l.productoId}>
-                <span>{l.nombre}</span>
-                <input className="input" type="number" min="1" value={l.cantidad}
-                  onChange={(e) => setLine(l.productoId, { cantidad: Math.max(1, Number(e.target.value)) })} />
-                <input className="input" type="number" min="0" value={l.precioUnit}
-                  onChange={(e) => setLine(l.productoId, { precioUnit: Number(e.target.value) })} />
+              <div className="pos-cart-item" key={l.productoId}>
+                <div>
+                  <div className="pos-cart-name">{l.nombre}</div>
+                  <div className="pos-cart-price">{formatMoney(l.precioUnit)} c/u</div>
+                </div>
+                <div className="qty-mini">
+                  <button type="button" onClick={() => changeQty(l.productoId, -1)}>−</button>
+                  <span>{l.cantidad}</span>
+                  <button type="button" onClick={() => changeQty(l.productoId, +1)}>+</button>
+                </div>
+                <span className="pos-line-total">{formatMoney(l.precioUnit * l.cantidad)}</span>
                 <button className="btn btn-ghost btn-sm" onClick={() => delLine(l.productoId)}>✕</button>
               </div>
             ))}
+            <p className="hint" style={{ textAlign: 'right' }}>{totalItems} unidad(es) · {lines.length} producto(s)</p>
           </div>
         )}
 
