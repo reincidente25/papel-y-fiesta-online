@@ -36,6 +36,13 @@ export const MOCK_CUSTOMERS = [
   { id: 'cli-3', nombre: 'Martín Pérez', telefono: '+54 9 351 444-5566', email: 'martin.p@mail.com', tipo: 'minorista', saldoCtaCte: 0, notas: '' },
 ];
 
+export const MOCK_ABANDONED_CARTS = [
+  { id: 'ab-1', cliente: 'Sofía Molina', telefono: '5493514445566', email: 'sofia.m@mail.com', items: [{ nombre: 'Set 12 fibras acuarelables', precio: 9500, cantidad: 1 }, { nombre: 'Block de dibujo A3', precio: 7900, cantidad: 1 }], total: 17400, actualizadoEn: '2026-09-29T18:40:00', estado: 'abierto' },
+  { id: 'ab-2', cliente: 'Bruno Díaz', telefono: '5493514447788', email: 'bruno.d@mail.com', items: [{ nombre: 'Kit cumpleaños temático 8 personas', precio: 11900, cantidad: 2 }], total: 23800, actualizadoEn: '2026-09-29T13:10:00', estado: 'abierto' },
+  { id: 'ab-3', cliente: 'Visitante', telefono: '', email: 'carla@mail.com', items: [{ nombre: 'Mochila escolar reforzada', precio: 24900, cantidad: 1 }], total: 24900, actualizadoEn: '2026-09-28T20:05:00', estado: 'contactado' },
+  { id: 'ab-4', cliente: 'Nicolás F.', telefono: '5493514441122', email: 'nico.f@mail.com', items: [{ nombre: 'Cuaderno A5 tapa dura', precio: 6900, cantidad: 3 }], total: 20700, actualizadoEn: '2026-09-27T11:30:00', estado: 'recuperado' },
+];
+
 // Sesión de caja actual (mock)
 export const MOCK_CASH_SESSION = {
   id: 'caja-1', estado: 'abierta', aperturaFecha: '2026-09-29T09:00:00', montoInicial: 20000, cierreFecha: null, montoFinal: null,

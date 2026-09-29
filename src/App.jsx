@@ -27,6 +27,7 @@ import Suppliers from './pages/admin/Suppliers';
 import Customers from './pages/admin/Customers';
 import Cash from './pages/admin/Cash';
 import Reports from './pages/admin/Reports';
+import AbandonedCarts from './pages/admin/AbandonedCarts';
 
 const App = () => (
   <AuthProvider>
@@ -57,6 +58,7 @@ const App = () => (
           <Route path="/admin/caja" element={<AdminRoute><Cash /></AdminRoute>} />
           <Route path="/admin/reportes" element={<AdminRoute><Reports /></AdminRoute>} />
           <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
+          <Route path="/admin/carritos" element={<AdminRoute><AbandonedCarts /></AdminRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

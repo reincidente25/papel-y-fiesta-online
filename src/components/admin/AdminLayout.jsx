@@ -23,6 +23,7 @@ const NAV = [
   ]},
   { section: 'Tienda online', items: [
     { path: '/admin/pedidos', label: 'Pedidos web', icon: '🛍️' },
+    { path: '/admin/carritos', label: 'Carritos abandonados', icon: '🛒' },
   ]},
 ];
 

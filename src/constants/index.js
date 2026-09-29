@@ -86,6 +86,15 @@ export const CUSTOMER_TYPES = {
 };
 export const CUSTOMER_TYPES_LIST = Object.values(CUSTOMER_TYPES);
 
+// Estados de un carrito abandonado
+export const ABANDONED_STATUS = {
+  abierto:    { value: 'abierto',    label: 'Abandonado', badge: 'badge-warning' },
+  contactado: { value: 'contactado', label: 'Contactado', badge: 'badge-muted'   },
+  recuperado: { value: 'recuperado', label: 'Recuperado', badge: 'badge-success' },
+  descartado: { value: 'descartado', label: 'Descartado', badge: 'badge-danger'  },
+};
+export const ABANDONED_STATUS_LIST = Object.values(ABANDONED_STATUS);
+
 // Tipos de movimiento de caja
 export const CASH_TYPES = {
   venta:   { value: 'venta',   label: 'Venta',   signo: 1 },
