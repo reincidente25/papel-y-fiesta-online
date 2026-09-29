@@ -91,14 +91,16 @@
 .preview-card .pc-row { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: .85rem; }
 
 /* Ticket / comprobante de venta */
-.ticket-head { text-align: center; padding-bottom: 14px; margin-bottom: 14px; border-bottom: 1px dashed var(--border-strong); }
-.ticket-head .t-num { font-family: var(--font-head); font-weight: 800; font-size: 1.2rem; margin-top: 4px; }
-.ticket-head .t-date { color: var(--muted); font-size: .85rem; }
-.ticket-info { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; margin-bottom: 16px; }
-.ticket-info .ti { display: flex; flex-direction: column; }
+.ticket-head { text-align: center; padding-bottom: 22px; margin-bottom: 24px; border-bottom: 1px dashed var(--border-strong); }
+.ticket-head .t-num { font-family: var(--font-head); font-weight: 800; font-size: 1.35rem; margin-top: 8px; }
+.ticket-head .t-date { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+.ticket-info { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 24px; margin-bottom: 26px; background: var(--surface-alt); border-radius: var(--radius); padding: 18px 20px; }
+.ticket-info .ti { display: flex; flex-direction: column; gap: 3px; }
 .ticket-info .ti .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); }
-.ticket-info .ti .v { font-weight: 600; font-family: var(--font-head); }
-.ticket-actions { display: flex; gap: 10px; margin-top: 18px; }
+.ticket-info .ti .v { font-weight: 600; font-family: var(--font-head); font-size: 1.02rem; }
+.ticket-actions { display: flex; gap: 12px; margin-top: 26px; }
+.ticket-modal .table th, .ticket-modal .table td { padding: 14px 16px; }
+.ticket-modal .pos-total { font-size: 1.5rem; padding-top: 16px; margin-top: 16px; }
 
 /* Modal POS a dos columnas */
 .pos-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }

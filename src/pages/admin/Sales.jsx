@@ -206,9 +206,9 @@ const Sales = () => {
       </Modal>
 
       {/* Consulta de venta realizada (comprobante) */}
-      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={460}>
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={620}>
         {detail && (
-          <div>
+          <div className="ticket-modal">
             <div className="ticket-head">
               <span className="brand" style={{ fontSize: '1.1rem' }}>
                 <span className="b-papel">Papel</span><span className="b-amp">&amp;</span><span className="b-fiesta">Fiesta</span>
@@ -238,8 +238,8 @@ const Sales = () => {
               </tbody>
             </table>
 
-            <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
-            {detail.descuento > 0 && <div className="spread" style={{ marginBottom: 6 }}><span className="muted">Descuento</span><span>− {formatMoney(detail.descuento)}</span></div>}
+            <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
+            {detail.descuento > 0 && <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(detail.descuento)}</span></div>}
             <div className="pos-total"><span>Total</span><span>{formatMoney(detail.total)}</span></div>
 
             <div className="ticket-actions">
