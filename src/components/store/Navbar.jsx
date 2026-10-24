@@ -3,12 +3,14 @@ import { useState } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
+import { useAuthModal } from '../../context/AuthModalContext';
 import Brand from '../common/Brand';
 import './Navbar.css';
 
 const Navbar = () => {
   const { user, isAdmin, demoMode, logout } = useAuth();
   const { count } = useCart();
+  const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
 
@@ -43,8 +45,8 @@ const Navbar = () => {
             </div>
           ) : (
             <div className="nav-auth">
-              <Link to="/login" className="btn btn-ghost btn-sm">Ingresar</Link>
-              <Link to="/registro" className="btn btn-primary btn-sm">Crear cuenta</Link>
+              <button className="btn btn-ghost btn-sm" onClick={() => { setOpen(false); openAuth('login'); }}>Ingresar</button>
+              <button className="btn btn-primary btn-sm" onClick={() => { setOpen(false); openAuth('register'); }}>Crear cuenta</button>
             </div>
           )}
 

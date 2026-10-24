@@ -4,15 +4,17 @@ import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   updateProfile,
   signOut,
 } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../config/firebase';
-import { MOCK_MODE } from '../config/app';
 import { createUserProfile, getUserProfile } from '../services/usersService';
 import { ROLES } from '../constants';
 
-const DEMO = MOCK_MODE || !isFirebaseConfigured;
+// La autenticación es real apenas hay credenciales de Firebase (.env),
+// independientemente del modo mock de los datos.
+const DEMO = !isFirebaseConfigured;
 
 const AuthContext = createContext(null);
 
@@ -49,13 +51,15 @@ export const AuthProvider = ({ children }) => {
     return cred;
   };
 
+  const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+
   const logout = () => signOut(auth);
 
   const isAdmin = profile?.rol === ROLES.ADMIN;
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, isAdmin, loading, login, register, logout, demoMode: DEMO }}
+      value={{ user, profile, isAdmin, loading, login, register, resetPassword, logout, demoMode: DEMO }}
     >
       {!loading && children}
     </AuthContext.Provider>

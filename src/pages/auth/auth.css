@@ -16,3 +16,16 @@
 .auth-foot a { color: var(--primary); font-weight: 600; }
 .auth-back { display: block; text-align: center; margin-top: 14px; font-size: .85rem; color: var(--muted); }
 .demo-hint { background: var(--info-soft); color: var(--info); font-size: .82rem; padding: 10px 12px; border-radius: var(--radius-sm); margin-bottom: 18px; text-align: center; }
+.auth-ok { background: var(--success-soft); color: var(--success); font-size: .88rem; padding: 10px 12px; border-radius: var(--radius-sm); }
+.auth-link { background: none; border: none; color: var(--primary); font-weight: 600; cursor: pointer; font-size: .85rem; padding: 0; }
+.auth-link:hover { text-decoration: underline; }
+
+/* ---- Modal de autenticación (sobre la tienda, sin navegar) ---- */
+.authm-overlay { position: fixed; inset: 0; background: rgba(38,35,34,.55); backdrop-filter: blur(2px); display: grid; place-items: center; z-index: 200; padding: 20px; }
+.authm { width: 100%; max-width: 400px; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); padding: 30px 28px; position: relative; }
+.authm-close { position: absolute; top: 14px; right: 16px; background: none; border: none; font-size: 1.15rem; color: var(--muted); cursor: pointer; line-height: 1; }
+.authm-close:hover { color: var(--text); }
+.authm-brand { text-align: center; margin-bottom: 18px; }
+.authm-tabs { display: flex; gap: 4px; background: var(--surface-alt); border-radius: var(--radius-sm); padding: 4px; margin-bottom: 20px; }
+.authm-tab { flex: 1; text-align: center; padding: 9px; border: none; background: transparent; border-radius: 8px; font-family: var(--font-head); font-weight: 600; font-size: .9rem; cursor: pointer; color: var(--text-soft); }
+.authm-tab.active { background: var(--surface); color: var(--text); box-shadow: var(--shadow-sm); }

@@ -2,6 +2,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { AuthModalProvider } from './context/AuthModalContext';
 import AdminRoute from './components/common/AdminRoute';
 
 // Tienda (público)
@@ -33,6 +34,7 @@ const App = () => (
   <AuthProvider>
     <CartProvider>
       <BrowserRouter>
+        <AuthModalProvider>
         <Routes>
           {/* Tienda pública */}
           <Route path="/" element={<Home />} />
@@ -63,6 +65,7 @@ const App = () => (
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </AuthModalProvider>
       </BrowserRouter>
     </CartProvider>
   </AuthProvider>

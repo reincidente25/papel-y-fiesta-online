@@ -1,15 +1,14 @@
 // src/components/store/StoreLayout.jsx
 import Navbar from './Navbar';
 import Footer from './Footer';
-import { useAuth } from '../../context/AuthContext';
+import { MOCK_MODE } from '../../config/app';
 
 const StoreLayout = ({ children }) => {
-  const { demoMode } = useAuth();
   return (
     <div className="store">
-      {demoMode && (
+      {MOCK_MODE && (
         <div className="demo-banner">
-          🧪 Modo mockup — datos de ejemplo (sin backend conectado).
+          🧪 Datos de ejemplo (los productos aún no vienen del backend).
         </div>
       )}
       <Navbar />
