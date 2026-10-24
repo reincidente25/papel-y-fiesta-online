@@ -5,12 +5,16 @@ import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getFeaturedProducts } from '../../services/productsService';
+import { useAuth } from '../../context/AuthContext';
+import { useAuthModal } from '../../context/AuthModalContext';
 import { DEFAULT_CATEGORIES } from '../../constants';
 import './store.css';
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const { openAuth } = useAuthModal();
 
   useEffect(() => {
     getFeaturedProducts()
@@ -29,7 +33,7 @@ const Home = () => {
             <p>Útiles escolares, artículos de oficina, materiales de arte y todo el cotillón para tu próxima fiesta. Envíos a todo el país.</p>
             <div className="hero-cta">
               <Link to="/catalogo" className="btn btn-primary">Ver catálogo</Link>
-              <Link to="/registro" className="btn btn-ghost">Crear cuenta</Link>
+              {!user && <button className="btn btn-ghost" onClick={() => openAuth('register')}>Crear cuenta</button>}
             </div>
           </div>
           <div className="hero-art">
