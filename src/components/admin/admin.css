@@ -93,7 +93,10 @@
 button.stat { text-align: left; font: inherit; cursor: pointer; transition: box-shadow .12s ease, transform .08s ease, border-color .12s ease; }
 button.stat:hover { box-shadow: var(--shadow); }
 button.stat:active { transform: translateY(1px); }
-button.stat.is-active { border-color: var(--brand-ink); box-shadow: 0 0 0 2px var(--brand-ink) inset; }
+button.stat.is-active.ok     { border-color: var(--success); box-shadow: 0 0 0 2px var(--success) inset; }
+button.stat.is-active.warn   { border-color: var(--warning); box-shadow: 0 0 0 2px var(--warning) inset; }
+button.stat.is-active.danger { border-color: var(--danger);  box-shadow: 0 0 0 2px var(--danger) inset; }
+button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2px var(--info) inset; }
 @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
 
 /* Celdas de la tabla de productos */
