@@ -79,6 +79,18 @@
 .col-label { font-size: .72rem; color: var(--muted); }
 .col-value { font-size: .7rem; font-weight: 700; color: var(--text-soft); }
 
+/* Toggle switch */
+.switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; user-select: none; }
+.switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+.switch .track { width: 42px; height: 24px; background: var(--border-strong); border-radius: 999px; position: relative; transition: background .15s ease; flex-shrink: 0; }
+.switch .track::after { content: ''; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; background: #fff; border-radius: 50%; transition: left .15s ease; box-shadow: var(--shadow-sm); }
+.switch input:checked + .track { background: var(--primary); }
+.switch input:checked + .track::after { left: 21px; }
+.switch input:focus-visible + .track { box-shadow: 0 0 0 3px var(--brand-orange-soft); }
+.switch.is-disabled { opacity: .45; cursor: not-allowed; }
+.switch-label { font-size: .92rem; }
+.switch-label small { display: block; color: var(--muted); font-size: .78rem; }
+
 /* Editor de producto (form + panel de imagen/preview) */
 .editor-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
 .editor-aside { position: sticky; top: 92px; display: flex; flex-direction: column; gap: 16px; }

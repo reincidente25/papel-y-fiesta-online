@@ -53,7 +53,7 @@ const ProductDetail = () => {
         </div>
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
-          <h1>{product.nombre}</h1>
+          <h1>{product.nombreWeb || product.nombre}</h1>
           <div className="detail-price">{formatMoney(product.precioVenta)}</div>
           <p className="detail-desc">{product.descripcion || 'Sin descripción.'}</p>
 

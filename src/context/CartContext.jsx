@@ -32,7 +32,7 @@ export const CartProvider = ({ children }) => {
       }
       return [...prev, {
         id: product.id,
-        nombre: product.nombre,
+        nombre: product.nombreWeb || product.nombre,
         precio: product.precioVenta,
         imagen: product.imagen,
         cantidad,

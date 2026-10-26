@@ -54,7 +54,10 @@ const AdminProducts = () => {
                 return (
                   <tr key={p.id}>
                     <td><img className="table-thumb" src={p.imagen} alt="" /></td>
-                    <td>{p.nombre}</td>
+                    <td>
+                      {p.mostrarWeb && <span title="En la web" style={{ marginRight: 6 }}>🌐</span>}
+                      {p.nombre}
+                    </td>
                     <td>{formatMoney(p.precioCosto)}</td>
                     <td>{formatMoney(p.precioVenta)}</td>
                     <td>{calcMargin(p.precioCosto, p.precioVenta)}%</td>

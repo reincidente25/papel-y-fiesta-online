@@ -42,7 +42,7 @@ const Catalog = () => {
     if (cat !== 'todas') list = list.filter((p) => p.categoria === cat);
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter((p) => p.nombre.toLowerCase().includes(q));
+      list = list.filter((p) => `${p.nombreWeb || ''} ${p.nombre || ''}`.toLowerCase().includes(q));
     }
     return list.sort(SORTS[sort].fn);
   }, [products, cat, search, sort]);

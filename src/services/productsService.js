@@ -1,6 +1,6 @@
 // src/services/productsService.js
 import {
-  collection, doc, getDoc, getDocs, addDoc, updateDoc, deleteDoc,
+  collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
   query, where, orderBy, serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
@@ -23,9 +23,9 @@ export async function getProducts() {
 }
 
 export async function getPublicProducts() {
-  // Solo productos visibles en la tienda
+  // Solo los marcados "mostrar en web" y no pausados/borrador
   const all = await getProducts();
-  return all.filter((p) => p.estado === 'activo' || p.estado === 'sin_stock');
+  return all.filter((p) => p.mostrarWeb === true && (p.estado === 'activo' || p.estado === 'sin_stock'));
 }
 
 export async function getProductById(id) {
@@ -36,18 +36,23 @@ export async function getProductById(id) {
 }
 
 export async function getFeaturedProducts(max = 10) {
-  const all = await getProducts();
-  const activos = all.filter((p) => p.estado === 'activo');
-  const destacados = activos.filter((p) => p.destacado);
-  // Si todavía no hay destacados marcados, mostramos algunos activos.
-  return (destacados.length ? destacados : activos).slice(0, max);
+  const pub = await getPublicProducts();
+  const destacados = pub.filter((p) => p.destacado);
+  // Si todavía no hay destacados marcados, mostramos otros productos web.
+  return (destacados.length ? destacados : pub).slice(0, max);
 }
 
 export async function createProduct(data) {
+  // Si viene con código, lo usamos como ID del documento (fácil de encontrar).
+  const id = data.codigo ? String(data.codigo).trim().replace(/\//g, '-') : null;
   if (useMock) {
-    const nuevo = { id: `demo-${Date.now()}`, ...data };
+    const nuevo = { id: id || `demo-${Date.now()}`, ...data };
     MOCK_PRODUCTS.push(nuevo);
     return nuevo.id;
+  }
+  if (id) {
+    await setDoc(doc(db, COL, id), { ...data, creadoEn: serverTimestamp(), actualizadoEn: serverTimestamp() }, { merge: true });
+    return id;
   }
   const ref = await addDoc(collection(db, COL), {
     ...data,
