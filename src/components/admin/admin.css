@@ -245,15 +245,39 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 }
 
 /* ---------- Subida de fotos de producto ---------- */
-.uploader-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
-.uploader-thumb { position: relative; aspect-ratio: 1; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-alt, #f4f4f5); cursor: grab; }
-.uploader-thumb:active { cursor: grabbing; }
-.uploader-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.uploader-thumb.is-cover { border-color: var(--primary); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
-.uploader-thumb .cover-badge { position: absolute; left: 4px; bottom: 4px; background: var(--primary); color: #fff; font-size: .64rem; font-weight: 700; padding: 2px 7px; border-radius: 999px; }
-.uploader-thumb .thumb-del { position: absolute; top: 4px; right: 4px; width: 22px; height: 22px; border: none; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; font-size: 1rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
-.uploader-thumb .thumb-del:hover { background: var(--danger); }
-.uploader-add { aspect-ratio: 1; border: 2px dashed var(--border); border-radius: 10px; background: none; color: var(--muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 1.6rem; }
-.uploader-add small { font-size: .7rem; }
-.uploader-add:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
-.uploader-add:disabled { cursor: default; opacity: .7; }
+.uploader { display: flex; flex-direction: column; gap: 10px; }
+
+/* Área principal (tamaño de la vista previa) */
+.up-main { position: relative; aspect-ratio: 1/1; border-radius: var(--radius); overflow: hidden; background: var(--surface-alt); border: 1px solid var(--border); }
+.up-main > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.up-empty { width: 100%; height: 100%; border: 2px dashed var(--border-strong); border-radius: var(--radius); background: none; color: var(--muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: .9rem; font-weight: 600; }
+.up-empty:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }
+.up-empty-ico { font-size: 2.4rem; }
+.up-cover { position: absolute; left: 8px; bottom: 8px; background: var(--primary); color: #fff; font-size: .68rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; z-index: 2; }
+.up-count { position: absolute; right: 8px; bottom: 8px; background: rgba(0,0,0,.6); color: #fff; font-size: .72rem; font-weight: 600; padding: 3px 9px; border-radius: 999px; z-index: 2; }
+.up-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(0,0,0,.5); color: #fff; font-size: 1.4rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; }
+.up-nav:hover { background: rgba(0,0,0,.75); }
+.up-nav.left { left: 8px; } .up-nav.right { right: 8px; }
+.up-actions-over { position: absolute; top: 8px; right: 8px; display: flex; gap: 6px; z-index: 2; }
+.up-actions-over button { width: 30px; height: 30px; border: none; border-radius: 8px; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; font-size: .95rem; }
+.up-actions-over button:hover { background: rgba(0,0,0,.8); }
+
+/* Tira de miniaturas */
+.up-strip { display: grid; grid-template-columns: repeat(auto-fill, minmax(52px, 1fr)); gap: 6px; }
+.up-thumb { aspect-ratio: 1/1; padding: 0; border: 2px solid transparent; border-radius: 8px; overflow: hidden; cursor: pointer; background: var(--surface-alt); }
+.up-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.up-thumb.active { border-color: var(--primary); }
+
+.up-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+
+/* Modal galería */
+.up-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+.up-gthumb { position: relative; aspect-ratio: 1/1; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface-alt); cursor: grab; }
+.up-gthumb:active { cursor: grabbing; }
+.up-gthumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.up-gthumb.is-cover { border-color: var(--primary); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
+.up-gthumb .thumb-del { position: absolute; top: 5px; right: 5px; width: 24px; height: 24px; border: none; border-radius: 50%; background: rgba(0,0,0,.6); color: #fff; cursor: pointer; font-size: 1.05rem; line-height: 1; display: flex; align-items: center; justify-content: center; }
+.up-gthumb .thumb-del:hover { background: var(--danger); }
+.up-gadd { aspect-ratio: 1/1; border: 2px dashed var(--border); border-radius: 10px; background: none; color: var(--muted); cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: 1.6rem; }
+.up-gadd small { font-size: .7rem; }
+.up-gadd:hover:not(:disabled) { border-color: var(--primary); color: var(--primary); }

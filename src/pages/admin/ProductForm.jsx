@@ -171,17 +171,11 @@ const ProductForm = () => {
           <aside className="editor-aside">
             <div className="card" style={{ padding: 18 }}>
               <label className="aside-title">Fotos del producto</label>
-              <div className="img-preview" style={{ marginBottom: 14 }}>
-                {form.imagenes?.[0]
-                  ? <img src={form.imagenes[0]} alt="Vista previa" onError={(e) => { e.target.style.display = 'none'; }} />
-                  : <span className="ph">📷<br />Subí fotos para ver<br />la vista previa</span>}
-              </div>
               <ImageUploader
                 value={form.imagenes}
                 codigo={form.codigo}
                 onChange={(imgs) => set('imagenes', imgs)}
               />
-              <span className="hint">La primera foto es la portada. Arrastrá para reordenar.</span>
             </div>
 
             <div className="card preview-card">
