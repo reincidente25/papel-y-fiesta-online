@@ -35,9 +35,12 @@ export async function getProductById(id) {
   return snap.exists() ? { id: snap.id, ...snap.data() } : null;
 }
 
-export async function getFeaturedProducts() {
+export async function getFeaturedProducts(max = 10) {
   const all = await getProducts();
-  return all.filter((p) => p.destacado && p.estado === 'activo');
+  const activos = all.filter((p) => p.estado === 'activo');
+  const destacados = activos.filter((p) => p.destacado);
+  // Si todavía no hay destacados marcados, mostramos algunos activos.
+  return (destacados.length ? destacados : activos).slice(0, max);
 }
 
 export async function createProduct(data) {

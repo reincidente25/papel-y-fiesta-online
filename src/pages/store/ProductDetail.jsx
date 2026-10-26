@@ -5,7 +5,6 @@ import StoreLayout from '../../components/store/StoreLayout';
 import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
-import { DEFAULT_CATEGORIES } from '../../constants';
 import { formatMoney } from '../../utils/format';
 import './store.css';
 
@@ -39,7 +38,7 @@ const ProductDetail = () => {
   }
 
   const sinStock = product.stock <= 0 || product.estado === 'sin_stock';
-  const categoria = DEFAULT_CATEGORIES.find((c) => c.id === product.categoria);
+  const categoria = product.categoriaNombre ? { name: product.categoriaNombre } : null;
 
   const handleAdd = () => {
     addItem(product, qty);
@@ -53,7 +52,7 @@ const ProductDetail = () => {
           <img src={product.imagen} alt={product.nombre} />
         </div>
         <div className="detail-info">
-          {categoria && <span className="badge badge-muted">{categoria.icon} {categoria.name}</span>}
+          {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombre}</h1>
           <div className="detail-price">{formatMoney(product.precioVenta)}</div>
           <p className="detail-desc">{product.descripcion || 'Sin descripción.'}</p>

@@ -5,20 +5,26 @@ import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getFeaturedProducts } from '../../services/productsService';
+import { getCategories } from '../../services/categoriesService';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
-import { DEFAULT_CATEGORIES } from '../../constants';
 import './store.css';
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
 
   useEffect(() => {
-    getFeaturedProducts()
-      .then(setFeatured)
+    Promise.all([getFeaturedProducts(), getCategories()])
+      .then(([f, c]) => {
+        setFeatured(f);
+        // En la home mostramos las categorías con más productos (hasta 10).
+        const top = [...c].sort((a, b) => (b.cantidad || 0) - (a.cantidad || 0)).slice(0, 10);
+        setCategories(top);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -54,9 +60,9 @@ const Home = () => {
           </div>
         </div>
         <div className="cat-grid">
-          {DEFAULT_CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-chip">
-              <span className="cat-icon">{cat.icon}</span>
+              <span className="cat-icon">{cat.icon || '🏷️'}</span>
               <span className="cat-name">{cat.name}</span>
             </Link>
           ))}

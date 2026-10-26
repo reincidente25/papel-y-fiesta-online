@@ -1,8 +1,10 @@
 // src/config/app.js
 //
-// MODO MOCKUP
-// Mientras estamos armando el mockup, forzamos datos de ejemplo en memoria y
-// NO llamamos a ningún backend (Firestore / Cloud Functions), aunque exista .env.
+// MOCK_MODE controla si productos, categorías y pedidos usan datos de ejemplo.
+// - false: usan Firestore cuando hay credenciales (.env). Si NO hay .env,
+//          igual caen a mock automáticamente (para desarrollar sin backend).
+// - true:  fuerzan mock siempre, aunque exista .env.
 //
-// 👉 Cuando conectemos el backend real, poner MOCK_MODE = false.
-export const MOCK_MODE = true;
+// Módulos de gestión del local (ventas, compras, caja, clientes, proveedores,
+// carritos) siguen en memoria por ahora: aún no están migrados al backend.
+export const MOCK_MODE = false;

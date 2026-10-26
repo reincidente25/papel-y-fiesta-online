@@ -14,6 +14,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Categorías: lectura pública (menú de la tienda), escritura admin.
+    match /categorias/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Perfiles: cada quien el suyo; el admin, todos.
     match /usuarios/{uid} {
       allow read, write: if (isSignedIn() && request.auth.uid == uid) || isAdmin();

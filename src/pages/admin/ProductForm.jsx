@@ -4,11 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import { getProductById, createProduct, updateProduct } from '../../services/productsService';
-import { DEFAULT_CATEGORIES, PRODUCT_STATUS, PRODUCT_STATUS_LIST } from '../../constants';
+import { PRODUCT_STATUS, PRODUCT_STATUS_LIST } from '../../constants';
+import { getCategories } from '../../services/categoriesService';
 import { calcMargin, formatMoney } from '../../utils/format';
 
 const EMPTY = {
-  nombre: '', descripcion: '', categoria: 'libreria',
+  nombre: '', descripcion: '', categoria: '',
   precioCosto: '', precioVenta: '', stock: '', estado: 'activo',
   destacado: false, imagen: '',
 };
@@ -18,8 +19,13 @@ const ProductForm = () => {
   const navigate = useNavigate();
   const isEdit = Boolean(id);
   const [form, setForm] = useState(EMPTY);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(isEdit);
   const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    getCategories({ soloActivas: false }).then(setCategories);
+  }, []);
 
   useEffect(() => {
     if (!isEdit) return;
@@ -34,8 +40,10 @@ const ProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
+    const catSel = categories.find((c) => c.id === form.categoria);
     const payload = {
       ...form,
+      categoriaNombre: catSel?.name || '',
       precioCosto: Number(form.precioCosto) || 0,
       precioVenta: Number(form.precioVenta) || 0,
       stock: Number(form.stock) || 0,
@@ -75,7 +83,8 @@ const ProductForm = () => {
               <div className="field">
                 <label>Categoría</label>
                 <select className="select" value={form.categoria} onChange={(e) => set('categoria', e.target.value)}>
-                  {DEFAULT_CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  <option value="">Sin categoría</option>
+                  {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
               <div className="field">

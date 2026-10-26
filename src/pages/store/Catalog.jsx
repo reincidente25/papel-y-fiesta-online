@@ -5,7 +5,7 @@ import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getPublicProducts } from '../../services/productsService';
-import { DEFAULT_CATEGORIES } from '../../constants';
+import { getCategories } from '../../services/categoriesService';
 import './store.css';
 
 const SORTS = {
@@ -18,6 +18,7 @@ const SORTS = {
 const Catalog = () => {
   const [params, setParams] = useSearchParams();
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('relevancia');
@@ -25,8 +26,8 @@ const Catalog = () => {
   const cat = params.get('cat') || 'todas';
 
   useEffect(() => {
-    getPublicProducts()
-      .then(setProducts)
+    Promise.all([getPublicProducts(), getCategories()])
+      .then(([p, c]) => { setProducts(p); setCategories(c); })
       .finally(() => setLoading(false));
   }, []);
 
@@ -57,13 +58,13 @@ const Catalog = () => {
               <button className={`filter-btn ${cat === 'todas' ? 'active' : ''}`} onClick={() => setCat('todas')}>
                 Todas
               </button>
-              {DEFAULT_CATEGORIES.map((c) => (
+              {categories.map((c) => (
                 <button
                   key={c.id}
                   className={`filter-btn ${cat === c.id ? 'active' : ''}`}
                   onClick={() => setCat(c.id)}
                 >
-                  {c.icon} {c.name}
+                  {c.icon ? `${c.icon} ` : ''}{c.name}{c.cantidad ? ` (${c.cantidad})` : ''}
                 </button>
               ))}
             </div>
