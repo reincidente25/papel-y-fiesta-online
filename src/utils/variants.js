@@ -26,6 +26,22 @@ export const costoDesde = (p) =>
 
 export const varianteLabel = (v) => (v?.tipo ? `${v.tipo}: ${v.nombre}` : (v?.nombre || ''));
 
+// Imagen principal: la portada del producto o, si no tiene, la de la primera
+// variante que tenga foto.
+export const imagenPrincipal = (p) => {
+  if (p?.imagen) return p.imagen;
+  if (p?.imagenes?.length) return p.imagenes[0];
+  if (p?.variantes?.length) return p.variantes.find((v) => v.imagen)?.imagen || '';
+  return '';
+};
+
+// Lista de fotos del producto; si no tiene, usa las fotos de las variantes.
+export const fotosProducto = (p) => {
+  const base = p?.imagenes?.length ? p.imagenes : (p?.imagen ? [p.imagen] : []);
+  if (base.length) return base;
+  return (p?.variantes || []).map((v) => v.imagen).filter(Boolean);
+};
+
 // Normaliza las variantes antes de guardar (números y labels limpios).
 export const limpiarVariantes = (variantes = []) =>
   variantes

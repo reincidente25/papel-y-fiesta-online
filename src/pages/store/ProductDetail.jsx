@@ -6,7 +6,7 @@ import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
 import { formatMoney } from '../../utils/format';
-import { tieneVariantes as hayVariantes, precioDesde } from '../../utils/variants';
+import { tieneVariantes as hayVariantes, precioDesde, fotosProducto } from '../../utils/variants';
 import './store.css';
 
 const ProductDetail = () => {
@@ -61,7 +61,7 @@ const ProductDetail = () => {
     navigate('/carrito');
   };
 
-  const fotos = product.imagenes?.length ? product.imagenes : (product.imagen ? [product.imagen] : []);
+  const fotos = fotosProducto(product);
   const principal = varSel?.imagen || fotos[activa] || fotos[0];
 
   return (
