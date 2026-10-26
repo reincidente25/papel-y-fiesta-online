@@ -1,0 +1,13 @@
+{
+  "name": "papel-y-fiesta-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Scripts de mantenimiento (importación de datos a Firestore)",
+  "scripts": {
+    "import": "node import-productos.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.6.0",
+    "xlsx": "^0.18.5"
+  }
+}

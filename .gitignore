@@ -4,3 +4,8 @@ node_modules/
 dist/
 build/
 *-firebase-adminsdk-*.json
+
+# Credenciales y datos de los scripts de importación
+scripts/serviceAccountKey.json
+scripts/*.xlsx
+scripts/*.xls
