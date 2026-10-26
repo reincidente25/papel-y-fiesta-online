@@ -20,6 +20,22 @@ producto quedan `categoria` (slug, para filtrar) y `categoriaNombre` (para mostr
 > Las pestañas que difieren solo por acento/mayúscula (ej. `Boligrafos` y
 > `Bolígrafos`) se **unifican** en un mismo slug automáticamente.
 
+## Importar ventas (historial) desde Excel
+
+Excel de **2 pestañas**: cabeceras (una fila por venta) y detalle (una fila por
+ítem), unidas por la columna **`ID Venta`** (el hash original de Firestore).
+
+```bash
+cd scripts
+node import-ventas.mjs            # toma el .xlsx cuyo nombre contenga "venta"
+# o: node import-ventas.mjs /ruta/al/ventas.xlsx
+```
+
+- **ID del documento = `ID Venta`** (el hash); también queda como campo `ventaId`.
+- El detalle se agrupa en `items[]` dentro de cada venta.
+- **No** descuenta stock ni impacta caja: solo carga el historial.
+- Idempotente (merge), en lotes. Colección: `ventas`.
+
 ### 1. Instalar dependencias
 ```bash
 cd scripts

@@ -4,7 +4,8 @@
   "type": "module",
   "description": "Scripts de mantenimiento (importación de datos a Firestore)",
   "scripts": {
-    "import": "node import-productos.mjs"
+    "import": "node import-productos.mjs",
+    "import:ventas": "node import-ventas.mjs"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",
