@@ -160,6 +160,15 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .ticket-modal .table th, .ticket-modal .table td { padding: 14px 16px; }
 .ticket-modal .pos-total { font-size: 1.5rem; padding-top: 16px; margin-top: 16px; }
 
+/* Detalle de venta: lista de ítems con imagen */
+.sale-items { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; max-height: 46vh; overflow-y: auto; }
+.sale-item { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
+.sale-item .table-thumb { width: 52px; height: 52px; }
+.si-name { font-weight: 600; color: var(--ink); }
+.si-meta { font-size: .8rem; color: var(--muted); margin-top: 2px; }
+.si-amount { font-family: var(--font-head); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.sale-totals { border-top: 1px dashed var(--border-strong); padding-top: 14px; margin-top: 6px; }
+
 /* Modal POS a dos columnas */
 .pos-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
 .pos-aside { background: var(--surface-alt); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }

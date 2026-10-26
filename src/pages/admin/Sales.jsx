@@ -1,12 +1,12 @@
 // src/pages/admin/Sales.jsx
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import { getSalesPage, getSalesStats, createSale } from '../../services/salesService';
 import { getProducts } from '../../services/productsService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
-import { formatMoney, formatDate, toDate } from '../../utils/format';
+import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 
 const PAGE = 20;
 
@@ -105,6 +105,14 @@ const Sales = () => {
     return true;
   });
 
+  // Lookup de productos para mostrar imágenes en el detalle
+  const prodMap = useMemo(() => {
+    const m = new Map();
+    for (const p of products) { m.set(p.id, p); if (p.codigo) m.set(p.codigo, p); }
+    return m;
+  }, [products]);
+  const itemImg = (i) => (prodMap.get(i.productoId) || prodMap.get(i.codigo))?.imagen || '';
+
   return (
     <AdminLayout title="Ventas">
       <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -130,20 +138,19 @@ const Sales = () => {
         <div className="table-wrap card">
           <table className="table">
             <thead>
-              <tr><th>N°</th><th>Fecha</th><th>Canal</th><th>Ítems</th><th>Pago</th><th>Cliente</th><th>Total</th></tr>
+              <tr><th>Fecha y hora</th><th>Canal</th><th>Ítems</th><th>Pago</th><th>Cliente</th><th className="num">Total</th></tr>
             </thead>
             <tbody>
               {filtered.length === 0 ? (
-                <tr><td colSpan={7} className="muted">No hay ventas en el período.</td></tr>
+                <tr><td colSpan={6} className="muted">No hay ventas en el período.</td></tr>
               ) : filtered.map((s) => (
                 <tr key={s.id} style={{ cursor: 'pointer' }} onClick={() => setDetail(s)}>
-                  <td>#{s.id.slice(-4)}</td>
-                  <td>{formatDate(s.fecha)}</td>
+                  <td>{formatDateTime(s.fecha)}</td>
                   <td><span className={`badge ${SALE_CHANNELS[s.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[s.canal]?.label || s.canal}</span></td>
                   <td>{s.items.reduce((n, i) => n + i.cantidad, 0)}</td>
                   <td>{PAYMENT_METHODS[s.metodoPago]?.label || s.metodoPago}</td>
                   <td>{s.cliente || '—'}</td>
-                  <td><strong>{formatMoney(s.total)}</strong></td>
+                  <td className="num"><strong>{formatMoney(s.total)}</strong></td>
                 </tr>
               ))}
             </tbody>
@@ -240,48 +247,55 @@ const Sales = () => {
       </Modal>
 
       {/* Consulta de venta realizada (comprobante) */}
-      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={620}>
-        {detail && (
-          <div className="ticket-modal">
-            <div className="ticket-head">
-              <span className="brand" style={{ fontSize: '1.1rem' }}>
-                <span className="b-papel">Papel</span><span className="b-amp">&amp;</span><span className="b-fiesta">Fiesta</span>
-              </span>
-              <div className="t-num">Venta #{detail.id.slice(-6)}</div>
-              <div className="t-date">{formatDate(detail.fecha)}</div>
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={720}>
+        {detail && (() => {
+          const descuento = detail.montoDesc ?? detail.descuento ?? 0;
+          const unidades = detail.items.reduce((n, i) => n + i.cantidad, 0);
+          return (
+            <div className="ticket-modal">
+              <div className="ticket-head">
+                <span className="brand" style={{ fontSize: '1.2rem' }}>
+                  <span className="b-papel">Papel</span><span className="b-amp">&amp;</span><span className="b-fiesta">Fiesta</span>
+                </span>
+                <div className="t-date">{formatDateTime(detail.fecha)}</div>
+              </div>
+
+              <div className="ticket-info">
+                <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
+                <div className="ti"><span className="k">Canal</span><span className="v"><span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></span></div>
+                <div className="ti"><span className="k">Medio de pago</span><span className="v">{PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</span></div>
+                <div className="ti"><span className="k">Unidades</span><span className="v">{unidades} ({detail.items.length} ítem/s)</span></div>
+              </div>
+
+              <div className="sale-items">
+                {detail.items.map((i, idx) => {
+                  const img = itemImg(i);
+                  return (
+                    <div className="sale-item" key={idx}>
+                      {img ? <img className="table-thumb" src={img} alt="" /> : <span className="table-thumb thumb-ph">📦</span>}
+                      <div>
+                        <div className="si-name">{i.nombre}</div>
+                        <div className="si-meta">{i.codigo ? `${i.codigo} · ` : ''}{i.cantidad} × {formatMoney(i.precioUnit)}</div>
+                      </div>
+                      <div className="si-amount">{formatMoney(i.subtotal ?? i.precioUnit * i.cantidad)}</div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="sale-totals">
+                <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
+                {descuento > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(descuento)}</span></div>}
+                <div className="pos-total" style={{ marginTop: 4 }}><span>Total</span><span>{formatMoney(detail.total)}</span></div>
+              </div>
+
+              <div className="ticket-actions">
+                <button className="btn btn-ghost btn-block" onClick={() => window.print()}>🖨️ Imprimir</button>
+                <button className="btn btn-primary btn-block" onClick={() => setDetail(null)}>Cerrar</button>
+              </div>
             </div>
-
-            <div className="ticket-info">
-              <div className="ti"><span className="k">Canal</span><span className="v">{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></div>
-              <div className="ti"><span className="k">Medio de pago</span><span className="v">{PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</span></div>
-              <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
-              <div className="ti"><span className="k">Unidades</span><span className="v">{detail.items.reduce((n, i) => n + i.cantidad, 0)}</span></div>
-            </div>
-
-            <table className="table" style={{ marginBottom: 12 }}>
-              <thead><tr><th>Producto</th><th style={{ textAlign: 'center' }}>Cant.</th><th style={{ textAlign: 'right' }}>P. unit.</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
-              <tbody>
-                {detail.items.map((i, idx) => (
-                  <tr key={idx}>
-                    <td>{i.nombre}</td>
-                    <td style={{ textAlign: 'center' }}>{i.cantidad}</td>
-                    <td style={{ textAlign: 'right' }}>{formatMoney(i.precioUnit)}</td>
-                    <td style={{ textAlign: 'right' }}>{formatMoney(i.precioUnit * i.cantidad)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
-            {(detail.montoDesc ?? detail.descuento) > 0 && <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(detail.montoDesc ?? detail.descuento)}</span></div>}
-            <div className="pos-total"><span>Total</span><span>{formatMoney(detail.total)}</span></div>
-
-            <div className="ticket-actions">
-              <button className="btn btn-ghost btn-block" onClick={() => window.print()}>🖨️ Imprimir</button>
-              <button className="btn btn-primary btn-block" onClick={() => setDetail(null)}>Cerrar</button>
-            </div>
-          </div>
-        )}
+          );
+        })()}
       </Modal>
     </AdminLayout>
   );

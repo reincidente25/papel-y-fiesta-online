@@ -27,6 +27,15 @@ export const formatDate = (value) => {
   }).format(date);
 };
 
+// Fecha + hora (ej. "26 oct 2026, 14:31")
+export const formatDateTime = (value) => {
+  const date = toDate(value);
+  if (!date) return '—';
+  return new Intl.DateTimeFormat('es-AR', {
+    day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit',
+  }).format(date);
+};
+
 // Margen de ganancia a partir de precio de costo y de venta
 export const calcMargin = (costo, venta) => {
   const c = Number(costo) || 0;
