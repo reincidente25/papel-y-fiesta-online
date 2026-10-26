@@ -51,9 +51,15 @@ const AdminProducts = () => {
       if (filterVis === 'web' && !p.mostrarWeb) return false;
       if (filterVis === 'ocultos' && p.mostrarWeb) return false;
       if (filterVis === 'destacados' && !p.destacado) return false;
+      if (filterVis === 'sin_stock' && (p.stock || 0) > 0) return false;
+      if (filterVis === 'stock_bajo' && !esStockBajo(p)) return false;
+      if (filterVis === 'sin_precio' && p.precioVenta > 0) return false;
       return true;
     });
   }, [products, search, filterCat, filterVis]);
+
+  // Click en un KPI: aplica/saca ese filtro
+  const setVis = (v) => setFilterVis((cur) => (cur === v ? 'todos' : v));
 
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const pageItems = visible.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
@@ -93,13 +99,17 @@ const AdminProducts = () => {
     <AdminLayout title="Productos">
       <p className="muted" style={{ marginBottom: 6 }}>{kpis.activos} productos activos · {categories.length} categorías</p>
 
-      {/* KPIs */}
+      {/* KPIs (clicables para filtrar) */}
       <div className="stats-row">
-        <div className="stat ok"><span className="stat-ic">📦</span><div><div className="stat-v">{kpis.activos}</div><div className="stat-l">Activos</div></div></div>
+        <button type="button" className={`stat ok ${filterVis === 'activos' ? 'is-active' : ''}`} onClick={() => setVis('activos')}>
+          <span className="stat-ic">📦</span><div><div className="stat-v">{kpis.activos}</div><div className="stat-l">Activos</div></div></button>
         <div className="stat info"><span className="stat-ic">🏷️</span><div><div className="stat-v">{categories.length}</div><div className="stat-l">Categorías</div></div></div>
-        <div className="stat warn"><span className="stat-ic">⚠️</span><div><div className="stat-v">{kpis.stockBajo}</div><div className="stat-l">Stock bajo</div></div></div>
-        <div className="stat danger"><span className="stat-ic">🚫</span><div><div className="stat-v">{kpis.sinStock}</div><div className="stat-l">Sin stock</div></div></div>
-        <div className="stat danger"><span className="stat-ic">💲</span><div><div className="stat-v">{kpis.sinPrecio}</div><div className="stat-l">Sin precio venta</div></div></div>
+        <button type="button" className={`stat warn ${filterVis === 'stock_bajo' ? 'is-active' : ''}`} onClick={() => setVis('stock_bajo')}>
+          <span className="stat-ic">⚠️</span><div><div className="stat-v">{kpis.stockBajo}</div><div className="stat-l">Stock bajo</div></div></button>
+        <button type="button" className={`stat danger ${filterVis === 'sin_stock' ? 'is-active' : ''}`} onClick={() => setVis('sin_stock')}>
+          <span className="stat-ic">🚫</span><div><div className="stat-v">{kpis.sinStock}</div><div className="stat-l">Sin stock</div></div></button>
+        <button type="button" className={`stat danger ${filterVis === 'sin_precio' ? 'is-active' : ''}`} onClick={() => setVis('sin_precio')}>
+          <span className="stat-ic">💲</span><div><div className="stat-v">{kpis.sinPrecio}</div><div className="stat-l">Sin precio venta</div></div></button>
       </div>
 
       {/* Filtros */}
@@ -118,6 +128,9 @@ const AdminProducts = () => {
             <option value="web">En la web</option>
             <option value="ocultos">Ocultos de web</option>
             <option value="destacados">Destacados</option>
+            <option value="stock_bajo">Stock bajo</option>
+            <option value="sin_stock">Sin stock</option>
+            <option value="sin_precio">Sin precio venta</option>
           </select>
         </div>
       </div>

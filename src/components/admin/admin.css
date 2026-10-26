@@ -89,6 +89,11 @@
 .stat.warn { border-left-color: var(--warning); }
 .stat.danger { border-left-color: var(--danger); }
 .stat.info { border-left-color: var(--info); }
+/* Stats clicables */
+button.stat { text-align: left; font: inherit; cursor: pointer; transition: box-shadow .12s ease, transform .08s ease, border-color .12s ease; }
+button.stat:hover { box-shadow: var(--shadow); }
+button.stat:active { transform: translateY(1px); }
+button.stat.is-active { border-color: var(--brand-ink); box-shadow: 0 0 0 2px var(--brand-ink) inset; }
 @media (max-width: 900px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
 
 /* Celdas de la tabla de productos */
