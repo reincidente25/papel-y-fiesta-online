@@ -5,6 +5,7 @@ import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import { getSalesPage, getSalesStats, createSale } from '../../services/salesService';
 import { getProducts } from '../../services/productsService';
+import { getCustomers } from '../../services/customersService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 
@@ -26,6 +27,7 @@ const recargoPctDe = (metodo, cuotas) => {
 const Sales = () => {
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
+  const [customers, setCustomers] = useState([]);
   const [stats, setStats] = useState({ count: 0, totalHoy: 0, totalHistorico: 0 });
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
@@ -41,7 +43,7 @@ const Sales = () => {
   const [cuotas, setCuotas] = useState(1);
   const [metodoPago, setMetodoPago] = useState('efectivo');
   const [canal, setCanal] = useState('local');
-  const [cliente, setCliente] = useState('');
+  const [clienteId, setClienteId] = useState('');
   const [query, setQuery] = useState('');
 
   // Filtro por fecha y detalle
@@ -51,13 +53,14 @@ const Sales = () => {
 
   const load = () => {
     setLoading(true);
-    Promise.all([getSalesPage({ pageSize: PAGE }), getSalesStats(), getProducts()])
-      .then(([pageRes, st, p]) => {
+    Promise.all([getSalesPage({ pageSize: PAGE }), getSalesStats(), getProducts(), getCustomers()])
+      .then(([pageRes, st, p, c]) => {
         setSales(pageRes.items);
         setCursor(pageRes.cursor);
         setHasMore(pageRes.hasMore);
         setStats(st);
         setProducts(p);
+        setCustomers(c);
       })
       .finally(() => setLoading(false));
   };
@@ -77,7 +80,7 @@ const Sales = () => {
 
   const openNew = () => {
     setLines([]); setDescuento(0); setDescTipo('monto'); setCuotas(1);
-    setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setQuery('');
+    setMetodoPago('efectivo'); setCanal('local'); setClienteId(''); setQuery('');
     setModal(true);
   };
 
@@ -115,8 +118,10 @@ const Sales = () => {
     if (lines.length === 0) return;
     setSaving(true);
     try {
+      const cli = customers.find((c) => c.id === clienteId);
       await createSale({
-        canal, items: lines, metodoPago, cliente,
+        canal, items: lines, metodoPago,
+        cliente: cli?.nombre || 'Consumidor final', clienteId,
         cuotas: metodoPago === 'credito' ? cuotas : (metodoPago === 'debito' ? 1 : 0),
         tipoDescuento: descTipo === 'porcentaje' ? 'Porcentaje' : 'Monto fijo',
         valorDesc: descValor, montoDesc, recargoPct, recargoMonto,
@@ -285,8 +290,11 @@ const Sales = () => {
               </select>
             </div>
           </div>
-          <div className="field"><label>Cliente (opcional)</label>
-            <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} /></div>
+          <div className="field"><label>Cliente</label>
+            <select className="select" value={clienteId} onChange={(e) => setClienteId(e.target.value)}>
+              <option value="">Consumidor final</option>
+              {customers.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+            </select></div>
 
           <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
           {montoDesc > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Descuento{descTipo === 'porcentaje' ? ` (${descValor}%)` : ''}</span><span>− {formatMoney(montoDesc)}</span></div>}
