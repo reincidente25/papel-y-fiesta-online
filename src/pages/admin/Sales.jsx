@@ -3,15 +3,21 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
-import { getSales, createSale } from '../../services/salesService';
+import { getSalesPage, getSalesStats, createSale } from '../../services/salesService';
 import { getProducts } from '../../services/productsService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
 import { formatMoney, formatDate, toDate } from '../../utils/format';
 
+const PAGE = 20;
+
 const Sales = () => {
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
+  const [stats, setStats] = useState({ count: 0, totalHoy: 0, totalHistorico: 0 });
+  const [cursor, setCursor] = useState(null);
+  const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [modal, setModal] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -30,11 +36,29 @@ const Sales = () => {
 
   const load = () => {
     setLoading(true);
-    Promise.all([getSales(), getProducts()])
-      .then(([s, p]) => { setSales(s); setProducts(p); })
+    Promise.all([getSalesPage({ pageSize: PAGE }), getSalesStats(), getProducts()])
+      .then(([pageRes, st, p]) => {
+        setSales(pageRes.items);
+        setCursor(pageRes.cursor);
+        setHasMore(pageRes.hasMore);
+        setStats(st);
+        setProducts(p);
+      })
       .finally(() => setLoading(false));
   };
   useEffect(load, []);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const res = await getSalesPage({ pageSize: PAGE, cursor });
+      setSales((prev) => [...prev, ...res.items]);
+      setCursor(res.cursor);
+      setHasMore(res.hasMore);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const openNew = () => {
     setLines([]); setDescuento(0); setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setQuery('');
@@ -73,11 +97,6 @@ const Sales = () => {
     }
   };
 
-  const hoyStr = new Date().toDateString();
-  const totalDia = sales
-    .filter((s) => toDate(s.fecha)?.toDateString() === hoyStr)
-    .reduce((n, s) => n + (s.total || 0), 0);
-
   const filtered = sales.filter((s) => {
     const f = toDate(s.fecha);
     if (!f) return !desde && !hasta;
@@ -89,9 +108,9 @@ const Sales = () => {
   return (
     <AdminLayout title="Ventas">
       <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div className="card kpi"><span className="kpi-icon">🧾</span><span className="kpi-value">{sales.length}</span><span className="kpi-label">Ventas registradas</span></div>
-        <div className="card kpi"><span className="kpi-icon">📅</span><span className="kpi-value">{formatMoney(totalDia)}</span><span className="kpi-label">Vendido hoy</span></div>
-        <div className="card kpi"><span className="kpi-icon">💵</span><span className="kpi-value">{formatMoney(sales.reduce((n, s) => n + s.total, 0))}</span><span className="kpi-label">Total histórico</span></div>
+        <div className="card kpi"><span className="kpi-icon">🧾</span><span className="kpi-value">{stats.count}</span><span className="kpi-label">Ventas registradas</span></div>
+        <div className="card kpi"><span className="kpi-icon">📅</span><span className="kpi-value">{formatMoney(stats.totalHoy)}</span><span className="kpi-label">Vendido hoy</span></div>
+        <div className="card kpi"><span className="kpi-icon">💵</span><span className="kpi-value">{formatMoney(stats.totalHistorico)}</span><span className="kpi-label">Total histórico</span></div>
       </div>
 
       <div className="toolbar">
@@ -130,6 +149,19 @@ const Sales = () => {
             </tbody>
           </table>
         </div>
+      )}
+
+      {!loading && hasMore && !desde && !hasta && (
+        <div className="pager">
+          <button className="btn btn-ghost" onClick={loadMore} disabled={loadingMore}>
+            {loadingMore ? 'Cargando...' : 'Cargar más'}
+          </button>
+        </div>
+      )}
+      {!loading && (desde || hasta) && hasMore && (
+        <p className="hint" style={{ textAlign: 'center', marginTop: 12 }}>
+          El filtro por fecha aplica sobre las {sales.length} ventas cargadas. Limpiá el filtro para cargar más.
+        </p>
       )}
 
       <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={880}>

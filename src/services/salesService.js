@@ -1,6 +1,7 @@
 // src/services/salesService.js
 import {
   collection, getDocs, addDoc, query, orderBy, serverTimestamp,
+  limit, startAfter, where, Timestamp, getCountFromServer, getAggregateFromServer, sum,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
 import { MOCK_MODE } from '../config/app';
@@ -16,6 +17,52 @@ export async function getSales() {
   if (useMock) return [...MOCK_SALES].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
   const snap = await getDocs(query(collection(db, COL), orderBy('fecha', 'desc')));
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+// Página de ventas (orden por fecha desc). `cursor` es el último doc de la
+// página anterior (o un índice, en mock). Devuelve { items, cursor, hasMore }.
+export async function getSalesPage({ pageSize = 20, cursor = null } = {}) {
+  if (useMock) {
+    const all = [...MOCK_SALES].sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+    const start = cursor || 0;
+    const items = all.slice(start, start + pageSize);
+    const next = start + pageSize;
+    return { items, cursor: next, hasMore: next < all.length };
+  }
+  const col = collection(db, COL);
+  const q = cursor
+    ? query(col, orderBy('fecha', 'desc'), startAfter(cursor), limit(pageSize))
+    : query(col, orderBy('fecha', 'desc'), limit(pageSize));
+  const snap = await getDocs(q);
+  return {
+    items: snap.docs.map((d) => ({ id: d.id, ...d.data() })),
+    cursor: snap.docs[snap.docs.length - 1] || null,
+    hasMore: snap.docs.length === pageSize,
+  };
+}
+
+// KPIs exactos sin traer todo (agregaciones del servidor).
+export async function getSalesStats() {
+  if (useMock) {
+    const hoy = new Date().toDateString();
+    return {
+      count: MOCK_SALES.length,
+      totalHistorico: MOCK_SALES.reduce((n, s) => n + (s.total || 0), 0),
+      totalHoy: MOCK_SALES.filter((s) => new Date(s.fecha).toDateString() === hoy).reduce((n, s) => n + (s.total || 0), 0),
+    };
+  }
+  const col = collection(db, COL);
+  const inicioHoy = new Date(); inicioHoy.setHours(0, 0, 0, 0);
+  const [cnt, aggAll, aggHoy] = await Promise.all([
+    getCountFromServer(col),
+    getAggregateFromServer(col, { total: sum('total') }),
+    getAggregateFromServer(query(col, where('fecha', '>=', Timestamp.fromDate(inicioHoy))), { total: sum('total') }),
+  ]);
+  return {
+    count: cnt.data().count,
+    totalHistorico: aggAll.data().total || 0,
+    totalHoy: aggHoy.data().total || 0,
+  };
 }
 
 /**
