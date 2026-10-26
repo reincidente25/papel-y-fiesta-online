@@ -6,7 +6,7 @@ import Modal from '../../components/common/Modal';
 import { getSales, createSale } from '../../services/salesService';
 import { getProducts } from '../../services/productsService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
-import { formatMoney, formatDate } from '../../utils/format';
+import { formatMoney, formatDate, toDate } from '../../utils/format';
 
 const Sales = () => {
   const [sales, setSales] = useState([]);
@@ -73,12 +73,14 @@ const Sales = () => {
     }
   };
 
+  const hoyStr = new Date().toDateString();
   const totalDia = sales
-    .filter((s) => new Date(s.fecha).toDateString() === new Date().toDateString())
-    .reduce((n, s) => n + s.total, 0);
+    .filter((s) => toDate(s.fecha)?.toDateString() === hoyStr)
+    .reduce((n, s) => n + (s.total || 0), 0);
 
   const filtered = sales.filter((s) => {
-    const f = new Date(s.fecha);
+    const f = toDate(s.fecha);
+    if (!f) return !desde && !hasta;
     if (desde && f < new Date(desde)) return false;
     if (hasta && f > new Date(hasta + 'T23:59:59')) return false;
     return true;
@@ -239,7 +241,7 @@ const Sales = () => {
             </table>
 
             <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
-            {detail.descuento > 0 && <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(detail.descuento)}</span></div>}
+            {(detail.montoDesc ?? detail.descuento) > 0 && <div className="spread" style={{ marginBottom: 10, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(detail.montoDesc ?? detail.descuento)}</span></div>}
             <div className="pos-total"><span>Total</span><span>{formatMoney(detail.total)}</span></div>
 
             <div className="ticket-actions">

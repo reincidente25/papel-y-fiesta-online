@@ -5,7 +5,7 @@ import Loader from '../../components/common/Loader';
 import { getSales } from '../../services/salesService';
 import { getPurchases } from '../../services/purchasesService';
 import { PAYMENT_METHODS, SALE_CHANNELS } from '../../constants';
-import { formatMoney } from '../../utils/format';
+import { formatMoney, toDate } from '../../utils/format';
 
 const DAYS = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
 
@@ -41,7 +41,7 @@ const Reports = () => {
     for (let i = 6; i >= 0; i--) {
       const d = new Date(); d.setDate(d.getDate() - i);
       const key = d.toDateString();
-      const total = sales.filter((s) => new Date(s.fecha).toDateString() === key).reduce((n, s) => n + s.total, 0);
+      const total = sales.filter((s) => toDate(s.fecha)?.toDateString() === key).reduce((n, s) => n + (s.total || 0), 0);
       out.push({ label: DAYS[d.getDay()], value: total });
     }
     return out;

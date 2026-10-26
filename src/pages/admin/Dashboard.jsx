@@ -7,7 +7,7 @@ import { getProducts } from '../../services/productsService';
 import { getOrders } from '../../services/ordersService';
 import { getSales } from '../../services/salesService';
 import { getCashBalance } from '../../services/cashService';
-import { formatMoney, formatDate } from '../../utils/format';
+import { formatMoney, formatDate, toDate } from '../../utils/format';
 import { SALE_CHANNELS } from '../../constants';
 
 const Dashboard = () => {
@@ -24,7 +24,7 @@ const Dashboard = () => {
   }, []);
 
   const hoy = new Date().toDateString();
-  const ventasHoy = sales.filter((s) => new Date(s.fecha).toDateString() === hoy);
+  const ventasHoy = sales.filter((s) => toDate(s.fecha)?.toDateString() === hoy);
   const totalHoy = ventasHoy.reduce((n, s) => n + s.total, 0);
   const stockAlerta = products.filter((p) => p.stock <= 5).length;
   const valorInventario = products.reduce((n, p) => n + (Number(p.precioCosto) || 0) * (Number(p.stock) || 0), 0);

@@ -10,6 +10,14 @@ const currency = new Intl.NumberFormat('es-AR', {
 
 export const formatMoney = (value) => currency.format(Number(value) || 0);
 
+// Convierte Timestamp de Firestore | Date | string a Date de JS (o null)
+export const toDate = (value) => {
+  if (!value) return null;
+  if (value?.toDate) return value.toDate();
+  const d = new Date(value);
+  return isNaN(d) ? null : d;
+};
+
 export const formatDate = (value) => {
   if (!value) return '—';
   // Soporta Timestamp de Firestore o Date/string
