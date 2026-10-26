@@ -102,7 +102,7 @@ const Sales = () => {
   const delLine = (id) => setLines((ls) => ls.filter((l) => l.productoId !== id));
 
   const results = query.trim()
-    ? products.filter((p) => p.nombre.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    ? products.filter((p) => `${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
     : [];
   const totalItems = lines.reduce((n, l) => n + l.cantidad, 0);
 
@@ -217,7 +217,7 @@ const Sales = () => {
         <div>
         <div className="field pos-search" style={{ marginBottom: 6 }}>
           <label>Agregar productos</label>
-          <input className="input" placeholder="🔎 Buscá por nombre y hacé clic para agregar..."
+          <input className="input" placeholder="🔎 Buscá por código o nombre y hacé clic para agregar..."
             value={query} onChange={(e) => setQuery(e.target.value)} />
           {results.length > 0 && (
             <div className="pos-results">
@@ -227,7 +227,7 @@ const Sales = () => {
                   <div key={p.id} className={`pos-result ${sinStock ? 'disabled' : ''}`}
                     onClick={() => !sinStock && addLine(p)}>
                     {p.imagen && <img src={p.imagen} alt="" />}
-                    <span className="pos-result-name">{p.nombre}</span>
+                    <span className="pos-result-name">{p.codigo ? <span className="code-chip" style={{ marginRight: 8 }}>{p.codigo}</span> : null}{p.nombre}</span>
                     <span className="pos-result-meta">{formatMoney(p.precioVenta)} · stock {p.stock}</span>
                   </div>
                 );
