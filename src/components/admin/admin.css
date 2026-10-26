@@ -140,6 +140,7 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 /* Editor de producto (form + panel de imagen/preview) */
 .editor-grid { display: grid; grid-template-columns: 1fr 340px; gap: 24px; align-items: start; }
 .editor-aside { position: sticky; top: 92px; display: flex; flex-direction: column; gap: 16px; }
+.aside-title { display: block; font-size: .82rem; font-weight: 700; color: var(--text-soft); margin-bottom: 10px; }
 .img-preview { aspect-ratio: 1/1; border-radius: var(--radius); overflow: hidden; background: var(--surface-alt); border: 1px dashed var(--border-strong); display: grid; place-items: center; }
 .img-preview img { width: 100%; height: 100%; object-fit: cover; }
 .img-preview .ph { color: var(--muted); font-size: .85rem; text-align: center; padding: 20px; }
