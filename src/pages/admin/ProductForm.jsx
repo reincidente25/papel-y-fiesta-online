@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
+import RichText from '../../components/common/RichText';
 import { getProductById, createProduct, updateProduct } from '../../services/productsService';
 import { PRODUCT_STATUS, PRODUCT_STATUS_LIST } from '../../constants';
 import { getCategories } from '../../services/categoriesService';
@@ -90,7 +91,8 @@ const ProductForm = () => {
 
               <div className="field full">
                 <label>Descripción</label>
-                <textarea className="textarea" value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} />
+                <RichText value={form.descripcion} onChange={(v) => set('descripcion', v)}
+                  placeholder="Detalle del producto. Podés usar negrita, cursiva y listas con viñetas." />
               </div>
 
               <div className="field">

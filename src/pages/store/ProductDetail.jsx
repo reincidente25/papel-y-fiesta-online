@@ -55,7 +55,9 @@ const ProductDetail = () => {
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombreWeb || product.nombre}</h1>
           <div className="detail-price">{formatMoney(product.precioVenta)}</div>
-          <p className="detail-desc">{product.descripcion || 'Sin descripción.'}</p>
+          {product.descripcion
+            ? <div className="detail-desc rte-content" dangerouslySetInnerHTML={{ __html: product.descripcion }} />
+            : <p className="detail-desc">Sin descripción.</p>}
 
           {sinStock ? (
             <span className="badge badge-danger">Sin stock</span>
