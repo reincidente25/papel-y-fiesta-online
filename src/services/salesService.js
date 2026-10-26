@@ -79,26 +79,29 @@ export async function createSale(sale) {
     subtotal: i.precioUnit * i.cantidad,
   }));
   const subtotal = items.reduce((n, i) => n + i.subtotal, 0);
-  const montoDesc = Number(sale.descuento) || 0;
-  const total = subtotal - montoDesc;
+  const montoDesc = Number(sale.montoDesc) || 0;
+  const recargoMonto = Number(sale.recargoMonto) || 0;
+  const total = subtotal - montoDesc + recargoMonto;
+
+  const data = {
+    canal: sale.canal || 'local', items, subtotal,
+    tipoDescuento: sale.tipoDescuento || 'Monto fijo',
+    valorDesc: Number(sale.valorDesc) || 0,
+    montoDesc, descuento: montoDesc,
+    recargoPct: Number(sale.recargoPct) || 0, recargoMonto,
+    cuotas: Number(sale.cuotas) || 0,
+    total, metodoPago: sale.metodoPago, cliente: sale.cliente || '',
+    cantItems: items.reduce((n, i) => n + i.cantidad, 0),
+    estado: 'completada', migrado: false,
+  };
 
   let ventaId;
   if (useMock) {
-    const nueva = {
-      id: `v-${Date.now()}`, ventaId: `v-${Date.now()}`, fecha: new Date().toISOString(),
-      canal: sale.canal || 'local', items, subtotal, montoDesc, descuento: montoDesc,
-      total, metodoPago: sale.metodoPago, cliente: sale.cliente || '', estado: 'completada', migrado: false,
-    };
-    MOCK_SALES.push(nueva);
-    ventaId = nueva.id;
+    const id = `v-${Date.now()}`;
+    MOCK_SALES.push({ id, ventaId: id, fecha: new Date().toISOString(), ...data });
+    ventaId = id;
   } else {
-    const ref = await addDoc(collection(db, COL), {
-      canal: sale.canal || 'local', fecha: serverTimestamp(), items,
-      subtotal, montoDesc, descuento: montoDesc, total,
-      metodoPago: sale.metodoPago, cliente: sale.cliente || '',
-      cantItems: items.reduce((n, i) => n + i.cantidad, 0),
-      estado: 'completada', migrado: false,
-    });
+    const ref = await addDoc(collection(db, COL), { ...data, fecha: serverTimestamp() });
     ventaId = ref.id;
   }
 

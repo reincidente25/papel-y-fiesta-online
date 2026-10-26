@@ -10,6 +10,19 @@ import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 
 const PAGE = 20;
 
+// Recargos por medio de pago
+const RECARGO_DEBITO = 7;
+const CREDITO_OPCIONES = [
+  { cuotas: 1, recargo: 15, label: '1 pago (+15%)' },
+  { cuotas: 2, recargo: 19, label: '2 pagos (+19%)' },
+  { cuotas: 3, recargo: 19, label: '3 pagos (+19%)' },
+];
+const recargoPctDe = (metodo, cuotas) => {
+  if (metodo === 'debito') return RECARGO_DEBITO;
+  if (metodo === 'credito') return CREDITO_OPCIONES.find((c) => c.cuotas === cuotas)?.recargo || 0;
+  return 0;
+};
+
 const Sales = () => {
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
@@ -24,6 +37,8 @@ const Sales = () => {
   // Estado de la venta en curso
   const [lines, setLines] = useState([]);
   const [descuento, setDescuento] = useState(0);
+  const [descTipo, setDescTipo] = useState('monto'); // 'monto' | 'porcentaje'
+  const [cuotas, setCuotas] = useState(1);
   const [metodoPago, setMetodoPago] = useState('efectivo');
   const [canal, setCanal] = useState('local');
   const [cliente, setCliente] = useState('');
@@ -61,8 +76,14 @@ const Sales = () => {
   };
 
   const openNew = () => {
-    setLines([]); setDescuento(0); setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setQuery('');
+    setLines([]); setDescuento(0); setDescTipo('monto'); setCuotas(1);
+    setMetodoPago('efectivo'); setCanal('local'); setCliente(''); setQuery('');
     setModal(true);
+  };
+
+  const cambiarMetodo = (m) => {
+    setMetodoPago(m);
+    setCuotas(1); // débito = 1; crédito arranca en 1 pago
   };
 
   const addLine = (p) => {
@@ -83,13 +104,23 @@ const Sales = () => {
   const totalItems = lines.reduce((n, l) => n + l.cantidad, 0);
 
   const subtotal = lines.reduce((n, l) => n + l.precioUnit * l.cantidad, 0);
-  const total = subtotal - (Number(descuento) || 0);
+  const descValor = Number(descuento) || 0;
+  const montoDesc = Math.min(descTipo === 'porcentaje' ? subtotal * (descValor / 100) : descValor, subtotal);
+  const base = Math.max(0, subtotal - montoDesc);
+  const recargoPct = recargoPctDe(metodoPago, cuotas);
+  const recargoMonto = base * (recargoPct / 100);
+  const total = base + recargoMonto;
 
   const save = async () => {
     if (lines.length === 0) return;
     setSaving(true);
     try {
-      await createSale({ canal, items: lines, descuento, metodoPago, cliente });
+      await createSale({
+        canal, items: lines, metodoPago, cliente,
+        cuotas: metodoPago === 'credito' ? cuotas : (metodoPago === 'debito' ? 1 : 0),
+        tipoDescuento: descTipo === 'porcentaje' ? 'Porcentaje' : 'Monto fijo',
+        valorDesc: descValor, montoDesc, recargoPct, recargoMonto,
+      });
       setModal(false);
       load();
     } finally {
@@ -176,8 +207,8 @@ const Sales = () => {
         </p>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={880}>
-        <div className="pos-grid">
+      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={1060}>
+        <div className="pos-grid" style={{ minHeight: '62vh' }}>
         <div>
         <div className="field pos-search" style={{ marginBottom: 6 }}>
           <label>Agregar productos</label>
@@ -231,16 +262,35 @@ const Sales = () => {
               {Object.values(SALE_CHANNELS).map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select></div>
           <div className="field"><label>Medio de pago</label>
-            <select className="select" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)}>
+            <select className="select" value={metodoPago} onChange={(e) => cambiarMetodo(e.target.value)}>
               {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
             </select></div>
+
+          {metodoPago === 'debito' && (
+            <p className="hint">1 cuota · recargo {RECARGO_DEBITO}%</p>
+          )}
+          {metodoPago === 'credito' && (
+            <div className="field"><label>Cuotas</label>
+              <select className="select" value={cuotas} onChange={(e) => setCuotas(Number(e.target.value))}>
+                {CREDITO_OPCIONES.map((c) => <option key={c.cuotas} value={c.cuotas}>{c.label}</option>)}
+              </select></div>
+          )}
+
           <div className="field"><label>Descuento</label>
-            <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} /></div>
+            <div className="row gap-8">
+              <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} style={{ flex: 1 }} />
+              <select className="select" style={{ width: 70 }} value={descTipo} onChange={(e) => setDescTipo(e.target.value)}>
+                <option value="monto">$</option>
+                <option value="porcentaje">%</option>
+              </select>
+            </div>
+          </div>
           <div className="field"><label>Cliente (opcional)</label>
             <input className="input" value={cliente} onChange={(e) => setCliente(e.target.value)} /></div>
 
           <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
-          {Number(descuento) > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Descuento</span><span>− {formatMoney(descuento)}</span></div>}
+          {montoDesc > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Descuento{descTipo === 'porcentaje' ? ` (${descValor}%)` : ''}</span><span>− {formatMoney(montoDesc)}</span></div>}
+          {recargoMonto > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Recargo ({recargoPct}%)</span><span>+ {formatMoney(recargoMonto)}</span></div>}
           <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
 
           <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0}>
@@ -268,7 +318,7 @@ const Sales = () => {
               <div className="ticket-info">
                 <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
                 <div className="ti"><span className="k">Canal</span><span className="v"><span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></span></div>
-                <div className="ti"><span className="k">Medio de pago</span><span className="v">{payChip(detail.metodoPago)}</span></div>
+                <div className="ti"><span className="k">Medio de pago</span><span className="v">{payChip(detail.metodoPago)}{detail.cuotas > 0 ? ` · ${detail.cuotas} cuota${detail.cuotas > 1 ? 's' : ''}` : ''}</span></div>
                 <div className="ti"><span className="k">Unidades</span><span className="v">{unidades} ({detail.items.length} ítem/s)</span></div>
               </div>
 
@@ -291,6 +341,7 @@ const Sales = () => {
               <div className="sale-totals">
                 <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
                 {descuento > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(descuento)}</span></div>}
+                {detail.recargoMonto > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Recargo ({detail.recargoPct}%)</span><span>+ {formatMoney(detail.recargoMonto)}</span></div>}
                 <div className="pos-total" style={{ marginTop: 4 }}><span>Total</span><span>{formatMoney(detail.total)}</span></div>
               </div>
 
