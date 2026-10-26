@@ -6,7 +6,7 @@ import Loader from '../../components/common/Loader';
 import { getProducts } from '../../services/productsService';
 import { getOrders } from '../../services/ordersService';
 import { getSales } from '../../services/salesService';
-import { getCashBalance } from '../../services/cashService';
+import { getCajaSaldo } from '../../services/cashService';
 import { formatMoney, formatDate, toDate } from '../../utils/format';
 import { SALE_CHANNELS } from '../../constants';
 
@@ -18,7 +18,7 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    Promise.all([getProducts(), getOrders(), getSales(), getCashBalance()])
+    Promise.all([getProducts(), getOrders(), getSales(), getCajaSaldo()])
       .then(([p, o, s, b]) => { setProducts(p); setOrders(o); setSales(s); setBalance(b); })
       .finally(() => setLoading(false));
   }, []);

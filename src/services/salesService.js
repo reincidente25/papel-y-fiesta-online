@@ -6,9 +6,7 @@ import {
 import { db, isFirebaseConfigured } from '../config/firebase';
 import { MOCK_MODE } from '../config/app';
 import { MOCK_SALES } from '../data/mockManagement';
-import { PAYMENT_METHODS } from '../constants';
 import { getProducts, updateProduct } from './productsService';
-import { addCashMovement } from './cashService';
 
 const COL = 'ventas';
 const useMock = MOCK_MODE || !isFirebaseConfigured;
@@ -39,6 +37,21 @@ export async function getSalesPage({ pageSize = 20, cursor = null } = {}) {
     cursor: snap.docs[snap.docs.length - 1] || null,
     hasMore: snap.docs.length === pageSize,
   };
+}
+
+// Ventas dentro de un rango de fechas (para la caja por turno).
+export async function getSalesBetween(desde, hasta = null) {
+  if (useMock) {
+    const d = (s) => (s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha));
+    return MOCK_SALES
+      .filter((s) => { const x = d(s); return x >= desde && (!hasta || x <= hasta); })
+      .sort((a, b) => d(b) - d(a));
+  }
+  const col = collection(db, COL);
+  const parts = [where('fecha', '>=', Timestamp.fromDate(desde))];
+  if (hasta) parts.push(where('fecha', '<=', Timestamp.fromDate(hasta)));
+  const snap = await getDocs(query(col, ...parts, orderBy('fecha', 'desc')));
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 // KPIs exactos sin traer todo (agregaciones del servidor).
@@ -121,11 +134,6 @@ export async function createSale(sale) {
   for (const item of items) {
     const prod = productos.find((p) => p.id === item.productoId || p.codigo === item.codigo);
     if (prod) await updateProduct(prod.id, { stock: Math.max(0, (prod.stock || 0) - item.cantidad) });
-  }
-
-  // Movimiento de caja si afecta efectivo
-  if (PAYMENT_METHODS[sale.metodoPago]?.afectaCaja) {
-    await addCashMovement({ tipo: 'venta', concepto: `Venta #${String(ventaId).slice(-6)}`, metodoPago: sale.metodoPago, monto: total });
   }
 
   return ventaId;

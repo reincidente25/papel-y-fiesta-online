@@ -160,6 +160,24 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .ticket-modal .table th, .ticket-modal .table td { padding: 14px 16px; }
 .ticket-modal .pos-total { font-size: 1.5rem; padding-top: 16px; margin-top: 16px; }
 
+/* Caja por turno */
+.caja-bar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px 22px; margin-bottom: 18px; }
+.caja-estado { font-family: var(--font-head); font-weight: 700; display: flex; align-items: center; gap: 8px; color: var(--success); }
+.caja-estado .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--success); }
+.caja-estado.cerrada { color: var(--muted); } .caja-estado.cerrada .dot { background: var(--muted); }
+.caja-sub { font-size: .82rem; color: var(--muted); margin-top: 3px; }
+.caja-fondo { text-align: center; }
+.caja-fondo .k { font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.caja-fondo .v { font-family: var(--font-head); font-weight: 800; font-size: 1.3rem; color: var(--ink); }
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 18px; flex-wrap: wrap; }
+.tab { background: none; border: none; padding: 10px 16px; cursor: pointer; font-family: var(--font-head); font-weight: 600; font-size: .92rem; color: var(--text-soft); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+.caja-open { max-width: 420px; margin: 40px auto; text-align: center; padding: 32px; }
+.caja-open .big { font-size: 2.2rem; margin-bottom: 8px; }
+
 /* Detalle de venta: lista de ítems con imagen */
 .sale-items { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; max-height: 46vh; overflow-y: auto; }
 .sale-item { display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--border); border-radius: 12px; background: var(--surface); }
