@@ -92,13 +92,17 @@ const Sales = () => {
   const addLine = (p) => {
     setLines((ls) => {
       const ex = ls.find((l) => l.productoId === p.id);
-      if (ex) return ls.map((l) => l.productoId === p.id ? { ...l, cantidad: l.cantidad + 1 } : l);
-      return [...ls, { productoId: p.id, nombre: p.nombre, cantidad: 1, precioUnit: p.precioVenta, stock: p.stock }];
+      if (ex) return ls.map((l) => l.productoId === p.id ? { ...l, cantidad: Math.min(l.stock ?? Infinity, l.cantidad + 1) } : l);
+      return [...ls, { productoId: p.id, codigo: p.codigo || '', nombre: p.nombre, cantidad: 1, precioUnit: p.precioVenta, stock: p.stock }];
     });
     setQuery('');
   };
 
-  const changeQty = (id, delta) => setLines((ls) => ls.map((l) => l.productoId === id ? { ...l, cantidad: Math.max(1, l.cantidad + delta) } : l));
+  const changeQty = (id, delta) => setLines((ls) => ls.map((l) => {
+    if (l.productoId !== id) return l;
+    const max = l.stock ?? Infinity;
+    return { ...l, cantidad: Math.min(max, Math.max(1, l.cantidad + delta)) };
+  }));
   const delLine = (id) => setLines((ls) => ls.filter((l) => l.productoId !== id));
 
   const results = query.trim()
@@ -244,12 +248,12 @@ const Sales = () => {
               <div className="pos-cart-item" key={l.productoId}>
                 <div>
                   <div className="pos-cart-name">{l.nombre}</div>
-                  <div className="pos-cart-price">{formatMoney(l.precioUnit)} c/u</div>
+                  <div className="pos-cart-price">{formatMoney(l.precioUnit)} c/u · stock {l.stock}</div>
                 </div>
                 <div className="qty-mini">
                   <button type="button" onClick={() => changeQty(l.productoId, -1)}>−</button>
                   <span>{l.cantidad}</span>
-                  <button type="button" onClick={() => changeQty(l.productoId, +1)}>+</button>
+                  <button type="button" disabled={l.cantidad >= (l.stock ?? Infinity)} onClick={() => changeQty(l.productoId, +1)}>+</button>
                 </div>
                 <span className="pos-line-total">{formatMoney(l.precioUnit * l.cantidad)}</span>
                 <button className="btn btn-ghost btn-sm" onClick={() => delLine(l.productoId)}>✕</button>
