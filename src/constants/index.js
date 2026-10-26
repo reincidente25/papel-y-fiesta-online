@@ -74,6 +74,7 @@ export const SALE_CHANNELS = {
 
 // Estado de una compra
 export const PURCHASE_STATUS = {
+  recibida:  { value: 'recibida',  label: 'Recibida',  badge: 'badge-success' },
   pagada:    { value: 'pagada',    label: 'Pagada',    badge: 'badge-success' },
   pendiente: { value: 'pendiente', label: 'Pendiente', badge: 'badge-warning' },
 };
