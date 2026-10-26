@@ -186,6 +186,9 @@ const AdminProducts = () => {
                       <td><input type="checkbox" checked={selected.has(p.id)} onChange={() => toggle(p.id)} /></td>
                       <td>
                         <div className="row gap-12">
+                          {p.imagen
+                            ? <img className="table-thumb" src={p.imagen} alt="" loading="lazy" />
+                            : <span className="table-thumb thumb-ph">📦</span>}
                           <span className="code-chip">{p.codigo || '—'}</span>
                           <span><span className="prod-name">{p.nombreWeb || p.nombre}</span>{p.marca && <span className="prod-marca">{p.marca}</span>}</span>
                         </div>

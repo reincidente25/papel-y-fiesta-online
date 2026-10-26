@@ -48,7 +48,8 @@
 .table th { background: var(--surface-alt); font-family: var(--font-head); font-weight: 600; color: var(--text-soft); font-size: .8rem; text-transform: uppercase; letter-spacing: .03em; }
 .table tr:last-child td { border-bottom: none; }
 .table tr:hover td { background: var(--surface-alt); }
-.table-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--surface-alt); }
+.table-thumb { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; background: var(--surface-alt); flex-shrink: 0; }
+.thumb-ph { display: inline-grid; place-items: center; color: var(--muted); font-size: 1.1rem; border: 1px solid var(--border); }
 .table-actions { display: flex; gap: 8px; }
 
 .toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
