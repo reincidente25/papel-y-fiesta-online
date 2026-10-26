@@ -25,10 +25,10 @@ service cloud.firestore {
       allow read, write: if (isSignedIn() && request.auth.uid == uid) || isAdmin();
     }
 
-    // Ventas del local (historial interno): solo admin.
-    match /ventas/{id} {
-      allow read, write: if isAdmin();
-    }
+    // Datos internos del local: solo admin.
+    match /ventas/{id}       { allow read, write: if isAdmin(); }
+    match /compras/{id}      { allow read, write: if isAdmin(); }
+    match /proveedores/{id}  { allow read, write: if isAdmin(); }
 
     // Pedidos: crea cualquier usuario logueado; lee/actualiza su dueño o el admin.
     match /pedidos/{id} {

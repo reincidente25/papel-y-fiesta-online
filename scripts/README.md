@@ -36,6 +36,26 @@ node import-ventas.mjs            # toma el .xlsx cuyo nombre contenga "venta"
 - **No** descuenta stock ni impacta caja: solo carga el historial.
 - Idempotente (merge), en lotes. Colección: `ventas`.
 
+## Importar proveedores desde Excel
+
+Una pestaña. ID del documento = columna **`ID`** (hash original).
+```bash
+cd scripts
+node import-proveedores.mjs    # toma el .xlsx con "proveedor" en el nombre
+```
+Colección `proveedores`. Mapea Razón Social → `nombre`, más CUIT, contacto, email,
+teléfono, rubro, dirección, etc.
+
+## Importar compras (historial) desde Excel
+
+Excel de **2 pestañas** (cabeceras + detalle), unidas por **`ID Compra`**.
+```bash
+cd scripts
+node import-compras.mjs        # toma el .xlsx con "compra" en el nombre
+```
+- ID del documento = **`ID Compra`** (hash). Detalle agrupado en `items[]`.
+- **No** modifica stock ni caja. Colección `compras`.
+
 ### 1. Instalar dependencias
 ```bash
 cd scripts
