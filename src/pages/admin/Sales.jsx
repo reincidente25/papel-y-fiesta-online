@@ -113,12 +113,17 @@ const Sales = () => {
   }, [products]);
   const itemImg = (i) => (prodMap.get(i.productoId) || prodMap.get(i.codigo))?.imagen || '';
 
+  const payChip = (m) => {
+    const p = PAYMENT_METHODS[m];
+    return <span className={`badge ${p?.badge || 'badge-muted'}`}>{p?.icon || '•'} {p?.label || m}</span>;
+  };
+
   return (
     <AdminLayout title="Ventas">
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div className="card kpi"><span className="kpi-icon">🧾</span><span className="kpi-value">{stats.count}</span><span className="kpi-label">Ventas registradas</span></div>
-        <div className="card kpi"><span className="kpi-icon">📅</span><span className="kpi-value">{formatMoney(stats.totalHoy)}</span><span className="kpi-label">Vendido hoy</span></div>
-        <div className="card kpi"><span className="kpi-icon">💵</span><span className="kpi-value">{formatMoney(stats.totalHistorico)}</span><span className="kpi-label">Total histórico</span></div>
+      <div className="stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+        <div className="stat info"><span className="stat-ic">🧾</span><div><div className="stat-v">{stats.count}</div><div className="stat-l">Ventas registradas</div></div></div>
+        <div className="stat ok"><span className="stat-ic">📅</span><div><div className="stat-v">{formatMoney(stats.totalHoy)}</div><div className="stat-l">Vendido hoy</div></div></div>
+        <div className="stat ok"><span className="stat-ic">💵</span><div><div className="stat-v">{formatMoney(stats.totalHistorico)}</div><div className="stat-l">Total histórico</div></div></div>
       </div>
 
       <div className="toolbar">
@@ -148,7 +153,7 @@ const Sales = () => {
                   <td>{formatDateTime(s.fecha)}</td>
                   <td><span className={`badge ${SALE_CHANNELS[s.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[s.canal]?.label || s.canal}</span></td>
                   <td>{s.items.reduce((n, i) => n + i.cantidad, 0)}</td>
-                  <td>{PAYMENT_METHODS[s.metodoPago]?.label || s.metodoPago}</td>
+                  <td>{payChip(s.metodoPago)}</td>
                   <td>{s.cliente || '—'}</td>
                   <td className="num"><strong>{formatMoney(s.total)}</strong></td>
                 </tr>
@@ -227,7 +232,7 @@ const Sales = () => {
             </select></div>
           <div className="field"><label>Medio de pago</label>
             <select className="select" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)}>
-              {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
+              {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
             </select></div>
           <div className="field"><label>Descuento</label>
             <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} /></div>
@@ -263,7 +268,7 @@ const Sales = () => {
               <div className="ticket-info">
                 <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
                 <div className="ti"><span className="k">Canal</span><span className="v"><span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></span></div>
-                <div className="ti"><span className="k">Medio de pago</span><span className="v">{PAYMENT_METHODS[detail.metodoPago]?.label || detail.metodoPago}</span></div>
+                <div className="ti"><span className="k">Medio de pago</span><span className="v">{payChip(detail.metodoPago)}</span></div>
                 <div className="ti"><span className="k">Unidades</span><span className="v">{unidades} ({detail.items.length} ítem/s)</span></div>
               </div>
 

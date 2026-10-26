@@ -57,12 +57,12 @@ export const DEFAULT_CATEGORIES = [
 
 // Medios de pago (ventas, compras y caja)
 export const PAYMENT_METHODS = {
-  efectivo:     { value: 'efectivo',     label: 'Efectivo',      afectaCaja: true },
-  debito:       { value: 'debito',       label: 'Débito',        afectaCaja: false },
-  credito:      { value: 'credito',      label: 'Crédito',       afectaCaja: false },
-  transferencia:{ value: 'transferencia',label: 'Transferencia', afectaCaja: false },
-  mercadopago:  { value: 'mercadopago',  label: 'Mercado Pago',  afectaCaja: false },
-  cuenta_corriente: { value: 'cuenta_corriente', label: 'Cuenta corriente', afectaCaja: false },
+  efectivo:     { value: 'efectivo',     label: 'Efectivo',      afectaCaja: true,  icon: '💵', badge: 'badge-success' },
+  debito:       { value: 'debito',       label: 'Débito',        afectaCaja: false, icon: '💳', badge: 'badge-info'    },
+  credito:      { value: 'credito',      label: 'Crédito',       afectaCaja: false, icon: '💳', badge: 'badge-warning' },
+  transferencia:{ value: 'transferencia',label: 'Transferencia', afectaCaja: false, icon: '🏦', badge: 'badge-info'    },
+  mercadopago:  { value: 'mercadopago',  label: 'Mercado Pago',  afectaCaja: false, icon: '💠', badge: 'badge-info'    },
+  cuenta_corriente: { value: 'cuenta_corriente', label: 'Cuenta corriente', afectaCaja: false, icon: '📒', badge: 'badge-muted' },
 };
 export const PAYMENT_METHODS_LIST = Object.values(PAYMENT_METHODS);
 

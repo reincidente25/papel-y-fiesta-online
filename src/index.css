@@ -131,6 +131,7 @@ button, input, select, textarea { font: inherit; }
 .badge-warning { background: var(--warning-soft); color: #9a7100; }
 .badge-danger  { background: var(--danger-soft);  color: var(--danger); }
 .badge-muted   { background: var(--surface-alt);  color: var(--muted); }
+.badge-info    { background: var(--info-soft);     color: var(--info); }
 
 /* ---------- Cards ---------- */
 .card {
