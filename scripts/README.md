@@ -6,6 +6,20 @@ Sube los productos del Excel a la colección `productos` de Firestore.
 **El ID de cada documento es el Código** (ej. `VAR-046`), y el campo `codigo`
 también queda guardado dentro para filtrar rápido.
 
+### Categorías (desde las pestañas del Excel)
+La categoría de cada producto se toma de **la pestaña donde aparece**:
+- La pestaña **"Todos"** aporta los datos de los productos.
+- Cada **pestaña de categoría** (Acrilicos, Cotillón, Juguete, …) asigna esa
+  categoría a los productos que lista.
+- La pestaña **"Sin categoría"** no asigna ninguna.
+
+Se crea además la colección **`categorias/{slug}`** (id = slug, ej.
+`arte-y-modelado`) con `{ nombre, slug, orden, activa, cantidad }`. En el
+producto quedan `categoria` (slug, para filtrar) y `categoriaNombre` (para mostrar).
+
+> Las pestañas que difieren solo por acento/mayúscula (ej. `Boligrafos` y
+> `Bolígrafos`) se **unifican** en un mismo slug automáticamente.
+
 ### 1. Instalar dependencias
 ```bash
 cd scripts
