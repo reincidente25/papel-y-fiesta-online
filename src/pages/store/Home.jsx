@@ -4,8 +4,7 @@ import { Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
-import { getFeaturedProducts } from '../../services/productsService';
-import { getCategories } from '../../services/categoriesService';
+import { getPublicProducts } from '../../services/productsService';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import './store.css';
@@ -18,11 +17,20 @@ const Home = () => {
   const { openAuth } = useAuthModal();
 
   useEffect(() => {
-    Promise.all([getFeaturedProducts(), getCategories()])
-      .then(([f, c]) => {
-        setFeatured(f);
-        // En la home mostramos las categorías con más productos (hasta 10).
-        const top = [...c].sort((a, b) => (b.cantidad || 0) - (a.cantidad || 0)).slice(0, 10);
+    getPublicProducts()
+      .then((pub) => {
+        // Destacados: los marcados; si no hay, algunos productos web.
+        const dest = pub.filter((p) => p.destacado);
+        setFeatured((dest.length ? dest : pub).slice(0, 10));
+        // Categorías que tienen productos en la web, por cantidad (hasta 10).
+        const map = new Map();
+        for (const p of pub) {
+          if (!p.categoria) continue;
+          const e = map.get(p.categoria) || { id: p.categoria, name: p.categoriaNombre || p.categoria, cantidad: 0 };
+          e.cantidad += 1;
+          map.set(p.categoria, e);
+        }
+        const top = [...map.values()].sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
         setCategories(top);
       })
       .finally(() => setLoading(false));

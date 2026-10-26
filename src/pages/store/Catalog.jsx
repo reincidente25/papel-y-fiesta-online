@@ -5,7 +5,6 @@ import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getPublicProducts } from '../../services/productsService';
-import { getCategories } from '../../services/categoriesService';
 import './store.css';
 
 const SORTS = {
@@ -18,7 +17,6 @@ const SORTS = {
 const Catalog = () => {
   const [params, setParams] = useSearchParams();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('relevancia');
@@ -26,10 +24,22 @@ const Catalog = () => {
   const cat = params.get('cat') || 'todas';
 
   useEffect(() => {
-    Promise.all([getPublicProducts(), getCategories()])
-      .then(([p, c]) => { setProducts(p); setCategories(c); })
+    getPublicProducts()
+      .then(setProducts)
       .finally(() => setLoading(false));
   }, []);
+
+  // Categorías que realmente tienen productos en la web (con su conteo web).
+  const categories = useMemo(() => {
+    const map = new Map();
+    for (const p of products) {
+      if (!p.categoria) continue;
+      const e = map.get(p.categoria) || { id: p.categoria, name: p.categoriaNombre || p.categoria, cantidad: 0 };
+      e.cantidad += 1;
+      map.set(p.categoria, e);
+    }
+    return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
 
   const setCat = (id) => {
     if (id === 'todas') params.delete('cat');
