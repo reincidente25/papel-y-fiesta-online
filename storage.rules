@@ -1,0 +1,27 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() {
+      return isSignedIn() &&
+        firestore.get(/databases/(default)/documents/usuarios/$(request.auth.uid)).data.rol == 'admin';
+    }
+    // Solo imágenes de hasta 5 MB.
+    function isImage() {
+      return request.resource.contentType.matches('image/.*') &&
+        request.resource.size < 5 * 1024 * 1024;
+    }
+
+    // Fotos de productos: lectura pública (catálogo), escritura solo admin.
+    match /productos/{codigo}/{foto} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage();
+    }
+
+    // Por defecto, nada.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

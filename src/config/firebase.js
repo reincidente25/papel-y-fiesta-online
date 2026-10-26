@@ -3,6 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getFirestore } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { getFunctions } from 'firebase/functions';
+import { getStorage } from 'firebase/storage';
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
@@ -23,12 +24,14 @@ let app = null;
 let db = null;
 let auth = null;
 let functions = null;
+let storage = null;
 
 if (isFirebaseConfigured) {
   app  = initializeApp(firebaseConfig);
   db   = getFirestore(app);
   auth = getAuth(app);
   functions = getFunctions(app, FUNCTIONS_REGION);
+  storage = getStorage(app);
 } else {
   // eslint-disable-next-line no-console
   console.warn(
@@ -37,5 +40,5 @@ if (isFirebaseConfigured) {
   );
 }
 
-export { db, auth, functions };
+export { db, auth, functions, storage };
 export default app;

@@ -15,9 +15,11 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
+  const [activa, setActiva] = useState(0);
 
   useEffect(() => {
     setLoading(true);
+    setActiva(0);
     getProductById(id)
       .then(setProduct)
       .finally(() => setLoading(false));
@@ -45,11 +47,30 @@ const ProductDetail = () => {
     navigate('/carrito');
   };
 
+  const fotos = product.imagenes?.length ? product.imagenes : (product.imagen ? [product.imagen] : []);
+  const principal = fotos[activa] || fotos[0];
+
   return (
     <StoreLayout>
       <div className="container detail">
         <div className="detail-media">
-          <img src={product.imagen} alt={product.nombre} />
+          {principal
+            ? <img src={principal} alt={product.nombre} />
+            : <div className="detail-noimg">📦</div>}
+          {fotos.length > 1 && (
+            <div className="detail-thumbs">
+              {fotos.map((url, i) => (
+                <button
+                  key={`${url}-${i}`}
+                  type="button"
+                  className={`detail-thumb ${i === activa ? 'active' : ''}`}
+                  onClick={() => setActiva(i)}
+                >
+                  <img src={url} alt={`Foto ${i + 1}`} />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}

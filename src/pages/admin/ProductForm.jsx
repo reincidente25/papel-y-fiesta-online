@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import RichText from '../../components/common/RichText';
+import ImageUploader from '../../components/admin/ImageUploader';
 import { getProductById, createProduct, updateProduct } from '../../services/productsService';
 import { PRODUCT_STATUS, PRODUCT_STATUS_LIST } from '../../constants';
 import { getCategories } from '../../services/categoriesService';
@@ -12,7 +13,7 @@ import { calcMargin, formatMoney } from '../../utils/format';
 const EMPTY = {
   codigo: '', nombre: '', nombreWeb: '', descripcion: '', categoria: '',
   precioCosto: '', precioVenta: '', stock: '', estado: 'activo',
-  mostrarWeb: false, destacado: false, imagen: '',
+  mostrarWeb: false, destacado: false, imagen: '', imagenes: [],
 };
 
 const ProductForm = () => {
@@ -31,7 +32,11 @@ const ProductForm = () => {
   useEffect(() => {
     if (!isEdit) return;
     getProductById(id).then((p) => {
-      if (p) setForm({ ...EMPTY, ...p });
+      if (p) {
+        // Compatibilidad: productos viejos con una sola `imagen`.
+        const imagenes = p.imagenes?.length ? p.imagenes : (p.imagen ? [p.imagen] : []);
+        setForm({ ...EMPTY, ...p, imagenes });
+      }
       setLoading(false);
     });
   }, [id, isEdit]);
@@ -42,8 +47,11 @@ const ProductForm = () => {
     e.preventDefault();
     setSaving(true);
     const catSel = categories.find((c) => c.id === form.categoria);
+    const imagenes = form.imagenes || [];
     const payload = {
       ...form,
+      imagenes,
+      imagen: imagenes[0] || '', // portada = primera imagen (compatibilidad)
       categoriaNombre: catSel?.name || '',
       precioCosto: Number(form.precioCosto) || 0,
       precioVenta: Number(form.precioVenta) || 0,
@@ -131,10 +139,14 @@ const ProductForm = () => {
                 <input className="input" type="number" min="0" value={form.stock}
                   onChange={(e) => set('stock', e.target.value)} placeholder="0" />
               </div>
-              <div className="field">
-                <label>URL de imagen</label>
-                <input className="input" value={form.imagen} onChange={(e) => set('imagen', e.target.value)} placeholder="https://..." />
-                <span className="hint">Más adelante: subida de archivos con Firebase Storage.</span>
+              <div className="field full">
+                <label>Fotos del producto</label>
+                <ImageUploader
+                  value={form.imagenes}
+                  codigo={form.codigo}
+                  onChange={(imgs) => set('imagenes', imgs)}
+                />
+                <span className="hint">La primera foto es la portada. Arrastrá para reordenar.</span>
               </div>
 
               <div className="field full" style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 4 }}>
@@ -168,9 +180,9 @@ const ProductForm = () => {
           {/* Columna lateral: imagen + vista previa */}
           <aside className="editor-aside">
             <div className="img-preview">
-              {form.imagen
-                ? <img src={form.imagen} alt="Vista previa" onError={(e) => { e.target.style.display = 'none'; }} />
-                : <span className="ph">📷<br />Pegá una URL de imagen<br />para ver la vista previa</span>}
+              {form.imagenes?.[0]
+                ? <img src={form.imagenes[0]} alt="Vista previa" onError={(e) => { e.target.style.display = 'none'; }} />
+                : <span className="ph">📷<br />Subí fotos para ver<br />la vista previa</span>}
             </div>
 
             <div className="card preview-card">
