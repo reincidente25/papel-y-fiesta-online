@@ -22,19 +22,25 @@ export const CartProvider = ({ children }) => {
     }
   }, [items]);
 
-  const addItem = (product, cantidad = 1) => {
+  const addItem = (product, cantidad = 1, variante = null) => {
+    // La línea del carrito es única por producto + variante.
+    const lineId = variante ? `${product.id}::${variante.id}` : product.id;
     setItems((prev) => {
-      const existing = prev.find((i) => i.id === product.id);
+      const existing = prev.find((i) => i.id === lineId);
       if (existing) {
         return prev.map((i) =>
-          i.id === product.id ? { ...i, cantidad: i.cantidad + cantidad } : i
+          i.id === lineId ? { ...i, cantidad: i.cantidad + cantidad } : i
         );
       }
+      const base = product.nombreWeb || product.nombre;
       return [...prev, {
-        id: product.id,
-        nombre: product.nombreWeb || product.nombre,
-        precio: product.precioVenta,
-        imagen: product.imagen,
+        id: lineId,
+        productoId: product.id,
+        varianteId: variante?.id || '',
+        variante: variante ? (variante.tipo ? `${variante.tipo}: ${variante.nombre}` : variante.nombre) : '',
+        nombre: variante ? `${base} — ${variante.tipo ? variante.tipo + ': ' : ''}${variante.nombre}` : base,
+        precio: variante ? (Number(variante.precioVenta) || 0) : product.precioVenta,
+        imagen: variante?.imagen || product.imagen,
         cantidad,
       }];
     });

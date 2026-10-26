@@ -190,7 +190,7 @@ const AdminProducts = () => {
                             ? <img className="table-thumb" src={p.imagen} alt="" loading="lazy" />
                             : <span className="table-thumb thumb-ph">📦</span>}
                           <span className="code-chip">{p.codigo || '—'}</span>
-                          <span><span className="prod-name">{p.nombreWeb || p.nombre}</span>{p.marca && <span className="prod-marca">{p.marca}</span>}</span>
+                          <span><span className="prod-name">{p.nombreWeb || p.nombre}</span>{p.marca && <span className="prod-marca">{p.marca}</span>}{p.tieneVariantes && p.variantes?.length ? <span className="badge badge-info" style={{ marginLeft: 6 }}>{p.variantes.length} variantes</span> : null}</span>
                         </div>
                       </td>
                       <td>{p.categoriaNombre ? <span className="cat-chip-sm">{p.categoriaNombre}</span> : <span className="muted">—</span>}</td>

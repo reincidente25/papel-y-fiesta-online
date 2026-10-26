@@ -8,6 +8,7 @@ import { getProducts } from '../../services/productsService';
 import { getCustomers } from '../../services/customersService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
+import { tieneVariantes as hayVariantes, precioDesde, varianteLabel } from '../../utils/variants';
 
 const PAGE = 20;
 
@@ -45,6 +46,7 @@ const Sales = () => {
   const [canal, setCanal] = useState('local');
   const [clienteId, setClienteId] = useState('');
   const [query, setQuery] = useState('');
+  const [expandido, setExpandido] = useState(null); // producto con variantes desplegado
 
   // Filtro por fecha y detalle
   const [desde, setDesde] = useState('');
@@ -89,21 +91,31 @@ const Sales = () => {
     setCuotas(1); // débito = 1; crédito arranca en 1 pago
   };
 
-  const addLine = (p) => {
+  const addLine = (p, variante = null) => {
+    const key = variante ? `${p.id}::${variante.id}` : p.id;
     setLines((ls) => {
-      const ex = ls.find((l) => l.productoId === p.id);
-      if (ex) return ls.map((l) => l.productoId === p.id ? { ...l, cantidad: Math.min(l.stock ?? Infinity, l.cantidad + 1) } : l);
-      return [...ls, { productoId: p.id, codigo: p.codigo || '', nombre: p.nombre, cantidad: 1, precioUnit: p.precioVenta, stock: p.stock }];
+      const ex = ls.find((l) => l.key === key);
+      if (ex) return ls.map((l) => l.key === key ? { ...l, cantidad: Math.min(l.stock ?? Infinity, l.cantidad + 1) } : l);
+      return [...ls, {
+        key,
+        productoId: p.id, codigo: p.codigo || '',
+        varianteId: variante?.id || '', variante: variante ? varianteLabel(variante) : '',
+        nombre: variante ? `${p.nombre} — ${varianteLabel(variante)}` : p.nombre,
+        cantidad: 1,
+        precioUnit: variante ? (Number(variante.precioVenta) || 0) : p.precioVenta,
+        stock: variante ? (Number(variante.stock) || 0) : p.stock,
+      }];
     });
     setQuery('');
+    setExpandido(null);
   };
 
-  const changeQty = (id, delta) => setLines((ls) => ls.map((l) => {
-    if (l.productoId !== id) return l;
+  const changeQty = (key, delta) => setLines((ls) => ls.map((l) => {
+    if (l.key !== key) return l;
     const max = l.stock ?? Infinity;
     return { ...l, cantidad: Math.min(max, Math.max(1, l.cantidad + delta)) };
   }));
-  const delLine = (id) => setLines((ls) => ls.filter((l) => l.productoId !== id));
+  const delLine = (key) => setLines((ls) => ls.filter((l) => l.key !== key));
 
   const results = query.trim()
     ? products.filter((p) => `${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
@@ -227,7 +239,32 @@ const Sales = () => {
           {results.length > 0 && (
             <div className="pos-results">
               {results.map((p) => {
+                const conVar = hayVariantes(p);
                 const sinStock = p.stock <= 0;
+                if (conVar) {
+                  const abierto = expandido === p.id;
+                  return (
+                    <div key={p.id}>
+                      <div className={`pos-result ${sinStock ? 'disabled' : ''}`}
+                        onClick={() => !sinStock && setExpandido(abierto ? null : p.id)}>
+                        {p.imagen && <img src={p.imagen} alt="" />}
+                        <span className="pos-result-name">{p.codigo ? <span className="code-chip" style={{ marginRight: 8 }}>{p.codigo}</span> : null}{p.nombre} <span className="badge badge-muted" style={{ marginLeft: 6 }}>{p.variantes.length} variantes</span></span>
+                        <span className="pos-result-meta">desde {formatMoney(precioDesde(p))} · {abierto ? '▲' : '▼'}</span>
+                      </div>
+                      {abierto && p.variantes.map((v) => {
+                        const vAgot = (Number(v.stock) || 0) <= 0;
+                        return (
+                          <div key={v.id} className={`pos-result pos-subresult ${vAgot ? 'disabled' : ''}`}
+                            onClick={() => !vAgot && addLine(p, v)}>
+                            {v.imagen && <img src={v.imagen} alt="" />}
+                            <span className="pos-result-name">↳ {varianteLabel(v)}</span>
+                            <span className="pos-result-meta">{formatMoney(v.precioVenta)} · stock {v.stock}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
                 return (
                   <div key={p.id} className={`pos-result ${sinStock ? 'disabled' : ''}`}
                     onClick={() => !sinStock && addLine(p)}>
@@ -246,18 +283,18 @@ const Sales = () => {
         ) : (
           <div className="pos-cart">
             {lines.map((l) => (
-              <div className="pos-cart-item" key={l.productoId}>
+              <div className="pos-cart-item" key={l.key}>
                 <div>
                   <div className="pos-cart-name">{l.nombre}</div>
                   <div className="pos-cart-price">{formatMoney(l.precioUnit)} c/u · stock {l.stock}</div>
                 </div>
                 <div className="qty-mini">
-                  <button type="button" onClick={() => changeQty(l.productoId, -1)}>−</button>
+                  <button type="button" onClick={() => changeQty(l.key, -1)}>−</button>
                   <span>{l.cantidad}</span>
-                  <button type="button" disabled={l.cantidad >= (l.stock ?? Infinity)} onClick={() => changeQty(l.productoId, +1)}>+</button>
+                  <button type="button" disabled={l.cantidad >= (l.stock ?? Infinity)} onClick={() => changeQty(l.key, +1)}>+</button>
                 </div>
                 <span className="pos-line-total">{formatMoney(l.precioUnit * l.cantidad)}</span>
-                <button className="btn btn-ghost btn-sm" onClick={() => delLine(l.productoId)}>✕</button>
+                <button className="btn btn-ghost btn-sm" onClick={() => delLine(l.key)}>✕</button>
               </div>
             ))}
             <p className="hint" style={{ textAlign: 'right' }}>{totalItems} unidad(es) · {lines.length} producto(s)</p>

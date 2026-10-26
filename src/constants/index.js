@@ -80,6 +80,9 @@ export const PURCHASE_STATUS = {
 };
 export const PURCHASE_STATUS_LIST = Object.values(PURCHASE_STATUS);
 
+// Sugerencias de tipo de variante (el campo es libre; esto alimenta el datalist)
+export const VARIANT_TYPES = ['Color', 'Tamaño', 'Diseño', 'Sabor', 'Material', 'Modelo', 'Aroma'];
+
 // Tipos de cliente
 export const CUSTOMER_TYPES = {
   minorista: { value: 'minorista', label: 'Minorista' },

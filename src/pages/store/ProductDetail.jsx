@@ -6,6 +6,7 @@ import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
 import { formatMoney } from '../../utils/format';
+import { tieneVariantes as hayVariantes, precioDesde } from '../../utils/variants';
 import './store.css';
 
 const ProductDetail = () => {
@@ -16,10 +17,12 @@ const ProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
   const [activa, setActiva] = useState(0);
+  const [varSel, setVarSel] = useState(null);
 
   useEffect(() => {
     setLoading(true);
     setActiva(0);
+    setVarSel(null);
     getProductById(id)
       .then(setProduct)
       .finally(() => setLoading(false));
@@ -39,16 +42,27 @@ const ProductDetail = () => {
     );
   }
 
-  const sinStock = product.stock <= 0 || product.estado === 'sin_stock';
+  const conVar = hayVariantes(product);
+  const variantes = conVar ? product.variantes : [];
+  const anyStock = conVar ? variantes.some((v) => (Number(v.stock) || 0) > 0) : product.stock > 0;
+  const sinStock = !anyStock || product.estado === 'sin_stock';
+  const stockSel = conVar ? (varSel ? (Number(varSel.stock) || 0) : 0) : product.stock;
+  const precioMostrar = conVar ? (varSel ? Number(varSel.precioVenta) || 0 : precioDesde(product)) : product.precioVenta;
   const categoria = product.categoriaNombre ? { name: product.categoriaNombre } : null;
 
+  // Variantes agrupadas por tipo para el selector.
+  const grupos = conVar
+    ? variantes.reduce((acc, v) => { (acc[v.tipo || 'Opción'] ||= []).push(v); return acc; }, {})
+    : {};
+
   const handleAdd = () => {
-    addItem(product, qty);
+    if (conVar && !varSel) return;
+    addItem(product, qty, varSel);
     navigate('/carrito');
   };
 
   const fotos = product.imagenes?.length ? product.imagenes : (product.imagen ? [product.imagen] : []);
-  const principal = fotos[activa] || fotos[0];
+  const principal = varSel?.imagen || fotos[activa] || fotos[0];
 
   return (
     <StoreLayout>
@@ -75,10 +89,38 @@ const ProductDetail = () => {
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombreWeb || product.nombre}</h1>
-          <div className="detail-price">{formatMoney(product.precioVenta)}</div>
+          <div className="detail-price">
+            {conVar && !varSel && <span className="desde">desde </span>}{formatMoney(precioMostrar)}
+          </div>
           {product.descripcion
             ? <div className="detail-desc rte-content" dangerouslySetInnerHTML={{ __html: product.descripcion }} />
             : <p className="detail-desc">Sin descripción.</p>}
+
+          {conVar && (
+            <div className="detail-variants">
+              {Object.entries(grupos).map(([tipo, vs]) => (
+                <div className="var-group" key={tipo}>
+                  <span className="var-group-label">{tipo}</span>
+                  <div className="var-chips">
+                    {vs.map((v) => {
+                      const agotada = (Number(v.stock) || 0) <= 0;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          className={`var-chip ${varSel?.id === v.id ? 'active' : ''} ${agotada ? 'agotada' : ''}`}
+                          disabled={agotada}
+                          onClick={() => { setVarSel(v); setQty(1); }}
+                        >
+                          {v.nombre}{agotada ? ' (sin stock)' : ''}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           {sinStock ? (
             <span className="badge badge-danger">Sin stock</span>
@@ -88,11 +130,17 @@ const ProductDetail = () => {
                 <div className="qty">
                   <button onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
                   <span>{qty}</span>
-                  <button onClick={() => setQty((q) => Math.min(product.stock, q + 1))}>+</button>
+                  <button onClick={() => setQty((q) => Math.min(stockSel || 1, q + 1))}>+</button>
                 </div>
-                <button className="btn btn-primary" onClick={handleAdd}>Agregar al carrito</button>
+                <button className="btn btn-primary" onClick={handleAdd} disabled={conVar && (!varSel || stockSel <= 0)}>
+                  {conVar && !varSel ? 'Elegí una variante' : 'Agregar al carrito'}
+                </button>
               </div>
-              <p className="muted" style={{ fontSize: '.85rem' }}>{product.stock} unidades disponibles</p>
+              <p className="muted" style={{ fontSize: '.85rem' }}>
+                {conVar
+                  ? (varSel ? `${stockSel} unidades disponibles` : 'Seleccioná una variante para ver el stock')
+                  : `${product.stock} unidades disponibles`}
+              </p>
             </>
           )}
 

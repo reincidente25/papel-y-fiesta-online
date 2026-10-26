@@ -129,3 +129,13 @@
   .cat-grid { grid-template-columns: repeat(2, 1fr); }
   .product-grid { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* Variantes en el detalle */
+.detail-price .desde { font-size: .8rem; font-weight: 500; color: var(--muted); }
+.detail-variants { display: flex; flex-direction: column; gap: 14px; margin: 18px 0 22px; }
+.var-group-label { display: block; font-size: .8rem; font-weight: 700; color: var(--text-soft); margin-bottom: 8px; }
+.var-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.var-chip { padding: 8px 14px; border: 1.5px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); cursor: pointer; font-size: .9rem; font-weight: 600; transition: border-color .15s ease, background .15s ease; }
+.var-chip:hover:not(:disabled) { border-color: var(--brand-orange, var(--primary)); }
+.var-chip.active { border-color: var(--brand-orange, var(--primary)); background: var(--brand-orange-soft); color: var(--brand-ink); }
+.var-chip.agotada { opacity: .5; cursor: not-allowed; text-decoration: line-through; }
