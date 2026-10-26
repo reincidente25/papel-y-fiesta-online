@@ -1,7 +1,7 @@
 // src/services/productsService.js
 import {
   collection, doc, getDoc, getDocs, addDoc, setDoc, updateDoc, deleteDoc,
-  query, where, orderBy, serverTimestamp,
+  writeBatch, query, where, orderBy, serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
 import { MOCK_MODE } from '../config/app';
@@ -78,6 +78,25 @@ export async function deleteProduct(id) {
     return;
   }
   await deleteDoc(doc(db, COL, id));
+}
+
+// Actualiza varios productos con los mismos campos (acción masiva del panel).
+export async function bulkUpdateProducts(ids, data) {
+  if (useMock) {
+    for (const id of ids) {
+      const i = MOCK_PRODUCTS.findIndex((p) => p.id === id);
+      if (i >= 0) MOCK_PRODUCTS[i] = { ...MOCK_PRODUCTS[i], ...data };
+    }
+    return;
+  }
+  for (let i = 0; i < ids.length; i += 450) {
+    const chunk = ids.slice(i, i + 450);
+    const batch = writeBatch(db);
+    for (const id of chunk) {
+      batch.update(doc(db, COL, id), { ...data, actualizadoEn: serverTimestamp() });
+    }
+    await batch.commit();
+  }
 }
 
 export async function getProductsByCategory(categoria) {

@@ -19,7 +19,6 @@ const NAV = [
   ]},
   { section: 'Catálogo', items: [
     { path: '/admin/productos', label: 'Productos', icon: '📦' },
-    { path: '/admin/importar',  label: 'Importar',  icon: '⬇️' },
   ]},
   { section: 'Tienda online', items: [
     { path: '/admin/pedidos', label: 'Pedidos web', icon: '🛍️' },
