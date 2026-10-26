@@ -6,7 +6,7 @@ import Loader from '../../components/common/Loader';
 import { getProducts, deleteProduct, bulkUpdateProducts } from '../../services/productsService';
 import { getCategories } from '../../services/categoriesService';
 import { PRODUCT_STATUS } from '../../constants';
-import { formatMoney, calcMargin } from '../../utils/format';
+import { formatMoney } from '../../utils/format';
 
 const PAGE_SIZE = 50;
 
