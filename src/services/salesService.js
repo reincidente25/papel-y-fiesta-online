@@ -43,25 +43,36 @@ export async function getSalesPage({ pageSize = 20, cursor = null } = {}) {
 
 // KPIs exactos sin traer todo (agregaciones del servidor).
 export async function getSalesStats() {
+  const CANCELADAS = ['cancelada', 'cancelado'];
   if (useMock) {
     const hoy = new Date().toDateString();
+    const now = new Date();
+    const d = (s) => (s.fecha?.toDate ? s.fecha.toDate() : new Date(s.fecha));
+    const delDia = MOCK_SALES.filter((s) => d(s).toDateString() === hoy);
+    const delMes = MOCK_SALES.filter((s) => d(s).getMonth() === now.getMonth() && d(s).getFullYear() === now.getFullYear());
     return {
-      count: MOCK_SALES.length,
-      totalHistorico: MOCK_SALES.reduce((n, s) => n + (s.total || 0), 0),
-      totalHoy: MOCK_SALES.filter((s) => new Date(s.fecha).toDateString() === hoy).reduce((n, s) => n + (s.total || 0), 0),
+      ventasHoy: delDia.length,
+      totalHoy: delDia.reduce((n, s) => n + (s.total || 0), 0),
+      totalMes: delMes.reduce((n, s) => n + (s.total || 0), 0),
+      canceladas: MOCK_SALES.filter((s) => CANCELADAS.includes(s.estado)).length,
     };
   }
   const col = collection(db, COL);
   const inicioHoy = new Date(); inicioHoy.setHours(0, 0, 0, 0);
-  const [cnt, aggAll, aggHoy] = await Promise.all([
-    getCountFromServer(col),
-    getAggregateFromServer(col, { total: sum('total') }),
-    getAggregateFromServer(query(col, where('fecha', '>=', Timestamp.fromDate(inicioHoy))), { total: sum('total') }),
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
+  const qHoy = query(col, where('fecha', '>=', Timestamp.fromDate(inicioHoy)));
+  const qMes = query(col, where('fecha', '>=', Timestamp.fromDate(inicioMes)));
+  const [cntHoy, sumHoy, sumMes, cntCanc] = await Promise.all([
+    getCountFromServer(qHoy),
+    getAggregateFromServer(qHoy, { total: sum('total') }),
+    getAggregateFromServer(qMes, { total: sum('total') }),
+    getCountFromServer(query(col, where('estado', 'in', CANCELADAS))),
   ]);
   return {
-    count: cnt.data().count,
-    totalHistorico: aggAll.data().total || 0,
-    totalHoy: aggHoy.data().total || 0,
+    ventasHoy: cntHoy.data().count,
+    totalHoy: sumHoy.data().total || 0,
+    totalMes: sumMes.data().total || 0,
+    canceladas: cntCanc.data().count,
   };
 }
 

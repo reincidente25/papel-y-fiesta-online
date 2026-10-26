@@ -1,7 +1,7 @@
 // src/services/purchasesService.js
 import {
   collection, getDocs, addDoc, query, orderBy, serverTimestamp,
-  limit, startAfter, getCountFromServer, getAggregateFromServer, sum,
+  limit, startAfter, where, Timestamp, getCountFromServer, getAggregateFromServer, sum,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
 import { MOCK_MODE } from '../config/app';
@@ -38,15 +38,37 @@ export async function getPurchasesPage({ pageSize = 20, cursor = null } = {}) {
 }
 
 export async function getPurchasesStats() {
+  const CANCELADAS = ['cancelada', 'cancelado'];
   if (useMock) {
-    return { count: MOCK_PURCHASES.length, totalInvertido: MOCK_PURCHASES.reduce((n, c) => n + (c.total || 0), 0) };
+    const hoy = new Date().toDateString();
+    const now = new Date();
+    const d = (c) => (c.fecha?.toDate ? c.fecha.toDate() : new Date(c.fecha));
+    const delDia = MOCK_PURCHASES.filter((c) => d(c).toDateString() === hoy);
+    const delMes = MOCK_PURCHASES.filter((c) => d(c).getMonth() === now.getMonth() && d(c).getFullYear() === now.getFullYear());
+    return {
+      comprasHoy: delDia.length,
+      totalHoy: delDia.reduce((n, c) => n + (c.total || 0), 0),
+      totalMes: delMes.reduce((n, c) => n + (c.total || 0), 0),
+      canceladas: MOCK_PURCHASES.filter((c) => CANCELADAS.includes(c.estado)).length,
+    };
   }
   const col = collection(db, COL);
-  const [cnt, agg] = await Promise.all([
-    getCountFromServer(col),
-    getAggregateFromServer(col, { total: sum('total') }),
+  const inicioHoy = new Date(); inicioHoy.setHours(0, 0, 0, 0);
+  const inicioMes = new Date(); inicioMes.setDate(1); inicioMes.setHours(0, 0, 0, 0);
+  const qHoy = query(col, where('fecha', '>=', Timestamp.fromDate(inicioHoy)));
+  const qMes = query(col, where('fecha', '>=', Timestamp.fromDate(inicioMes)));
+  const [cntHoy, sumHoy, sumMes, cntCanc] = await Promise.all([
+    getCountFromServer(qHoy),
+    getAggregateFromServer(qHoy, { total: sum('total') }),
+    getAggregateFromServer(qMes, { total: sum('total') }),
+    getCountFromServer(query(col, where('estado', 'in', CANCELADAS))),
   ]);
-  return { count: cnt.data().count, totalInvertido: agg.data().total || 0 };
+  return {
+    comprasHoy: cntHoy.data().count,
+    totalHoy: sumHoy.data().total || 0,
+    totalMes: sumMes.data().total || 0,
+    canceladas: cntCanc.data().count,
+  };
 }
 
 /**

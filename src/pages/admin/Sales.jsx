@@ -28,7 +28,7 @@ const Sales = () => {
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
-  const [stats, setStats] = useState({ count: 0, totalHoy: 0, totalHistorico: 0 });
+  const [stats, setStats] = useState({ ventasHoy: 0, totalHoy: 0, totalMes: 0, canceladas: 0 });
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -160,10 +160,11 @@ const Sales = () => {
 
   return (
     <AdminLayout title="Ventas">
-      <div className="stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div className="stat info"><span className="stat-ic">🧾</span><div><div className="stat-v">{stats.count}</div><div className="stat-l">Ventas registradas</div></div></div>
-        <div className="stat ok"><span className="stat-ic">📅</span><div><div className="stat-v">{formatMoney(stats.totalHoy)}</div><div className="stat-l">Vendido hoy</div></div></div>
-        <div className="stat ok"><span className="stat-ic">💵</span><div><div className="stat-v">{formatMoney(stats.totalHistorico)}</div><div className="stat-l">Total histórico</div></div></div>
+      <div className="stats-row" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <div className="stat info"><span className="stat-ic">🧾</span><div><div className="stat-v">{stats.ventasHoy}</div><div className="stat-l">Ventas hoy</div></div></div>
+        <div className="stat ok"><span className="stat-ic">📅</span><div><div className="stat-v">{formatMoney(stats.totalHoy)}</div><div className="stat-l">Total hoy</div></div></div>
+        <div className="stat ok"><span className="stat-ic">📆</span><div><div className="stat-v">{formatMoney(stats.totalMes)}</div><div className="stat-l">Total del mes</div></div></div>
+        <div className="stat danger"><span className="stat-ic">🚫</span><div><div className="stat-v">{stats.canceladas}</div><div className="stat-l">Canceladas</div></div></div>
       </div>
 
       <div className="toolbar">

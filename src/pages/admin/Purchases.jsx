@@ -16,7 +16,7 @@ const Purchases = () => {
   const [purchases, setPurchases] = useState([]);
   const [suppliers, setSuppliers] = useState([]);
   const [products, setProducts] = useState([]);
-  const [stats, setStats] = useState({ count: 0, totalInvertido: 0 });
+  const [stats, setStats] = useState({ comprasHoy: 0, totalHoy: 0, totalMes: 0, canceladas: 0 });
   const [cursor, setCursor] = useState(null);
   const [hasMore, setHasMore] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -69,14 +69,14 @@ const Purchases = () => {
     return m;
   }, [products]);
   const itemImg = (i) => (prodMap.get(i.productoId) || prodMap.get(i.codigo))?.imagen || '';
-  const promedio = stats.count ? stats.totalInvertido / stats.count : 0;
 
   return (
     <AdminLayout title="Compras">
-      <div className="stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
-        <div className="stat info"><span className="stat-ic">🛒</span><div><div className="stat-v">{stats.count}</div><div className="stat-l">Compras</div></div></div>
-        <div className="stat ok"><span className="stat-ic">💵</span><div><div className="stat-v">{formatMoney(stats.totalInvertido)}</div><div className="stat-l">Total invertido</div></div></div>
-        <div className="stat"><span className="stat-ic">📊</span><div><div className="stat-v">{formatMoney(promedio)}</div><div className="stat-l">Promedio por compra</div></div></div>
+      <div className="stats-row" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <div className="stat info"><span className="stat-ic">🛒</span><div><div className="stat-v">{stats.comprasHoy}</div><div className="stat-l">Compras hoy</div></div></div>
+        <div className="stat ok"><span className="stat-ic">📅</span><div><div className="stat-v">{formatMoney(stats.totalHoy)}</div><div className="stat-l">Total hoy</div></div></div>
+        <div className="stat ok"><span className="stat-ic">📆</span><div><div className="stat-v">{formatMoney(stats.totalMes)}</div><div className="stat-l">Total del mes</div></div></div>
+        <div className="stat danger"><span className="stat-ic">🚫</span><div><div className="stat-v">{stats.canceladas}</div><div className="stat-l">Canceladas</div></div></div>
       </div>
 
       <div className="spread" style={{ marginBottom: 14 }}>
