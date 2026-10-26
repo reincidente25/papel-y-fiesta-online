@@ -141,39 +141,53 @@ const ProductForm = () => {
               </div>
 
               {!form.tieneVariantes && (
-                <>
-                  <div className="field">
-                    <label>Precio de costo</label>
-                    <input className="input" type="number" min="0" value={form.precioCosto}
-                      onChange={(e) => set('precioCosto', e.target.value)} placeholder="0" />
-                  </div>
-                  <div className="field">
-                    <label>Precio de venta</label>
-                    <input className="input" type="number" min="0" value={form.precioVenta}
-                      onChange={(e) => set('precioVenta', e.target.value)} placeholder="0" />
-                  </div>
-
-                  {form.precioVenta > 0 && (
-                    <div className="field full">
-                      <span className="margin-pill">Margen {margen}% · Ganancia {formatMoney(ganancia)} / unidad</span>
+                <div className="field full">
+                  <div className="trio">
+                    <div className="field">
+                      <label>Precio de costo</label>
+                      <input className="input" type="number" min="0" value={form.precioCosto}
+                        onChange={(e) => set('precioCosto', e.target.value)} placeholder="0" />
                     </div>
-                  )}
-
-                  <div className="field">
-                    <label>Stock</label>
-                    <input className="input" type="number" min="0" value={form.stock}
-                      onChange={(e) => set('stock', e.target.value)} placeholder="0" />
+                    <div className="field">
+                      <label>Precio de venta</label>
+                      <input className="input" type="number" min="0" value={form.precioVenta}
+                        onChange={(e) => set('precioVenta', e.target.value)} placeholder="0" />
+                    </div>
+                    <div className="field">
+                      <label>Stock</label>
+                      <input className="input" type="number" min="0" value={form.stock}
+                        onChange={(e) => set('stock', e.target.value)} placeholder="0" />
+                    </div>
                   </div>
-                </>
+                  {form.precioVenta > 0 && (
+                    <span className="margin-pill" style={{ marginTop: 12 }}>Margen {margen}% · Ganancia {formatMoney(ganancia)} / unidad</span>
+                  )}
+                </div>
               )}
 
-              {/* Toggle + tabla de variantes */}
-              <div className="field full" style={{ marginTop: 4 }}>
+              <div className="field full toggles-row">
+                <label className="switch">
+                  <input type="checkbox" checked={!!form.mostrarWeb}
+                    onChange={(e) => {
+                      const on = e.target.checked;
+                      setForm((f) => ({ ...f, mostrarWeb: on, destacado: on ? f.destacado : false }));
+                    }} />
+                  <span className="track" />
+                  <span className="switch-label">Mostrar en la web<small>El producto aparece en la tienda online</small></span>
+                </label>
+
+                <label className={`switch ${!form.mostrarWeb ? 'is-disabled' : ''}`}>
+                  <input type="checkbox" checked={!!form.destacado} disabled={!form.mostrarWeb}
+                    onChange={(e) => set('destacado', e.target.checked)} />
+                  <span className="track" />
+                  <span className="switch-label">Artículo destacado<small>Aparece en la portada (requiere estar en la web)</small></span>
+                </label>
+
                 <label className="switch">
                   <input type="checkbox" checked={!!form.tieneVariantes}
                     onChange={(e) => toggleVariantes(e.target.checked)} />
                   <span className="track" />
-                  <span className="switch-label">Este producto tiene variantes<small>Color, tamaño, diseño… cada una con su precio y stock</small></span>
+                  <span className="switch-label">Tiene variantes<small>Color, tamaño, diseño… c/u con precio y stock</small></span>
                 </label>
               </div>
 
@@ -214,25 +228,6 @@ const ProductForm = () => {
                   </div>
                 </div>
               )}
-
-              <div className="field full" style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 4 }}>
-                <label className="switch">
-                  <input type="checkbox" checked={!!form.mostrarWeb}
-                    onChange={(e) => {
-                      const on = e.target.checked;
-                      setForm((f) => ({ ...f, mostrarWeb: on, destacado: on ? f.destacado : false }));
-                    }} />
-                  <span className="track" />
-                  <span className="switch-label">Mostrar en la web<small>El producto aparece en la tienda online</small></span>
-                </label>
-
-                <label className={`switch ${!form.mostrarWeb ? 'is-disabled' : ''}`}>
-                  <input type="checkbox" checked={!!form.destacado} disabled={!form.mostrarWeb}
-                    onChange={(e) => set('destacado', e.target.checked)} />
-                  <span className="track" />
-                  <span className="switch-label">Artículo destacado<small>Aparece en la portada (requiere estar en la web)</small></span>
-                </label>
-              </div>
             </div>
 
             <div className="form-actions">
