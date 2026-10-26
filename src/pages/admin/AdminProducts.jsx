@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import { getProducts, deleteProduct, bulkUpdateProducts } from '../../services/productsService';
+import { getCategories } from '../../services/categoriesService';
 import { PRODUCT_STATUS } from '../../constants';
 import { formatMoney, calcMargin } from '../../utils/format';
 
@@ -11,8 +12,11 @@ const PAGE_SIZE = 50;
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [filterCat, setFilterCat] = useState('todas');
+  const [filterVis, setFilterVis] = useState('todos'); // todos | web | ocultos | destacados
   const [page, setPage] = useState(0);
   const [selected, setSelected] = useState(() => new Set());
   const [busy, setBusy] = useState(false);
@@ -22,6 +26,7 @@ const AdminProducts = () => {
     getProducts().then(setProducts).finally(() => setLoading(false));
   };
   useEffect(load, []);
+  useEffect(() => { getCategories({ soloActivas: false }).then(setCategories); }, []);
 
   const handleDelete = async (id, nombre) => {
     if (!window.confirm(`¿Eliminar "${nombre}"?`)) return;
@@ -31,16 +36,21 @@ const AdminProducts = () => {
 
   const visible = useMemo(() => {
     const q = search.toLowerCase();
-    return products.filter((p) =>
-      `${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''}`.toLowerCase().includes(q)
-    );
-  }, [products, search]);
+    return products.filter((p) => {
+      if (q && !`${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''}`.toLowerCase().includes(q)) return false;
+      if (filterCat !== 'todas' && p.categoria !== filterCat) return false;
+      if (filterVis === 'web' && !p.mostrarWeb) return false;
+      if (filterVis === 'ocultos' && p.mostrarWeb) return false;
+      if (filterVis === 'destacados' && !p.destacado) return false;
+      return true;
+    });
+  }, [products, search, filterCat, filterVis]);
 
   const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
   const pageItems = visible.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  // Reset de página al buscar
-  useEffect(() => { setPage(0); }, [search]);
+  // Reset de página al cambiar filtros
+  useEffect(() => { setPage(0); }, [search, filterCat, filterVis]);
 
   const toggle = (id) => setSelected((s) => {
     const n = new Set(s);
@@ -56,6 +66,8 @@ const AdminProducts = () => {
   });
   const selectAllFiltered = () => setSelected(new Set(visible.map((p) => p.id)));
   const clearSel = () => setSelected(new Set());
+  const allFilteredSelected = visible.length > 0 && visible.every((p) => selected.has(p.id));
+  const toggleAllFiltered = () => (allFilteredSelected ? clearSel() : selectAllFiltered());
 
   const applyBulk = async (data, label) => {
     const ids = [...selected];
@@ -74,11 +86,26 @@ const AdminProducts = () => {
   return (
     <AdminLayout title="Productos">
       <div className="toolbar">
-        <input className="input" style={{ maxWidth: 320 }} placeholder="🔎 Buscar por nombre o código..."
-          value={search} onChange={(e) => setSearch(e.target.value)} />
+        <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
+          <input className="input" style={{ maxWidth: 260 }} placeholder="🔎 Nombre o código..."
+            value={search} onChange={(e) => setSearch(e.target.value)} />
+          <select className="select" style={{ maxWidth: 200 }} value={filterCat} onChange={(e) => setFilterCat(e.target.value)}>
+            <option value="todas">Todas las categorías</option>
+            {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+          </select>
+          <select className="select" style={{ maxWidth: 170 }} value={filterVis} onChange={(e) => setFilterVis(e.target.value)}>
+            <option value="todos">Todos</option>
+            <option value="web">En la web</option>
+            <option value="ocultos">Ocultos</option>
+            <option value="destacados">Destacados</option>
+          </select>
+        </div>
         <div className="row gap-12">
-          <span className="muted">{visible.length} productos</span>
-          <Link to="/admin/productos/nuevo" className="btn btn-primary">+ Nuevo producto</Link>
+          <label className="row gap-8" style={{ cursor: 'pointer', fontSize: '.88rem' }}>
+            <input type="checkbox" checked={allFilteredSelected} onChange={toggleAllFiltered} />
+            Seleccionar todos ({visible.length})
+          </label>
+          <Link to="/admin/productos/nuevo" className="btn btn-primary">+ Nuevo</Link>
         </div>
       </div>
 
