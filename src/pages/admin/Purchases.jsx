@@ -6,10 +6,11 @@ import Modal from '../../components/common/Modal';
 import { getPurchasesPage, getPurchasesStats, createPurchase } from '../../services/purchasesService';
 import { getSuppliers } from '../../services/suppliersService';
 import { getProducts } from '../../services/productsService';
-import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, PURCHASE_STATUS, PURCHASE_STATUS_LIST } from '../../constants';
+import { PAYMENT_METHODS, PURCHASE_STATUS } from '../../constants';
 import { formatMoney, formatDateTime } from '../../utils/format';
 
 const PAGE = 20;
+const EMPTY = { proveedorId: '', remito: '', factura: '', total: '', notas: '' };
 
 const Purchases = () => {
   const [purchases, setPurchases] = useState([]);
@@ -23,13 +24,7 @@ const Purchases = () => {
   const [modal, setModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [detail, setDetail] = useState(null);
-
-  // Nueva compra
-  const [proveedorId, setProveedorId] = useState('');
-  const [estado, setEstado] = useState('recibida');
-  const [metodoPago, setMetodoPago] = useState('transferencia');
-  const [lines, setLines] = useState([]);
-  const [query, setQuery] = useState('');
+  const [form, setForm] = useState(EMPTY);
 
   const load = () => {
     setLoading(true);
@@ -51,35 +46,19 @@ const Purchases = () => {
     } finally { setLoadingMore(false); }
   };
 
-  const openNew = () => {
-    setProveedorId(''); setEstado('recibida'); setMetodoPago('transferencia'); setLines([]); setQuery('');
-    setModal(true);
-  };
+  const openNew = () => { setForm(EMPTY); setModal(true); };
+  const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
-  const addLine = (p) => {
-    setLines((ls) => {
-      const ex = ls.find((l) => l.productoId === p.id);
-      if (ex) return ls.map((l) => l.productoId === p.id ? { ...l, cantidad: l.cantidad + 1 } : l);
-      return [...ls, { productoId: p.id, codigo: p.codigo || '', nombre: p.nombre, cantidad: 1, costoUnit: p.precioCosto || 0 }];
-    });
-    setQuery('');
-  };
-  const setLine = (id, patch) => setLines((ls) => ls.map((l) => l.productoId === id ? { ...l, ...patch } : l));
-  const changeQty = (id, delta) => setLines((ls) => ls.map((l) => l.productoId === id ? { ...l, cantidad: Math.max(1, l.cantidad + delta) } : l));
-  const delLine = (id) => setLines((ls) => ls.filter((l) => l.productoId !== id));
-
-  const results = query.trim()
-    ? products.filter((p) => `${p.codigo || ''} ${p.nombre || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
-    : [];
-  const total = lines.reduce((n, l) => n + l.costoUnit * l.cantidad, 0);
-  const totalItems = lines.reduce((n, l) => n + l.cantidad, 0);
-
-  const save = async () => {
-    if (lines.length === 0) return;
+  const save = async (e) => {
+    e.preventDefault();
     setSaving(true);
     try {
-      const prov = suppliers.find((s) => s.id === proveedorId);
-      await createPurchase({ proveedorId, proveedorNombre: prov?.nombre || '—', items: lines, estado, metodoPago });
+      const prov = suppliers.find((s) => s.id === form.proveedorId);
+      await createPurchase({
+        proveedorId: form.proveedorId, proveedorNombre: prov?.nombre || '—',
+        remito: form.remito, factura: form.factura, notas: form.notas,
+        total: Number(form.total) || 0, estado: 'recibida', items: [],
+      });
       setModal(false); load();
     } finally { setSaving(false); }
   };
@@ -139,72 +118,29 @@ const Purchases = () => {
         </>
       )}
 
-      {/* Nueva compra */}
-      <Modal open={modal} onClose={() => setModal(false)} title="Nueva compra" width={1000}>
-        <div className="pos-grid" style={{ minHeight: '58vh' }}>
-          <div>
-            <div className="field pos-search" style={{ marginBottom: 6 }}>
-              <label>Agregar productos</label>
-              <input className="input" placeholder="🔎 Buscá por código o nombre..."
-                value={query} onChange={(e) => setQuery(e.target.value)} />
-              {results.length > 0 && (
-                <div className="pos-results">
-                  {results.map((p) => (
-                    <div key={p.id} className="pos-result" onClick={() => addLine(p)}>
-                      {p.imagen && <img src={p.imagen} alt="" />}
-                      <span className="pos-result-name">{p.codigo ? <span className="code-chip" style={{ marginRight: 8 }}>{p.codigo}</span> : null}{p.nombre}</span>
-                      <span className="pos-result-meta">costo {formatMoney(p.precioCosto || 0)} · stock {p.stock}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {lines.length === 0 ? (
-              <div className="pos-empty">Agregá productos a la compra buscándolos arriba.</div>
-            ) : (
-              <div className="pos-cart">
-                {lines.map((l) => (
-                  <div className="pos-cart-item" key={l.productoId} style={{ gridTemplateColumns: '1fr auto auto auto auto' }}>
-                    <div><div className="pos-cart-name">{l.nombre}</div><div className="pos-cart-price">costo unitario</div></div>
-                    <input className="input" type="number" min="0" style={{ width: 110 }} value={l.costoUnit}
-                      onChange={(e) => setLine(l.productoId, { costoUnit: Number(e.target.value) })} />
-                    <div className="qty-mini">
-                      <button type="button" onClick={() => changeQty(l.productoId, -1)}>−</button>
-                      <span>{l.cantidad}</span>
-                      <button type="button" onClick={() => changeQty(l.productoId, +1)}>+</button>
-                    </div>
-                    <span className="pos-line-total">{formatMoney(l.costoUnit * l.cantidad)}</span>
-                    <button className="btn btn-ghost btn-sm" onClick={() => delLine(l.productoId)}>✕</button>
-                  </div>
-                ))}
-                <p className="hint" style={{ textAlign: 'right' }}>{totalItems} unidad(es) · {lines.length} producto(s)</p>
-              </div>
-            )}
-          </div>
-
-          <aside className="pos-aside">
-            <div className="field"><label>Proveedor</label>
-              <select className="select" value={proveedorId} onChange={(e) => setProveedorId(e.target.value)}>
-                <option value="">Seleccioná...</option>
-                {suppliers.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
-              </select></div>
-            <div className="field"><label>Estado</label>
-              <select className="select" value={estado} onChange={(e) => setEstado(e.target.value)}>
-                {PURCHASE_STATUS_LIST.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
-              </select></div>
-            <div className="field"><label>Medio de pago</label>
-              <select className="select" value={metodoPago} onChange={(e) => setMetodoPago(e.target.value)}>
-                {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
-              </select></div>
-
-            <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
-            <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0}>
+      {/* Nueva compra (por monto total) */}
+      <Modal open={modal} onClose={() => setModal(false)} title="Nueva compra" width={560}>
+        <form onSubmit={save} className="form-grid">
+          <div className="field full"><label>Proveedor *</label>
+            <select className="select" value={form.proveedorId} onChange={(e) => set('proveedorId', e.target.value)} required>
+              <option value="">Seleccionar proveedor...</option>
+              {suppliers.map((s) => <option key={s.id} value={s.id}>{s.nombre}</option>)}
+            </select></div>
+          <div className="field"><label>N° Remito</label>
+            <input className="input" value={form.remito} onChange={(e) => set('remito', e.target.value)} placeholder="ej: R-0001-00012345" /></div>
+          <div className="field"><label>N° Factura</label>
+            <input className="input" value={form.factura} onChange={(e) => set('factura', e.target.value)} placeholder="ej: FA-0001-00012345" /></div>
+          <div className="field full"><label>Monto total *</label>
+            <input className="input" type="number" min="0" step="0.01" value={form.total} onChange={(e) => set('total', e.target.value)} placeholder="$ 0.00" required /></div>
+          <div className="field full"><label>Notas (opcional)</label>
+            <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Observaciones de la compra..." /></div>
+          <div className="form-actions full">
+            <button type="submit" className="btn btn-primary" disabled={saving || !form.proveedorId || !form.total}>
               {saving ? 'Registrando...' : 'Registrar compra'}
             </button>
-            <button className="btn btn-ghost btn-block" onClick={() => setModal(false)}>Cancelar</button>
-          </aside>
-        </div>
+            <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
+          </div>
+        </form>
       </Modal>
 
       {/* Detalle de compra */}
@@ -219,7 +155,7 @@ const Purchases = () => {
             </div>
 
             {(detail.items || []).length === 0 ? (
-              <div className="pos-empty" style={{ margin: '16px 0' }}>Esta compra no tiene detalle de ítems cargado.</div>
+              <div className="pos-empty" style={{ margin: '16px 0' }}>Esta compra se registró por monto total (sin detalle de ítems).</div>
             ) : (
               <div className="sale-items">
                 {detail.items.map((i, idx) => {

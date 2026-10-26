@@ -54,16 +54,19 @@ export async function getPurchasesStats() {
  * y mueve caja si se pagó en efectivo.
  */
 export async function createPurchase(purchase) {
-  const items = purchase.items.map((i) => ({
+  const items = (purchase.items || []).map((i) => ({
     productoId: i.productoId || '', codigo: i.codigo || '', nombre: i.nombre,
     cantidad: i.cantidad, costoUnit: i.costoUnit, subtotal: i.costoUnit * i.cantidad,
   }));
-  const total = items.reduce((n, i) => n + i.subtotal, 0);
+  // Con ítems, el total sale de las líneas; si no, se usa el monto total ingresado.
+  const total = items.length ? items.reduce((n, i) => n + i.subtotal, 0) : (Number(purchase.total) || 0);
   const data = {
     proveedor: purchase.proveedorNombre || purchase.proveedor || '—',
     proveedorId: purchase.proveedorId || '',
+    remito: purchase.remito || '', factura: purchase.factura || '',
+    notas: purchase.notas || '',
     items, total, cantItems: items.reduce((n, i) => n + i.cantidad, 0),
-    estado: purchase.estado || 'pendiente', metodoPago: purchase.metodoPago || '',
+    estado: purchase.estado || 'recibida', metodoPago: purchase.metodoPago || '',
     migrado: false,
   };
 
