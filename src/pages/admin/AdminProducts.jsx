@@ -91,13 +91,7 @@ const AdminProducts = () => {
 
   return (
     <AdminLayout title="Productos">
-      <div className="spread" style={{ marginBottom: 6, flexWrap: 'wrap', gap: 12 }}>
-        <p className="muted">{kpis.activos} productos activos · {categories.length} categorías</p>
-        <div className="row gap-8">
-          <button className="btn btn-ghost btn-sm" onClick={descargar}>⬇️ Descargar lista</button>
-          <Link to="/admin/productos/nuevo" className="btn btn-primary btn-sm">+ Nuevo producto</Link>
-        </div>
-      </div>
+      <p className="muted" style={{ marginBottom: 6 }}>{kpis.activos} productos activos · {categories.length} categorías</p>
 
       {/* KPIs */}
       <div className="stats-row">
@@ -126,6 +120,12 @@ const AdminProducts = () => {
             <option value="destacados">Destacados</option>
           </select>
         </div>
+      </div>
+
+      {/* Acciones de la lista */}
+      <div className="row gap-8" style={{ justifyContent: 'flex-end', marginBottom: 16 }}>
+        <button className="btn btn-ghost btn-sm" onClick={descargar}>⬇️ Descargar lista</button>
+        <Link to="/admin/productos/nuevo" className="btn btn-primary btn-sm">+ Nuevo producto</Link>
       </div>
 
       {/* Barra de acciones masivas */}
