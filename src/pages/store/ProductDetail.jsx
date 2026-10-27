@@ -1,6 +1,6 @@
 // src/pages/store/ProductDetail.jsx
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
@@ -11,7 +11,6 @@ import './store.css';
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const navigate = useNavigate();
   const { addItem } = useCart();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +57,6 @@ const ProductDetail = () => {
   const handleAdd = () => {
     if (conVar && !varSel) return;
     addItem(product, qty, varSel);
-    navigate('/carrito');
   };
 
   const fotos = fotosProducto(product);

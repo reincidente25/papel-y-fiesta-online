@@ -1,5 +1,5 @@
 // src/context/CartContext.jsx
-import { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 
 const CartContext = createContext(null);
 const STORAGE_KEY = 'pf_cart';
@@ -13,6 +13,15 @@ export const CartProvider = ({ children }) => {
       return [];
     }
   });
+
+  // Aviso tipo "toast" (ej: "Agregado al carrito").
+  const [toast, setToast] = useState('');
+  const toastTimer = useRef(null);
+  const notify = (msg) => {
+    setToast(msg);
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    toastTimer.current = setTimeout(() => setToast(''), 2200);
+  };
 
   useEffect(() => {
     try {
@@ -44,6 +53,7 @@ export const CartProvider = ({ children }) => {
         cantidad,
       }];
     });
+    notify('Agregado al carrito');
   };
 
   const removeItem = (id) => setItems((prev) => prev.filter((i) => i.id !== id));
@@ -63,8 +73,13 @@ export const CartProvider = ({ children }) => {
   }), [items]);
 
   return (
-    <CartContext.Provider value={{ items, addItem, removeItem, setQty, clearCart, count, total }}>
+    <CartContext.Provider value={{ items, addItem, removeItem, setQty, clearCart, count, total, notify }}>
       {children}
+      {toast && (
+        <div className="cart-toast" role="status" aria-live="polite">
+          <span className="cart-toast-ico">✓</span> {toast}
+        </div>
+      )}
     </CartContext.Provider>
   );
 };
