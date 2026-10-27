@@ -68,23 +68,25 @@ const ProductDetail = () => {
     <StoreLayout>
       <div className="container detail">
         <div className="detail-media">
-          {principal
-            ? <img src={principal} alt={product.nombre} />
-            : <div className="detail-noimg">📦</div>}
           {fotos.length > 1 && (
             <div className="detail-thumbs">
               {fotos.map((url, i) => (
                 <button
                   key={`${url}-${i}`}
                   type="button"
-                  className={`detail-thumb ${i === activa ? 'active' : ''}`}
-                  onClick={() => setActiva(i)}
+                  className={`detail-thumb ${!varSel && i === activa ? 'active' : ''}`}
+                  onClick={() => { setActiva(i); setVarSel(null); }}
                 >
                   <img src={url} alt={`Foto ${i + 1}`} />
                 </button>
               ))}
             </div>
           )}
+          <div className="detail-main">
+            {principal
+              ? <img src={principal} alt={product.nombre} />
+              : <div className="detail-noimg">📦</div>}
+          </div>
         </div>
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
