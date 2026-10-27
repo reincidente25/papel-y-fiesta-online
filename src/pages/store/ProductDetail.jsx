@@ -74,7 +74,7 @@ const ProductDetail = () => {
                 <button
                   key={`${url}-${i}`}
                   type="button"
-                  className={`detail-thumb ${!varSel && i === activa ? 'active' : ''}`}
+                  className={`detail-thumb ${(varSel ? varSel.imagen === url : i === activa) ? 'active' : ''}`}
                   onClick={() => { setActiva(i); setVarSel(null); }}
                 >
                   <img src={url} alt={`Foto ${i + 1}`} />

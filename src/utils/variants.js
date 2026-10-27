@@ -35,11 +35,11 @@ export const imagenPrincipal = (p) => {
   return '';
 };
 
-// Lista de fotos del producto; si no tiene, usa las fotos de las variantes.
+// Lista de fotos del producto: las propias + las de las variantes (sin repetir).
 export const fotosProducto = (p) => {
   const base = p?.imagenes?.length ? p.imagenes : (p?.imagen ? [p.imagen] : []);
-  if (base.length) return base;
-  return (p?.variantes || []).map((v) => v.imagen).filter(Boolean);
+  const deVariantes = (p?.variantes || []).map((v) => v.imagen).filter(Boolean);
+  return [...new Set([...base, ...deVariantes])];
 };
 
 // Normaliza las variantes antes de guardar (números y labels limpios).
