@@ -9,6 +9,7 @@ import { getCustomers } from '../../services/customersService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 import { tieneVariantes as hayVariantes, varianteLabel } from '../../utils/variants';
+import MoneyInput from '../../components/common/MoneyInput';
 
 const PAGE = 20;
 
@@ -322,7 +323,11 @@ const Sales = () => {
 
           <div className="field"><label>Descuento</label>
             <div className="row gap-8">
-              <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} style={{ flex: 1 }} />
+              {descTipo === 'monto' ? (
+                <div style={{ flex: 1 }}><MoneyInput value={descuento} onChange={(n) => setDescuento(n)} /></div>
+              ) : (
+                <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} style={{ flex: 1 }} />
+              )}
               <select className="select" style={{ width: 70 }} value={descTipo} onChange={(e) => setDescTipo(e.target.value)}>
                 <option value="monto">$</option>
                 <option value="porcentaje">%</option>
