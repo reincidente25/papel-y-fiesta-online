@@ -10,7 +10,7 @@ import { getProductById, createProduct, updateProduct } from '../../services/pro
 import { PRODUCT_STATUS, PRODUCT_STATUS_LIST, VARIANT_TYPES } from '../../constants';
 import { getCategories } from '../../services/categoriesService';
 import { calcMargin, formatMoney } from '../../utils/format';
-import { nuevaVarianteId, limpiarVariantes, stockTotal, precioDesde, costoDesde } from '../../utils/variants';
+import { nuevaVarianteId, limpiarVariantes } from '../../utils/variants';
 
 const EMPTY = {
   codigo: '', nombre: '', nombreWeb: '', descripcion: '', categoria: '',
@@ -19,7 +19,7 @@ const EMPTY = {
   tieneVariantes: false, variantes: [],
 };
 
-const filaVacia = () => ({ id: nuevaVarianteId(), tipo: '', nombre: '', precioCosto: '', precioVenta: '', stock: '', imagen: '' });
+const filaVacia = () => ({ id: nuevaVarianteId(), tipo: '', nombre: '', imagen: '' });
 
 const ProductForm = () => {
   const { id } = useParams();
@@ -67,7 +67,6 @@ const ProductForm = () => {
     const imagenes = form.imagenes || [];
     const conVar = form.tieneVariantes;
     const variantes = conVar ? limpiarVariantes(form.variantes) : [];
-    const prodDerivado = { tieneVariantes: conVar, variantes };
     const payload = {
       ...form,
       imagenes,
@@ -75,10 +74,10 @@ const ProductForm = () => {
       categoriaNombre: catSel?.name || '',
       tieneVariantes: conVar,
       variantes,
-      // Con variantes, el precio y el stock del producto se derivan de ellas.
-      precioCosto: conVar ? costoDesde(prodDerivado) : (Number(form.precioCosto) || 0),
-      precioVenta: conVar ? precioDesde(prodDerivado) : (Number(form.precioVenta) || 0),
-      stock: conVar ? stockTotal(prodDerivado) : (Number(form.stock) || 0),
+      // El precio y el stock son del producto (las variantes son solo de elección).
+      precioCosto: Number(form.precioCosto) || 0,
+      precioVenta: Number(form.precioVenta) || 0,
+      stock: Number(form.stock) || 0,
     };
     try {
       if (isEdit) await updateProduct(id, payload);
@@ -140,30 +139,28 @@ const ProductForm = () => {
                 </select>
               </div>
 
-              {!form.tieneVariantes && (
-                <div className="field full">
-                  <div className="trio">
-                    <div className="field">
-                      <label>Precio de costo</label>
-                      <input className="input" type="number" min="0" value={form.precioCosto}
-                        onChange={(e) => set('precioCosto', e.target.value)} placeholder="0" />
-                    </div>
-                    <div className="field">
-                      <label>Precio de venta</label>
-                      <input className="input" type="number" min="0" value={form.precioVenta}
-                        onChange={(e) => set('precioVenta', e.target.value)} placeholder="0" />
-                    </div>
-                    <div className="field">
-                      <label>Stock</label>
-                      <input className="input" type="number" min="0" value={form.stock}
-                        onChange={(e) => set('stock', e.target.value)} placeholder="0" />
-                    </div>
+              <div className="field full">
+                <div className="trio">
+                  <div className="field">
+                    <label>Precio de costo</label>
+                    <input className="input" type="number" min="0" value={form.precioCosto}
+                      onChange={(e) => set('precioCosto', e.target.value)} placeholder="0" />
                   </div>
-                  {form.precioVenta > 0 && (
-                    <span className="margin-pill" style={{ marginTop: 12 }}>Margen {margen}% · Ganancia {formatMoney(ganancia)} / unidad</span>
-                  )}
+                  <div className="field">
+                    <label>Precio de venta</label>
+                    <input className="input" type="number" min="0" value={form.precioVenta}
+                      onChange={(e) => set('precioVenta', e.target.value)} placeholder="0" />
+                  </div>
+                  <div className="field">
+                    <label>Stock</label>
+                    <input className="input" type="number" min="0" value={form.stock}
+                      onChange={(e) => set('stock', e.target.value)} placeholder="0" />
+                  </div>
                 </div>
-              )}
+                {form.precioVenta > 0 && (
+                  <span className="margin-pill" style={{ marginTop: 12 }}>Margen {margen}% · Ganancia {formatMoney(ganancia)} / unidad</span>
+                )}
+              </div>
 
               <div className="field full toggles-row">
                 <label className="switch">
@@ -187,7 +184,7 @@ const ProductForm = () => {
                   <input type="checkbox" checked={!!form.tieneVariantes}
                     onChange={(e) => toggleVariantes(e.target.checked)} />
                   <span className="track" />
-                  <span className="switch-label">Tiene variantes<small>Color, tamaño, diseño… c/u con precio y stock</small></span>
+                  <span className="switch-label">Tiene variantes<small>Color, tamaño, diseño… para que el cliente elija</small></span>
                 </label>
               </div>
 
@@ -195,8 +192,7 @@ const ProductForm = () => {
                 <div className="field full">
                   <div className="var-table">
                     <div className="var-head">
-                      <span>Foto</span><span>Tipo</span><span>Variante</span>
-                      <span>Costo</span><span>Precio venta</span><span>Stock</span><span />
+                      <span>Foto</span><span>Tipo</span><span>Variante</span><span />
                     </div>
                     {form.variantes.map((v) => (
                       <div className="var-row" key={v.id}>
@@ -206,12 +202,6 @@ const ProductForm = () => {
                           value={v.tipo} onChange={(e) => setVar(v.id, 'tipo', e.target.value)} />
                         <input className="input" placeholder="Rojo, XL…"
                           value={v.nombre} onChange={(e) => setVar(v.id, 'nombre', e.target.value)} />
-                        <input className="input" type="number" min="0" placeholder="0"
-                          value={v.precioCosto} onChange={(e) => setVar(v.id, 'precioCosto', e.target.value)} />
-                        <input className="input" type="number" min="0" placeholder="0"
-                          value={v.precioVenta} onChange={(e) => setVar(v.id, 'precioVenta', e.target.value)} />
-                        <input className="input" type="number" min="0" placeholder="0"
-                          value={v.stock} onChange={(e) => setVar(v.id, 'stock', e.target.value)} />
                         <button type="button" className="btn btn-ghost btn-sm" title="Quitar"
                           onClick={() => delVar(v.id)}>✕</button>
                       </div>
@@ -222,9 +212,7 @@ const ProductForm = () => {
                   </datalist>
                   <div className="row gap-12" style={{ marginTop: 10, alignItems: 'center' }}>
                     <button type="button" className="btn btn-soft btn-sm" onClick={addVar}>＋ Agregar variante</button>
-                    <span className="hint">
-                      {form.variantes.length} variante(s) · stock total {stockTotal({ tieneVariantes: true, variantes: form.variantes })}
-                    </span>
+                    <span className="hint">{form.variantes.length} variante(s)</span>
                   </div>
                 </div>
               )}
@@ -251,13 +239,10 @@ const ProductForm = () => {
 
             <div className="card preview-card">
               <div className="pc-name">{form.nombreWeb || form.nombre || 'Nombre del producto'}</div>
-              <div className="pc-price">
-                {form.tieneVariantes ? 'desde ' : ''}
-                {formatMoney(form.tieneVariantes ? precioDesde({ tieneVariantes: true, variantes: form.variantes }) : (form.precioVenta || 0))}
-              </div>
+              <div className="pc-price">{formatMoney(form.precioVenta || 0)}</div>
               <div className="pc-row">
                 <span className={`badge ${st.badge}`}>{st.label}</span>
-                <span className="muted">Stock: {form.tieneVariantes ? stockTotal({ tieneVariantes: true, variantes: form.variantes }) : (form.stock || 0)}</span>
+                <span className="muted">Stock: {form.stock || 0}</span>
               </div>
               <div className="pc-row" style={{ gap: 6, flexWrap: 'wrap' }}>
                 <span className={`badge ${form.mostrarWeb ? 'badge-success' : 'badge-muted'}`}>

@@ -8,7 +8,7 @@ import { getProducts } from '../../services/productsService';
 import { getCustomers } from '../../services/customersService';
 import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../constants';
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
-import { tieneVariantes as hayVariantes, precioDesde, varianteLabel } from '../../utils/variants';
+import { tieneVariantes as hayVariantes, varianteLabel } from '../../utils/variants';
 
 const PAGE = 20;
 
@@ -102,8 +102,8 @@ const Sales = () => {
         varianteId: variante?.id || '', variante: variante ? varianteLabel(variante) : '',
         nombre: variante ? `${p.nombre} — ${varianteLabel(variante)}` : p.nombre,
         cantidad: 1,
-        precioUnit: variante ? (Number(variante.precioVenta) || 0) : p.precioVenta,
-        stock: variante ? (Number(variante.stock) || 0) : p.stock,
+        precioUnit: p.precioVenta,
+        stock: p.stock,
       }];
     });
     setQuery('');
@@ -249,19 +249,16 @@ const Sales = () => {
                         onClick={() => !sinStock && setExpandido(abierto ? null : p.id)}>
                         {p.imagen && <img src={p.imagen} alt="" />}
                         <span className="pos-result-name">{p.codigo ? <span className="code-chip" style={{ marginRight: 8 }}>{p.codigo}</span> : null}{p.nombre} <span className="badge badge-muted" style={{ marginLeft: 6 }}>{p.variantes.length} variantes</span></span>
-                        <span className="pos-result-meta">desde {formatMoney(precioDesde(p))} · {abierto ? '▲' : '▼'}</span>
+                        <span className="pos-result-meta">{formatMoney(p.precioVenta)} · stock {p.stock} · {abierto ? '▲' : '▼'}</span>
                       </div>
-                      {abierto && p.variantes.map((v) => {
-                        const vAgot = (Number(v.stock) || 0) <= 0;
-                        return (
-                          <div key={v.id} className={`pos-result pos-subresult ${vAgot ? 'disabled' : ''}`}
-                            onClick={() => !vAgot && addLine(p, v)}>
-                            {v.imagen && <img src={v.imagen} alt="" />}
-                            <span className="pos-result-name">↳ {varianteLabel(v)}</span>
-                            <span className="pos-result-meta">{formatMoney(v.precioVenta)} · stock {v.stock}</span>
-                          </div>
-                        );
-                      })}
+                      {abierto && p.variantes.map((v) => (
+                        <div key={v.id} className={`pos-result pos-subresult ${sinStock ? 'disabled' : ''}`}
+                          onClick={() => !sinStock && addLine(p, v)}>
+                          {v.imagen && <img src={v.imagen} alt="" />}
+                          <span className="pos-result-name">↳ {varianteLabel(v)}</span>
+                          <span className="pos-result-meta">Elegir</span>
+                        </div>
+                      ))}
                     </div>
                   );
                 }

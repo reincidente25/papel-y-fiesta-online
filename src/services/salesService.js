@@ -131,27 +131,17 @@ export async function createSale(sale) {
     ventaId = ref.id;
   }
 
-  // Descontar stock. Si la línea es de una variante, se descuenta de esa
-  // variante y el stock del producto se recalcula como la suma. Agrupamos los
-  // cambios por producto para no pisar descuentos de varias variantes.
+  // Descontar stock (siempre a nivel producto; la variante es solo informativa).
+  // Agrupamos por producto para no pisar descuentos de varias líneas/variantes.
   const productos = await getProducts();
-  const cambios = new Map(); // productoId -> { stock, variantes? }
+  const cambios = new Map(); // productoId -> stock resultante
   for (const item of items) {
     const prod = productos.find((p) => p.id === item.productoId || p.codigo === item.codigo);
     if (!prod) continue;
-    const prev = cambios.get(prod.id);
-    if (item.varianteId && prod.variantes?.length) {
-      const baseVars = prev?.variantes || prod.variantes;
-      const variantes = baseVars.map((v) =>
-        v.id === item.varianteId ? { ...v, stock: Math.max(0, (Number(v.stock) || 0) - item.cantidad) } : v);
-      const stock = variantes.reduce((n, v) => n + (Number(v.stock) || 0), 0);
-      cambios.set(prod.id, { ...prev, variantes, stock });
-    } else {
-      const base = prev?.stock ?? prod.stock ?? 0;
-      cambios.set(prod.id, { ...prev, stock: Math.max(0, base - item.cantidad) });
-    }
+    const base = cambios.has(prod.id) ? cambios.get(prod.id) : (prod.stock ?? 0);
+    cambios.set(prod.id, Math.max(0, base - item.cantidad));
   }
-  for (const [pid, data] of cambios) await updateProduct(pid, data);
+  for (const [pid, stock] of cambios) await updateProduct(pid, { stock });
 
   return ventaId;
 }

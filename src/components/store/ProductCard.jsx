@@ -2,7 +2,7 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../../context/CartContext';
 import { formatMoney } from '../../utils/format';
-import { tieneVariantes as hayVariantes, precioDesde, imagenPrincipal } from '../../utils/variants';
+import { tieneVariantes as hayVariantes, imagenPrincipal } from '../../utils/variants';
 import './ProductCard.css';
 
 const PLACEHOLDER = 'https://via.placeholder.com/400x400/F4F4F1/908E8A?text=Papel+%26+Fiesta';
@@ -24,7 +24,7 @@ const ProductCard = ({ product }) => {
       <div className="product-body">
         <Link to={`/producto/${product.id}`} className="product-name">{titulo}</Link>
         <div className="product-foot">
-          <span className="product-price">{conVar ? 'desde ' : ''}{formatMoney(conVar ? precioDesde(product) : product.precioVenta)}</span>
+          <span className="product-price">{formatMoney(product.precioVenta)}</span>
           {conVar ? (
             <Link to={`/producto/${product.id}`} className="btn btn-soft btn-sm" style={{ opacity: sinStock ? 0.5 : 1, pointerEvents: sinStock ? 'none' : 'auto' }}>
               {sinStock ? 'Agotado' : 'Elegir'}

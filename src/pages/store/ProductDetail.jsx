@@ -6,7 +6,7 @@ import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
 import { formatMoney } from '../../utils/format';
-import { tieneVariantes as hayVariantes, precioDesde, fotosProducto } from '../../utils/variants';
+import { tieneVariantes as hayVariantes, fotosProducto } from '../../utils/variants';
 import './store.css';
 
 const ProductDetail = () => {
@@ -43,10 +43,7 @@ const ProductDetail = () => {
 
   const conVar = hayVariantes(product);
   const variantes = conVar ? product.variantes : [];
-  const anyStock = conVar ? variantes.some((v) => (Number(v.stock) || 0) > 0) : product.stock > 0;
-  const sinStock = !anyStock || product.estado === 'sin_stock';
-  const stockSel = conVar ? (varSel ? (Number(varSel.stock) || 0) : 0) : product.stock;
-  const precioMostrar = conVar ? (varSel ? Number(varSel.precioVenta) || 0 : precioDesde(product)) : product.precioVenta;
+  const sinStock = product.stock <= 0 || product.estado === 'sin_stock';
   const categoria = product.categoriaNombre ? { name: product.categoriaNombre } : null;
 
   // Variantes agrupadas por tipo para el selector.
@@ -89,9 +86,7 @@ const ProductDetail = () => {
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombreWeb || product.nombre}</h1>
-          <div className="detail-price">
-            {conVar && !varSel && <span className="desde">desde </span>}{formatMoney(precioMostrar)}
-          </div>
+          <div className="detail-price">{formatMoney(product.precioVenta)}</div>
           {product.descripcion
             ? <div className="detail-desc rte-content" dangerouslySetInnerHTML={{ __html: product.descripcion }} />
             : <p className="detail-desc">Sin descripción.</p>}
@@ -102,20 +97,16 @@ const ProductDetail = () => {
                 <div className="var-group" key={tipo}>
                   <span className="var-group-label">{tipo}</span>
                   <div className="var-chips">
-                    {vs.map((v) => {
-                      const agotada = (Number(v.stock) || 0) <= 0;
-                      return (
-                        <button
-                          key={v.id}
-                          type="button"
-                          className={`var-chip ${varSel?.id === v.id ? 'active' : ''} ${agotada ? 'agotada' : ''}`}
-                          disabled={agotada}
-                          onClick={() => { setVarSel(v); setQty(1); }}
-                        >
-                          {v.nombre}{agotada ? ' (sin stock)' : ''}
-                        </button>
-                      );
-                    })}
+                    {vs.map((v) => (
+                      <button
+                        key={v.id}
+                        type="button"
+                        className={`var-chip ${varSel?.id === v.id ? 'active' : ''}`}
+                        onClick={() => { setVarSel(v); }}
+                      >
+                        {v.nombre}
+                      </button>
+                    ))}
                   </div>
                 </div>
               ))}
@@ -130,17 +121,13 @@ const ProductDetail = () => {
                 <div className="qty">
                   <button onClick={() => setQty((q) => Math.max(1, q - 1))}>−</button>
                   <span>{qty}</span>
-                  <button onClick={() => setQty((q) => Math.min(stockSel || 1, q + 1))}>+</button>
+                  <button onClick={() => setQty((q) => Math.min(product.stock || 1, q + 1))}>+</button>
                 </div>
-                <button className="btn btn-primary" onClick={handleAdd} disabled={conVar && (!varSel || stockSel <= 0)}>
+                <button className="btn btn-primary" onClick={handleAdd} disabled={conVar && !varSel}>
                   {conVar && !varSel ? 'Elegí una variante' : 'Agregar al carrito'}
                 </button>
               </div>
-              <p className="muted" style={{ fontSize: '.85rem' }}>
-                {conVar
-                  ? (varSel ? `${stockSel} unidades disponibles` : 'Seleccioná una variante para ver el stock')
-                  : `${product.stock} unidades disponibles`}
-              </p>
+              <p className="muted" style={{ fontSize: '.85rem' }}>{product.stock} unidades disponibles</p>
             </>
           )}
 
