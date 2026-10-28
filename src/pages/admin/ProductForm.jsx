@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import RichText from '../../components/common/RichText';
+import MoneyInput from '../../components/common/MoneyInput';
 import ImageUploader from '../../components/admin/ImageUploader';
 import VariantImage from '../../components/admin/VariantImage';
 import { getProductById, createProduct, updateProduct } from '../../services/productsService';
@@ -143,13 +144,11 @@ const ProductForm = () => {
                 <div className="trio">
                   <div className="field">
                     <label>Precio de costo</label>
-                    <input className="input" type="number" min="0" value={form.precioCosto}
-                      onChange={(e) => set('precioCosto', e.target.value)} placeholder="0" />
+                    <MoneyInput value={form.precioCosto} onChange={(n) => set('precioCosto', n)} />
                   </div>
                   <div className="field">
                     <label>Precio de venta</label>
-                    <input className="input" type="number" min="0" value={form.precioVenta}
-                      onChange={(e) => set('precioVenta', e.target.value)} placeholder="0" />
+                    <MoneyInput value={form.precioVenta} onChange={(n) => set('precioVenta', n)} />
                   </div>
                   <div className="field">
                     <label>Stock</label>

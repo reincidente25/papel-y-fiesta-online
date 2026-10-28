@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
+import MoneyInput from '../../components/common/MoneyInput';
 import { getPurchasesPage, getPurchasesStats, createPurchase } from '../../services/purchasesService';
 import { getSuppliers } from '../../services/suppliersService';
 import { getProducts } from '../../services/productsService';
@@ -131,7 +132,7 @@ const Purchases = () => {
           <div className="field"><label>N° Factura</label>
             <input className="input" value={form.factura} onChange={(e) => set('factura', e.target.value)} placeholder="ej: FA-0001-00012345" /></div>
           <div className="field full"><label>Monto total *</label>
-            <input className="input" type="number" min="0" step="0.01" value={form.total} onChange={(e) => set('total', e.target.value)} placeholder="$ 0.00" required /></div>
+            <MoneyInput value={form.total} onChange={(n) => set('total', n)} /></div>
           <div className="field full"><label>Notas (opcional)</label>
             <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Observaciones de la compra..." /></div>
           <div className="form-actions full">
