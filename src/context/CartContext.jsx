@@ -48,7 +48,7 @@ export const CartProvider = ({ children }) => {
         varianteId: variante?.id || '',
         variante: variante ? (variante.tipo ? `${variante.tipo}: ${variante.nombre}` : variante.nombre) : '',
         nombre: variante ? `${base} — ${variante.tipo ? variante.tipo + ': ' : ''}${variante.nombre}` : base,
-        precio: variante ? (Number(variante.precioVenta) || 0) : product.precioVenta,
+        precio: product.precioVenta, // el precio es del producto, no de la variante
         imagen: variante?.imagen || product.imagen,
         cantidad,
       }];
