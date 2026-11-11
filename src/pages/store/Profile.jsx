@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import Modal from '../../components/common/Modal';
+import MiniMap from '../../components/common/MiniMap';
 import { useAuth } from '../../context/AuthContext';
 import { buscarDirecciones } from '../../services/geoService';
 import './store.css';
@@ -216,7 +217,12 @@ const Profile = () => {
               )}
             </div>
 
-            {modal.lat != null && <span className="dir-geo">📌 Ubicación detectada ({Number(modal.lat).toFixed(4)}, {Number(modal.lon).toFixed(4)})</span>}
+            {modal.lat != null && (
+              <>
+                <span className="dir-geo">📌 Ubicación detectada</span>
+                <MiniMap lat={modal.lat} lon={modal.lon} />
+              </>
+            )}
 
             <div className="field"><label>Etiqueta</label>
               <input className="input" value={modal.etiqueta} onChange={(e) => setM('etiqueta', e.target.value)} placeholder="Casa, Trabajo…" /></div>

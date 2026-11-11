@@ -2,6 +2,7 @@
 // Buscador de dirección (Georef) + campos editables. Devuelve el domicilio por onChange.
 import { useEffect, useState } from 'react';
 import { buscarDirecciones } from '../../services/geoService';
+import MiniMap from '../common/MiniMap';
 
 const AddressAutocomplete = ({ value, onChange }) => {
   const dir = value || {};
@@ -49,7 +50,12 @@ const AddressAutocomplete = ({ value, onChange }) => {
           </div>
         )}
       </div>
-      {dir.lat != null && <span className="dir-geo">📌 Ubicación detectada</span>}
+      {dir.lat != null && (
+        <>
+          <span className="dir-geo">📌 Ubicación detectada</span>
+          <MiniMap lat={dir.lat} lon={dir.lon} />
+        </>
+      )}
       <div className="form-grid">
         <div className="field"><label>Calle *</label>
           <input className="input" value={dir.calle || ''} onChange={(e) => set('calle', e.target.value)} required /></div>
