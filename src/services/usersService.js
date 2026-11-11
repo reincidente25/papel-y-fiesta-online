@@ -19,3 +19,11 @@ export async function getUserProfile(uid) {
   const snap = await getDoc(doc(db, COL, uid));
   return snap.exists() ? { uid, ...snap.data() } : null;
 }
+
+// Actualiza datos del perfil (whatsapp, dni, domicilios, etc.).
+export async function updateUserProfile(uid, data) {
+  if (!isFirebaseConfigured) return { uid, ...data };
+  const ref = doc(db, COL, uid);
+  await setDoc(ref, { ...data, actualizadoEn: serverTimestamp() }, { merge: true });
+  return { uid, ...data };
+}

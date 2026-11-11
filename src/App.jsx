@@ -11,6 +11,7 @@ import Catalog from './pages/store/Catalog';
 import ProductDetail from './pages/store/ProductDetail';
 import Cart from './pages/store/Cart';
 import OrderStatus from './pages/store/OrderStatus';
+import Profile from './pages/store/Profile';
 
 // Auth
 import Login from './pages/auth/Login';
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/producto/:id" element={<ProductDetail />} />
           <Route path="/carrito" element={<Cart />} />
           <Route path="/pedido/:id" element={<OrderStatus />} />
+          <Route path="/perfil" element={<Profile />} />
 
           {/* Autenticación */}
           <Route path="/login" element={<Login />} />

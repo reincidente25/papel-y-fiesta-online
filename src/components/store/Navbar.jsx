@@ -40,7 +40,7 @@ const Navbar = () => {
 
           {user ? (
             <div className="nav-user">
-              <span className="nav-user-name">{user.displayName || user.email}</span>
+              <Link to="/perfil" className="nav-user-name" onClick={() => setOpen(false)}>👤 {user.displayName || user.email}</Link>
               <button className="btn btn-ghost btn-sm" onClick={handleLogout}>Salir</button>
             </div>
           ) : (

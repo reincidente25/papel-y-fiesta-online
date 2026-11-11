@@ -149,3 +149,16 @@
 .cart-toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); z-index: 1000; display: flex; align-items: center; gap: 8px; background: var(--brand-ink, #1a1a1a); color: #fff; padding: 12px 20px; border-radius: 999px; font-weight: 600; font-size: .95rem; box-shadow: 0 8px 24px rgba(0,0,0,.25); animation: toastIn .25s ease; }
 .cart-toast-ico { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; border-radius: 50%; background: #2ecc71; color: #fff; font-size: .75rem; }
 @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Perfil del cliente */
+.profile { max-width: 860px; padding-bottom: 48px; }
+.profile-card { padding: 22px; }
+.save-ok { color: var(--success, #1faa59); font-weight: 600; font-size: .9rem; align-self: center; }
+.dom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.dom-card { padding: 16px; border: 1px solid var(--border); }
+.dom-card.is-default { border-color: var(--brand-orange, #F7941E); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
+.dom-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.dom-dir { font-size: .92rem; margin: 0 0 6px; }
+.dom-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.nav-user-name { text-decoration: none; color: inherit; font-weight: 600; }
+.nav-user-name:hover { color: var(--brand-orange, #F7941E); }

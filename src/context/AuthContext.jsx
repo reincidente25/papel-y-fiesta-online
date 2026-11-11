@@ -10,7 +10,7 @@ import {
 } from 'firebase/auth';
 import { httpsCallable } from 'firebase/functions';
 import { auth, functions, isFirebaseConfigured } from '../config/firebase';
-import { createUserProfile, getUserProfile } from '../services/usersService';
+import { createUserProfile, getUserProfile, updateUserProfile } from '../services/usersService';
 import { ROLES } from '../constants';
 
 // La autenticación es real apenas hay credenciales de Firebase (.env),
@@ -54,6 +54,13 @@ export const AuthProvider = ({ children }) => {
 
   // Reset de contraseña: usa Brevo (Cloud Function). Si falla, cae al envío
   // estándar de Firebase Auth para no dejar al usuario sin opción.
+  // Guarda cambios del perfil del usuario y refresca el estado local.
+  const saveProfile = async (data) => {
+    if (!user) return;
+    await updateUserProfile(user.uid, data);
+    setProfile((p) => ({ ...(p || { uid: user.uid }), ...data }));
+  };
+
   const resetPassword = async (email) => {
     try {
       await httpsCallable(functions, 'enviarResetPassword')({ email });
@@ -71,7 +78,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, isAdmin, loading, login, register, resetPassword, reenviarVerificacion, logout, demoMode: DEMO }}
+      value={{ user, profile, isAdmin, loading, login, register, resetPassword, reenviarVerificacion, saveProfile, logout, demoMode: DEMO }}
     >
       {!loading && children}
     </AuthContext.Provider>
