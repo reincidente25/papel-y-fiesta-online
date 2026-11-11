@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
+import Modal from '../../components/common/Modal';
 import AddressAutocomplete from '../../components/store/AddressAutocomplete';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
@@ -118,59 +119,89 @@ const Cart = () => {
             <div className="cart-summary-row"><span className="muted">Envío</span><span>A coordinar</span></div>
             <div className="cart-summary-row cart-summary-total"><span>Total</span><span>{formatMoney(total)}</span></div>
 
-            {!checkout ? (
-              <>
-                <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setCheckout(true)}>
-                  Continuar
-                </button>
-                <p className="hint" style={{ marginTop: 10, textAlign: 'center' }}>
-                  💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.
-                </p>
-              </>
-            ) : (
-              <form onSubmit={handleCheckout} className="stack gap-12" style={{ marginTop: 16 }}>
-                <div className="field"><label>Nombre y apellido *</label>
-                  <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required /></div>
-                <div className="field"><label>Teléfono / WhatsApp *</label>
-                  <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
-                <div className="field"><label>Email</label>
-                  <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
-                <div className="field"><label>Entrega</label>
-                  <select className="select" value={form.entrega} onChange={(e) => set('entrega', e.target.value)}>
-                    <option value="retiro">Retiro en el local</option>
-                    <option value="envio">Envío a domicilio</option>
-                  </select></div>
-
-                {form.entrega === 'envio' && (
-                  <div className="field">
-                    <label>Domicilio de entrega</label>
-                    {domicilios.length > 0 && (
-                      <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
-                        {domicilios.map((d) => (
-                          <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
-                        ))}
-                        <option value="otra">✏️ Otra dirección…</option>
-                      </select>
-                    )}
-                    {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
-                      <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
-                    ) : (
-                      <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
-                    )}
-                  </div>
-                )}
-
-                <div className="field"><label>Notas (opcional)</label>
-                  <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} /></div>
-                <button type="submit" className="btn btn-primary btn-block" disabled={placing || (form.entrega === 'envio' && !domicilioElegido?.calle)}>
-                  {placing ? 'Enviando...' : form.entrega === 'envio' && !domicilioElegido?.calle ? 'Completá el domicilio' : 'Confirmar pedido'}
-                </button>
-                <button type="button" className="btn btn-ghost btn-block" onClick={() => setCheckout(false)}>Volver</button>
-              </form>
-            )}
+            <button className="btn btn-primary btn-block" style={{ marginTop: 16 }} onClick={() => setCheckout(true)}>
+              Continuar
+            </button>
+            <p className="hint" style={{ marginTop: 10, textAlign: 'center' }}>
+              💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.
+            </p>
           </aside>
         </div>
       </div>
+
+      {/* Checkout en modal grande, en dos columnas */}
+      <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={980}>
+        <form onSubmit={handleCheckout} className="checkout-grid">
+          {/* Columna izquierda: repaso del pedido */}
+          <div className="checkout-review">
+            <h4 className="checkout-h">Tu pedido ({items.reduce((n, i) => n + i.cantidad, 0)})</h4>
+            <div className="checkout-items">
+              {items.map((item) => (
+                <div className="checkout-item" key={item.id}>
+                  {item.imagen ? <img src={item.imagen} alt="" /> : <span className="checkout-ph">📦</span>}
+                  <div className="checkout-item-info">
+                    <div className="checkout-item-name">{item.nombre}</div>
+                    <div className="muted" style={{ fontSize: '.82rem' }}>{item.cantidad} × {formatMoney(item.precio)}</div>
+                  </div>
+                  <div className="checkout-item-total">{formatMoney(item.precio * item.cantidad)}</div>
+                </div>
+              ))}
+            </div>
+            <div className="checkout-totals">
+              <div className="cart-summary-row"><span className="muted">Subtotal</span><span>{formatMoney(total)}</span></div>
+              <div className="cart-summary-row"><span className="muted">Envío</span><span>A coordinar</span></div>
+              <div className="cart-summary-row cart-summary-total"><span>Total</span><span>{formatMoney(total)}</span></div>
+            </div>
+          </div>
+
+          {/* Columna derecha: datos */}
+          <div className="checkout-form">
+            <h4 className="checkout-h">Tus datos</h4>
+            <div className="form-grid">
+              <div className="field"><label>Nombre y apellido *</label>
+                <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required /></div>
+              <div className="field"><label>Teléfono / WhatsApp *</label>
+                <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
+              <div className="field full"><label>Email</label>
+                <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
+              <div className="field full"><label>Entrega</label>
+                <select className="select" value={form.entrega} onChange={(e) => set('entrega', e.target.value)}>
+                  <option value="retiro">Retiro en el local</option>
+                  <option value="envio">Envío a domicilio</option>
+                </select></div>
+            </div>
+
+            {form.entrega === 'envio' && (
+              <div className="field" style={{ marginTop: 12 }}>
+                <label>Domicilio de entrega</label>
+                {domicilios.length > 0 && (
+                  <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
+                    {domicilios.map((d) => (
+                      <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
+                    ))}
+                    <option value="otra">✏️ Otra dirección…</option>
+                  </select>
+                )}
+                {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
+                  <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
+                ) : (
+                  <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
+                )}
+              </div>
+            )}
+
+            <div className="field" style={{ marginTop: 12 }}><label>Notas (opcional)</label>
+              <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Horario de entrega, referencia…" /></div>
+
+            <div className="form-actions" style={{ marginTop: 16 }}>
+              <button type="submit" className="btn btn-primary" disabled={placing || (form.entrega === 'envio' && !domicilioElegido?.calle)}>
+                {placing ? 'Enviando...' : form.entrega === 'envio' && !domicilioElegido?.calle ? 'Completá el domicilio' : 'Confirmar pedido'}
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={() => setCheckout(false)}>Volver</button>
+            </div>
+          </div>
+        </form>
+      </Modal>
     </StoreLayout>
   );
 };
