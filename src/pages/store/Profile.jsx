@@ -196,7 +196,7 @@ const Profile = () => {
       </div>
 
       {/* Modal alta/edición de domicilio */}
-      <Modal open={Boolean(modal)} onClose={() => setModal(null)} title={modal && domicilios.some((d) => d.id === modal.id) ? 'Editar domicilio' : 'Nuevo domicilio'} width={540}>
+      <Modal open={Boolean(modal)} onClose={() => setModal(null)} title={modal && domicilios.some((d) => d.id === modal.id) ? 'Editar domicilio' : 'Nuevo domicilio'} width={720}>
         {modal && (
           <form className="stack gap-12" onSubmit={guardarDom}>
             <div className="field dir-search">
