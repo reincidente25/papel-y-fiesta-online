@@ -19,6 +19,16 @@ service firebase.storage {
       allow write: if isAdmin() && isImage();
     }
 
+    // Imágenes de la tienda (hero de la landing, categorías): pública / admin.
+    match /landing/{foto} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage();
+    }
+    match /categorias/{foto} {
+      allow read: if true;
+      allow write: if isAdmin() && isImage();
+    }
+
     // Por defecto, nada.
     match /{allPaths=**} {
       allow read, write: if false;
