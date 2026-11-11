@@ -140,7 +140,7 @@ const Profile = () => {
   return (
     <StoreLayout>
       <div className="container profile">
-        <h1 className="page-title" style={{ marginTop: 28 }}>Mi perfil</h1>
+        <h1 className="page-title" style={{ marginTop: 28, marginBottom: 20 }}>Mi perfil</h1>
 
         {/* Datos personales */}
         <form className="card profile-card" onSubmit={guardarDatos}>
@@ -179,7 +179,7 @@ const Profile = () => {
             <table className="dom-table">
               <thead>
                 <tr>
-                  <th>Etiqueta</th><th>Calle</th><th>N°</th><th>Piso</th>
+                  <th>Etiqueta</th><th>Dirección</th><th>Piso</th>
                   <th>Localidad</th><th>Provincia</th><th>CP</th>
                   <th>Default</th><th className="dom-th-acc">Acciones</th>
                 </tr>
@@ -188,11 +188,10 @@ const Profile = () => {
                 {domicilios.map((d) => (
                   <tr key={d.id} className={d.predeterminado ? 'is-default' : ''}>
                     <td data-label="Etiqueta"><strong>{d.etiqueta || 'Domicilio'}</strong></td>
-                    <td data-label="Calle">
-                      {d.calle || '—'}
+                    <td data-label="Dirección">
+                      {[d.calle, d.numero].filter(Boolean).join(' ') || '—'}
                       {d.notas && <span className="dom-notas">{d.notas}</span>}
                     </td>
-                    <td data-label="N°">{d.numero || '—'}</td>
                     <td data-label="Piso">{d.piso || '—'}</td>
                     <td data-label="Localidad">{d.localidad || '—'}</td>
                     <td data-label="Provincia">{d.provincia || '—'}</td>
