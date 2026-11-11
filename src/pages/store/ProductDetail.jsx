@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
+import ShippingEstimator from '../../components/store/ShippingEstimator';
 import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
@@ -130,6 +131,8 @@ const ProductDetail = () => {
               <p className="muted" style={{ fontSize: '.85rem' }}>{product.stock} unidades disponibles</p>
             </>
           )}
+
+          <ShippingEstimator cantidad={qty} />
 
           <Link to="/catalogo" className="btn btn-ghost btn-sm" style={{ marginTop: 24 }}>← Seguir comprando</Link>
         </div>

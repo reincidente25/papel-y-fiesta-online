@@ -135,7 +135,6 @@ const Profile = () => {
   };
 
   const setM = (k, v) => setModal((m) => ({ ...m, [k]: v }));
-  const resumen = (d) => [`${d.calle} ${d.numero}`, d.piso && `Piso ${d.piso}`, d.localidad, d.provincia, d.cp && `CP ${d.cp}`].filter(Boolean).join(' · ');
 
   return (
     <StoreLayout>

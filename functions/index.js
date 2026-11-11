@@ -12,6 +12,7 @@ import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
+import { cotizar as cotizarCorreo } from './lib/correoArgentino.js';
 import {
   welcomeEmail, verifyEmail, passwordResetEmail,
   emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
@@ -37,7 +38,31 @@ const NOTIFY_ESTADOS = defineString('NOTIFY_ESTADOS', {
   default: 'confirmado,pagado,enviado,entregado,cancelado',
 });
 
+// ── Envíos (Mi Correo Argentino) ───────────────────────────────────────────
+const CA_ENV = defineString('CA_ENV', { default: 'prod' }); // 'test' | 'prod'
+const CA_USER_TOKEN = defineSecret('CA_USER_TOKEN');
+const CA_PASSWORD_TOKEN = defineSecret('CA_PASSWORD_TOKEN');
+const CA_EMAIL = defineSecret('CA_EMAIL');
+const CA_PASSWORD = defineSecret('CA_PASSWORD');
+const CA_CP_ORIGEN = defineString('CA_CP_ORIGEN', { default: '' });        // CP del local
+const ENVIO_PESO_ESTANDAR_G = defineString('ENVIO_PESO_ESTANDAR_G', { default: '500' });
+// Fallback (cuando no hay credenciales o falla la API): base + por kg, con factor por zona.
+const ENVIO_FALLBACK_BASE = defineString('ENVIO_FALLBACK_BASE', { default: '2500' });
+const ENVIO_FALLBACK_POR_KG = defineString('ENVIO_FALLBACK_POR_KG', { default: '1200' });
+
 const REGION = 'southamerica-east1';
+
+// Factor de zona aproximado por el primer dígito del CP numérico.
+const ZONA_FACTOR = { 1: 1.0, 2: 1.3, 3: 1.5, 4: 1.6, 5: 1.5, 6: 1.4, 7: 1.5, 8: 1.8, 9: 2.1, 0: 1.3 };
+function estimarFallback(cpDestino, pesoGramos, cantidad) {
+  const base = Number(ENVIO_FALLBACK_BASE.value()) || 2500;
+  const porKg = Number(ENVIO_FALLBACK_POR_KG.value()) || 1200;
+  const kg = Math.max(0.5, ((pesoGramos || 500) * (cantidad || 1)) / 1000);
+  const dig = (String(cpDestino).match(/\d/) || ['1'])[0];
+  const factor = ZONA_FACTOR[dig] ?? 1.5;
+  const precio = Math.round((base + porKg * kg) * factor);
+  return { estimado: true, rates: [{ deliveredType: 'D', productType: 'EST', productName: 'Envío estimado a domicilio', price: precio }] };
+}
 
 // Redirige al sitio después de la acción (reset/verificación), si está seteado.
 const actionSettings = () => (siteUrl() ? { url: siteUrl(), handleCodeInApp: false } : undefined);
@@ -215,6 +240,36 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
       const orden = { id: event.params.id, ...despues };
       const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl() });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
+    }
+  }
+);
+
+// ── Callable: cotizar envío (Correo Argentino, con fallback estimado) ───────
+export const cotizarEnvio = onCall(
+  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD] },
+  async (request) => {
+    const cpDestino = String(request.data?.cpDestino || '').trim();
+    const cantidad = Number(request.data?.cantidad) || 1;
+    const pesoGramos = (Number(request.data?.pesoGramos) || Number(ENVIO_PESO_ESTANDAR_G.value()) || 500);
+    if (!cpDestino) throw new HttpsError('invalid-argument', 'Falta el código postal de destino.');
+
+    const cpOrigen = CA_CP_ORIGEN.value();
+    const hayCreds = CA_USER_TOKEN.value() && CA_PASSWORD_TOKEN.value() && CA_EMAIL.value() && CA_PASSWORD.value() && cpOrigen;
+
+    if (!hayCreds) {
+      return estimarFallback(cpDestino, pesoGramos, cantidad);
+    }
+    try {
+      const cfg = {
+        env: CA_ENV.value(),
+        userToken: CA_USER_TOKEN.value(), passwordToken: CA_PASSWORD_TOKEN.value(),
+        email: CA_EMAIL.value(), password: CA_PASSWORD.value(),
+      };
+      const r = await cotizarCorreo(cfg, { cpOrigen, cpDestino, pesoGramos, cantidad });
+      return { estimado: false, rates: r.rates || [], validTo: r.validTo || null };
+    } catch (err) {
+      logger.error('Cotización Correo falló, uso fallback:', err.message);
+      return estimarFallback(cpDestino, pesoGramos, cantidad);
     }
   }
 );
