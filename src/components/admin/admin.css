@@ -339,3 +339,6 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .pago-row { margin-bottom: 14px; }
 .pago-top { display: flex; justify-content: space-between; align-items: center; font-size: .9rem; margin-bottom: 6px; }
 .pago-pct { font-size: .78rem; color: var(--muted); margin-top: 4px; }
+
+/* Fila fija Consumidor Final */
+.cf-row td { background: var(--surface-alt, #f7f6f3); }

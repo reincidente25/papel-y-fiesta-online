@@ -4,7 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import { getCustomers, createCustomer, updateCustomer, deleteCustomer } from '../../services/customersService';
-import { CUSTOMER_TYPES, CUSTOMER_TYPES_LIST } from '../../constants';
+import { CUSTOMER_TYPES_LIST } from '../../constants';
 import { formatMoney } from '../../utils/format';
 
 const EMPTY = { nombre: '', telefono: '', email: '', tipo: 'minorista', saldoCtaCte: 0, notas: '' };
@@ -37,15 +37,23 @@ const Customers = () => {
     await deleteCustomer(c.id); load();
   };
 
-  const visible = items.filter((c) => c.nombre.toLowerCase().includes(search.toLowerCase()));
+  const q = search.trim().toLowerCase();
+  const visible = items.filter((c) => `${c.nombre || ''} ${c.email || ''} ${c.telefono || ''}`.toLowerCase().includes(q));
   const deuda = items.reduce((n, c) => n + (c.saldoCtaCte || 0), 0);
+  const web = items.filter((c) => c.origen === 'web').length;
+  const local = items.filter((c) => c.origen === 'local').length;
+
+  const origenBadge = (origen) => origen === 'web'
+    ? <span className="badge badge-info">🌐 Web</span>
+    : <span className="badge badge-muted">🏪 Local</span>;
 
   return (
     <AdminLayout title="Clientes">
-      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
+      <div className="kpi-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
         <div className="card kpi"><span className="kpi-icon">👥</span><span className="kpi-value">{items.length}</span><span className="kpi-label">Clientes</span></div>
-        <div className="card kpi"><span className="kpi-icon">🏢</span><span className="kpi-value">{items.filter((c) => c.tipo === 'mayorista').length}</span><span className="kpi-label">Mayoristas</span></div>
-        <div className="card kpi"><span className="kpi-icon">💳</span><span className="kpi-value">{formatMoney(deuda)}</span><span className="kpi-label">Total en cuenta corriente</span></div>
+        <div className="card kpi"><span className="kpi-icon">🌐</span><span className="kpi-value">{web}</span><span className="kpi-label">De la web</span></div>
+        <div className="card kpi"><span className="kpi-icon">🏪</span><span className="kpi-value">{local}</span><span className="kpi-label">Del local</span></div>
+        <div className="card kpi"><span className="kpi-icon">💳</span><span className="kpi-value">{formatMoney(deuda)}</span><span className="kpi-label">Cuenta corriente</span></div>
       </div>
 
       <div className="toolbar">
@@ -56,24 +64,41 @@ const Customers = () => {
       {loading ? <Loader /> : (
         <div className="table-wrap card">
           <table className="table">
-            <thead><tr><th>Cliente</th><th>Tipo</th><th>Teléfono</th><th>Email</th><th>Cta. corriente</th><th></th></tr></thead>
+            <thead><tr><th>Cliente</th><th>Origen</th><th>Teléfono</th><th>Email</th><th>Cta. corriente</th><th></th></tr></thead>
             <tbody>
+              {!search && (
+                <tr className="cf-row">
+                  <td><strong>Consumidor Final</strong></td>
+                  <td><span className="badge badge-warning">Mostrador</span></td>
+                  <td className="muted">—</td>
+                  <td className="muted">Venta pública sin cliente</td>
+                  <td className="muted">—</td>
+                  <td></td>
+                </tr>
+              )}
               {visible.length === 0 ? (
                 <tr><td colSpan={6} className="muted">No hay clientes.</td></tr>
               ) : visible.map((c) => (
                 <tr key={c.id}>
-                  <td><strong>{c.nombre}</strong></td>
-                  <td><span className="badge badge-muted">{CUSTOMER_TYPES[c.tipo]?.label || c.tipo}</span></td>
+                  <td>
+                    <strong>{c.nombre}</strong>
+                    {c.dni && <span className="muted" style={{ display: 'block', fontSize: '.8rem' }}>DNI {c.dni}</span>}
+                  </td>
+                  <td>{origenBadge(c.origen)}</td>
                   <td>{c.telefono || '—'}</td>
                   <td>{c.email || '—'}</td>
                   <td style={{ color: c.saldoCtaCte > 0 ? 'var(--danger)' : 'var(--text-soft)', fontWeight: c.saldoCtaCte > 0 ? 700 : 400 }}>
                     {formatMoney(c.saldoCtaCte || 0)}
                   </td>
                   <td>
-                    <div className="table-actions">
-                      <button className="btn btn-ghost btn-sm" onClick={() => openEdit(c)}>Editar</button>
-                      <button className="btn btn-danger btn-sm" onClick={() => remove(c)}>✕</button>
-                    </div>
+                    {c.origen === 'local' ? (
+                      <div className="table-actions">
+                        <button className="btn btn-ghost btn-sm" onClick={() => openEdit(c)}>Editar</button>
+                        <button className="btn btn-danger btn-sm" onClick={() => remove(c)}>✕</button>
+                      </div>
+                    ) : (
+                      <span className="muted" style={{ fontSize: '.8rem' }}>Gestiona su perfil</span>
+                    )}
                   </td>
                 </tr>
               ))}
