@@ -5,16 +5,44 @@
 // NUNCA devuelve el precio de costo, y solo responde a usuarios admin de la tienda.
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
-import { defineString } from 'firebase-functions/params';
+import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import { defineString, defineSecret } from 'firebase-functions/params';
+import { logger } from 'firebase-functions';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { sendEmail } from './lib/brevo.js';
+import {
+  welcomeEmail, emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
+} from './lib/emails.js';
 
 // ── Parámetros de configuración (se definen al desplegar) ──────────────────
 // projectId del POS y nombre de la colección de productos en el POS.
 const POS_PROJECT_ID = defineString('POS_PROJECT_ID');
 const POS_COLLECTION = defineString('POS_COLLECTION', { default: 'productos' });
 
+// ── Emails transaccionales (Brevo) ─────────────────────────────────────────
+// Secret: se carga con `firebase functions:secrets:set BREVO_API_KEY`.
+const BREVO_API_KEY = defineSecret('BREVO_API_KEY');
+// Remitente (debe estar verificado en Brevo) y datos del sitio / admin.
+const BREVO_SENDER_EMAIL = defineString('BREVO_SENDER_EMAIL');
+const BREVO_SENDER_NAME = defineString('BREVO_SENDER_NAME', { default: 'Papel & Fiesta' });
+const ADMIN_NOTIFY_EMAIL = defineString('ADMIN_NOTIFY_EMAIL', { default: '' });
+const SITE_URL = defineString('SITE_URL', { default: '' });
+
 const REGION = 'southamerica-east1';
+
+const sender = () => ({ email: BREVO_SENDER_EMAIL.value(), name: BREVO_SENDER_NAME.value() });
+const siteUrl = () => SITE_URL.value() || '';
+
+// Envía un email y nunca tira el error hacia arriba (no debe romper el trigger).
+async function enviar({ to, subject, html }) {
+  try {
+    if (!BREVO_SENDER_EMAIL.value()) { logger.warn('BREVO_SENDER_EMAIL sin configurar; no se envía.'); return; }
+    await sendEmail({ apiKey: BREVO_API_KEY.value(), sender: sender(), to, subject, html });
+  } catch (err) {
+    logger.error('Error enviando email por Brevo:', err.message);
+  }
+}
 
 // App por defecto = proyecto de la TIENDA (usa las credenciales del runtime).
 const tiendaApp = initializeApp();
@@ -71,3 +99,66 @@ export const listPosProducts = onCall({ region: REGION }, async (request) => {
 
   return { items, total: items.length };
 });
+
+// ── Trigger: alta de usuario → email de bienvenida ─────────────────────────
+export const onUsuarioCreado = onDocumentCreated(
+  { document: 'usuarios/{uid}', region: REGION, secrets: [BREVO_API_KEY] },
+  async (event) => {
+    const u = event.data?.data();
+    if (!u?.email) return;
+    const { subject, html } = welcomeEmail({ nombre: u.nombre, siteUrl: siteUrl() });
+    await enviar({ to: [{ email: u.email, name: u.nombre || undefined }], subject, html });
+  }
+);
+
+// ── Trigger: cambio de email → aviso al correo nuevo y al anterior ──────────
+export const onUsuarioActualizado = onDocumentUpdated(
+  { document: 'usuarios/{uid}', region: REGION, secrets: [BREVO_API_KEY] },
+  async (event) => {
+    const antes = event.data?.before?.data();
+    const despues = event.data?.after?.data();
+    if (!antes || !despues) return;
+    if (antes.email && despues.email && antes.email !== despues.email) {
+      // Aviso al correo nuevo (confirmación).
+      const nuevo = emailChangedEmail({ nombre: despues.nombre, emailNuevo: despues.email, aviso: 'nuevo', siteUrl: siteUrl() });
+      await enviar({ to: [{ email: despues.email, name: despues.nombre || undefined }], subject: nuevo.subject, html: nuevo.html });
+      // Aviso al correo anterior (seguridad).
+      const viejo = emailChangedEmail({ nombre: despues.nombre, emailNuevo: despues.email, aviso: 'viejo', siteUrl: siteUrl() });
+      await enviar({ to: [{ email: antes.email }], subject: viejo.subject, html: viejo.html });
+    }
+  }
+);
+
+// ── Trigger: nuevo pedido → confirmación al cliente + aviso al admin ────────
+export const onPedidoCreado = onDocumentCreated(
+  { document: 'pedidos/{id}', region: REGION, secrets: [BREVO_API_KEY] },
+  async (event) => {
+    const d = event.data?.data();
+    if (!d) return;
+    const orden = { id: event.params.id, ...d };
+    if (orden.email) {
+      const { subject, html } = orderReceivedEmail({ nombre: orden.cliente, orden, siteUrl: siteUrl() });
+      await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
+    }
+    const adminMail = ADMIN_NOTIFY_EMAIL.value();
+    if (adminMail) {
+      const { subject, html } = adminNewOrderEmail({ orden, siteUrl: siteUrl() });
+      await enviar({ to: [{ email: adminMail }], subject, html });
+    }
+  }
+);
+
+// ── Trigger: cambio de estado del pedido → email al cliente ─────────────────
+export const onPedidoEstadoCambiado = onDocumentUpdated(
+  { document: 'pedidos/{id}', region: REGION, secrets: [BREVO_API_KEY] },
+  async (event) => {
+    const antes = event.data?.before?.data();
+    const despues = event.data?.after?.data();
+    if (!antes || !despues) return;
+    if (antes.estado !== despues.estado && despues.email) {
+      const orden = { id: event.params.id, ...despues };
+      const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl() });
+      await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
+    }
+  }
+);
