@@ -154,8 +154,9 @@
 .profile { max-width: 860px; padding-bottom: 48px; }
 .profile-card { padding: 22px; }
 .save-ok { color: var(--success, #1faa59); font-weight: 600; font-size: .9rem; align-self: center; }
-.dom-table-wrap { padding: 0; overflow: hidden; }
-.dom-table { width: 100%; border-collapse: collapse; }
+.dom-table-wrap { padding: 0; overflow-x: auto; }
+.dom-table { width: 100%; border-collapse: collapse; min-width: 760px; }
+.dom-table th, .dom-table td { white-space: nowrap; }
 .dom-table thead th { text-align: left; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--brand-ink, #2b2b2b); background: var(--brand-orange-soft, #fde9cf); padding: 12px 16px; }
 .dom-table th.dom-th-acc { text-align: right; }
 .dom-table tbody td { padding: 14px 16px; border-top: 1px solid var(--border); font-size: .92rem; vertical-align: middle; }
@@ -165,6 +166,8 @@
 .dom-td-acc { text-align: right; white-space: nowrap; }
 @media (max-width: 620px) {
   .dom-table thead { display: none; }
+  .dom-table { min-width: 0; }
+  .dom-table th, .dom-table td { white-space: normal; }
   .dom-table, .dom-table tbody, .dom-table tr, .dom-table td { display: block; width: 100%; }
   .dom-table tbody tr { border-top: 1px solid var(--border); padding: 6px 0; }
   .dom-table tbody td { border: none; padding: 6px 16px; }

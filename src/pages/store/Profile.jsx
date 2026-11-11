@@ -178,16 +178,25 @@ const Profile = () => {
           <div className="card dom-table-wrap">
             <table className="dom-table">
               <thead>
-                <tr><th>Etiqueta</th><th>Dirección</th><th>Default</th><th className="dom-th-acc">Acciones</th></tr>
+                <tr>
+                  <th>Etiqueta</th><th>Calle</th><th>N°</th><th>Piso</th>
+                  <th>Localidad</th><th>Provincia</th><th>CP</th>
+                  <th>Default</th><th className="dom-th-acc">Acciones</th>
+                </tr>
               </thead>
               <tbody>
                 {domicilios.map((d) => (
                   <tr key={d.id} className={d.predeterminado ? 'is-default' : ''}>
                     <td data-label="Etiqueta"><strong>{d.etiqueta || 'Domicilio'}</strong></td>
-                    <td data-label="Dirección">
-                      {resumen(d)}
+                    <td data-label="Calle">
+                      {d.calle || '—'}
                       {d.notas && <span className="dom-notas">{d.notas}</span>}
                     </td>
+                    <td data-label="N°">{d.numero || '—'}</td>
+                    <td data-label="Piso">{d.piso || '—'}</td>
+                    <td data-label="Localidad">{d.localidad || '—'}</td>
+                    <td data-label="Provincia">{d.provincia || '—'}</td>
+                    <td data-label="CP">{d.cp || '—'}</td>
                     <td data-label="Default">
                       {d.predeterminado
                         ? <span className="badge badge-success">★ Predeterminado</span>
