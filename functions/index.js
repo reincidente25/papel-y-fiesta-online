@@ -10,9 +10,11 @@ import { defineString, defineSecret } from 'firebase-functions/params';
 import { logger } from 'firebase-functions';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
 import { getFirestore } from 'firebase-admin/firestore';
+import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
 import {
-  welcomeEmail, emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
+  welcomeEmail, verifyEmail, passwordResetEmail,
+  emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
 } from './lib/emails.js';
 
 // ── Parámetros de configuración (se definen al desplegar) ──────────────────
@@ -29,7 +31,16 @@ const BREVO_SENDER_NAME = defineString('BREVO_SENDER_NAME', { default: 'Papel & 
 const ADMIN_NOTIFY_EMAIL = defineString('ADMIN_NOTIFY_EMAIL', { default: '' });
 const SITE_URL = defineString('SITE_URL', { default: '' });
 
+// Estados de pedido que SÍ disparan email al cliente (coma-separados).
+// Por defecto, solo los relevantes: evitamos spamear al cliente en cada paso.
+const NOTIFY_ESTADOS = defineString('NOTIFY_ESTADOS', {
+  default: 'confirmado,pagado,enviado,entregado,cancelado',
+});
+
 const REGION = 'southamerica-east1';
+
+// Redirige al sitio después de la acción (reset/verificación), si está seteado.
+const actionSettings = () => (siteUrl() ? { url: siteUrl(), handleCodeInApp: false } : undefined);
 
 const sender = () => ({ email: BREVO_SENDER_EMAIL.value(), name: BREVO_SENDER_NAME.value() });
 const siteUrl = () => SITE_URL.value() || '';
@@ -106,8 +117,51 @@ export const onUsuarioCreado = onDocumentCreated(
   async (event) => {
     const u = event.data?.data();
     if (!u?.email) return;
-    const { subject, html } = welcomeEmail({ nombre: u.nombre, siteUrl: siteUrl() });
+    // Intentamos incluir el link de verificación en el mismo email de bienvenida.
+    let verifyLink;
+    try {
+      verifyLink = await getAuth(tiendaApp).generateEmailVerificationLink(u.email, actionSettings());
+    } catch (err) {
+      logger.warn('No se pudo generar link de verificación:', err.message);
+    }
+    const { subject, html } = welcomeEmail({ nombre: u.nombre, siteUrl: siteUrl(), verifyLink });
     await enviar({ to: [{ email: u.email, name: u.nombre || undefined }], subject, html });
+  }
+);
+
+// ── Callable: enviar email de verificación (reenvío) ───────────────────────
+export const enviarVerificacion = onCall(
+  { region: REGION, secrets: [BREVO_API_KEY] },
+  async (request) => {
+    if (!request.auth) throw new HttpsError('unauthenticated', 'Necesitás iniciar sesión.');
+    const { uid } = request.auth;
+    const userRec = await getAuth(tiendaApp).getUser(uid);
+    if (!userRec.email) throw new HttpsError('failed-precondition', 'Tu cuenta no tiene email.');
+    if (userRec.emailVerified) return { ok: true, yaVerificado: true };
+    const link = await getAuth(tiendaApp).generateEmailVerificationLink(userRec.email, actionSettings());
+    const { subject, html } = verifyEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl() });
+    await enviar({ to: [{ email: userRec.email, name: userRec.displayName || undefined }], subject, html });
+    return { ok: true };
+  }
+);
+
+// ── Callable: enviar email de reseteo de contraseña ────────────────────────
+// Público (como el reset estándar). No revela si el email existe o no.
+export const enviarResetPassword = onCall(
+  { region: REGION, secrets: [BREVO_API_KEY] },
+  async (request) => {
+    const email = String(request.data?.email || '').trim().toLowerCase();
+    if (!email) throw new HttpsError('invalid-argument', 'Falta el email.');
+    try {
+      const userRec = await getAuth(tiendaApp).getUserByEmail(email);
+      const link = await getAuth(tiendaApp).generatePasswordResetLink(email, actionSettings());
+      const { subject, html } = passwordResetEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl() });
+      await enviar({ to: [{ email, name: userRec.displayName || undefined }], subject, html });
+    } catch (err) {
+      // No filtramos si el email existe: respondemos ok igual.
+      logger.info('Reset solicitado para email no registrado o error:', err.message);
+    }
+    return { ok: true };
   }
 );
 
@@ -156,6 +210,8 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
     const despues = event.data?.after?.data();
     if (!antes || !despues) return;
     if (antes.estado !== despues.estado && despues.email) {
+      const permitidos = NOTIFY_ESTADOS.value().split(',').map((s) => s.trim()).filter(Boolean);
+      if (!permitidos.includes(despues.estado)) return; // estado silenciado
       const orden = { id: event.params.id, ...despues };
       const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl() });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });

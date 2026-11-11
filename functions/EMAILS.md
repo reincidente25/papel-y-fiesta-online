@@ -9,7 +9,15 @@ Los emails salen solos mediante **triggers de Firestore** (Cloud Functions, regi
 | `onUsuarioCreado` | se crea `usuarios/{uid}` (registro) | cliente (bienvenida) |
 | `onUsuarioActualizado` | cambia `email` en `usuarios/{uid}` | correo nuevo + correo anterior |
 | `onPedidoCreado` | se crea `pedidos/{id}` | cliente (confirmación) + admin (aviso) |
-| `onPedidoEstadoCambiado` | cambia `estado` en `pedidos/{id}` | cliente |
+| `onPedidoEstadoCambiado` | cambia `estado` en `pedidos/{id}` | cliente (solo estados elegidos) |
+| `enviarVerificacion` (callable) | el cliente pide reenviar la verificación | cliente |
+| `enviarResetPassword` (callable) | el cliente pide restablecer su contraseña | cliente |
+
+El **email de bienvenida** ya incluye el botón de **verificar email** (link generado con el Admin SDK). El **reset de contraseña** y la **verificación** se mandan 100% por Brevo (la app llama a las Cloud Functions; ya no usa el envío por defecto de Firebase).
+
+### ¿Qué estados avisan al cliente?
+Configurable con el parámetro `NOTIFY_ESTADOS` (coma-separado). Por defecto:
+`confirmado,pagado,enviado,entregado,cancelado` (se omiten `pendiente` —ya cubierto por "pedido recibido"— y `pago_informado`, que es interno).
 
 ## Configuración (una sola vez)
 

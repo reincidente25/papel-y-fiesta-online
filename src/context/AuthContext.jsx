@@ -8,7 +8,8 @@ import {
   updateProfile,
   signOut,
 } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '../config/firebase';
+import { httpsCallable } from 'firebase/functions';
+import { auth, functions, isFirebaseConfigured } from '../config/firebase';
 import { createUserProfile, getUserProfile } from '../services/usersService';
 import { ROLES } from '../constants';
 
@@ -51,7 +52,18 @@ export const AuthProvider = ({ children }) => {
     return cred;
   };
 
-  const resetPassword = (email) => sendPasswordResetEmail(auth, email);
+  // Reset de contraseña: usa Brevo (Cloud Function). Si falla, cae al envío
+  // estándar de Firebase Auth para no dejar al usuario sin opción.
+  const resetPassword = async (email) => {
+    try {
+      await httpsCallable(functions, 'enviarResetPassword')({ email });
+    } catch {
+      await sendPasswordResetEmail(auth, email);
+    }
+  };
+
+  // Reenviar el email de verificación (vía Brevo).
+  const reenviarVerificacion = () => httpsCallable(functions, 'enviarVerificacion')();
 
   const logout = () => signOut(auth);
 
@@ -59,7 +71,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, profile, isAdmin, loading, login, register, resetPassword, logout, demoMode: DEMO }}
+      value={{ user, profile, isAdmin, loading, login, register, resetPassword, reenviarVerificacion, logout, demoMode: DEMO }}
     >
       {!loading && children}
     </AuthContext.Provider>

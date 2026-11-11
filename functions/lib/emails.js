@@ -54,14 +54,43 @@ function layout({ titulo, cuerpo, cta, siteUrl }) {
   </table></body></html>`;
 }
 
-export function welcomeEmail({ nombre, siteUrl }) {
+export function welcomeEmail({ nombre, siteUrl, verifyLink }) {
+  const cuerpoVerif = verifyLink
+    ? `<br/><br/>Para empezar, confirmá tu email con el botón de abajo.`
+    : '';
   return {
     subject: '¡Bienvenido/a a Papel & Fiesta! 🎉',
     html: layout({
       siteUrl,
       titulo: `¡Hola${nombre ? ' ' + nombre : ''}! 👋`,
-      cuerpo: `Tu cuenta en <strong>Papel &amp; Fiesta</strong> ya está activa. Desde ahora podés hacer pedidos y seguir su estado en todo momento.<br/><br/>¡Gracias por sumarte!`,
-      cta: siteUrl ? { url: `${siteUrl}/catalogo`, label: 'Ver el catálogo' } : null,
+      cuerpo: `Tu cuenta en <strong>Papel &amp; Fiesta</strong> ya está activa. Desde ahora podés hacer pedidos y seguir su estado en todo momento.${cuerpoVerif}<br/><br/>¡Gracias por sumarte!`,
+      cta: verifyLink
+        ? { url: verifyLink, label: 'Confirmar mi email' }
+        : (siteUrl ? { url: `${siteUrl}/catalogo`, label: 'Ver el catálogo' } : null),
+    }),
+  };
+}
+
+export function verifyEmail({ nombre, link, siteUrl }) {
+  return {
+    subject: 'Confirmá tu email · Papel & Fiesta',
+    html: layout({
+      siteUrl,
+      titulo: 'Confirmá tu email ✉️',
+      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, hacé clic en el botón para verificar tu dirección de correo y activar todas las funciones de tu cuenta.<br/><br/>Si no creaste una cuenta en Papel &amp; Fiesta, ignorá este mensaje.`,
+      cta: { url: link, label: 'Verificar mi email' },
+    }),
+  };
+}
+
+export function passwordResetEmail({ nombre, link, siteUrl }) {
+  return {
+    subject: 'Restablecé tu contraseña · Papel & Fiesta',
+    html: layout({
+      siteUrl,
+      titulo: 'Restablecer contraseña 🔑',
+      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, recibimos un pedido para restablecer la contraseña de tu cuenta. Hacé clic en el botón para elegir una nueva.<br/><br/>El enlace vence en 1 hora. Si no fuiste vos, ignorá este correo: tu contraseña no cambia.`,
+      cta: { url: link, label: 'Crear nueva contraseña' },
     }),
   };
 }
