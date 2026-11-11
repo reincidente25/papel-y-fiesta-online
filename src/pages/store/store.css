@@ -240,12 +240,13 @@
 .co-sum-item:first-child { padding-top: 0; }
 .co-sum-item:last-child { border-bottom: none; }
 .co-sum-item img, .co-sum-ph { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--surface, #fff); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
-.co-sum-name { font-weight: 600; font-size: .88rem; line-height: 1.3; }
+.co-sum-item > div { min-width: 0; }
+.co-sum-name { font-weight: 600; font-size: .88rem; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .co-sum-price { font-weight: 700; font-size: .88rem; white-space: nowrap; }
 .co-sum-total { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); font-family: var(--font-head, inherit); font-weight: 800; font-size: 1.05rem; }
 
 /* Checkout opción C: tarjetas + resumen sticky */
-.co-grid { display: grid; grid-template-columns: 1fr 380px; gap: 22px; align-items: start; }
+.co-grid { display: grid; grid-template-columns: 1fr 460px; gap: 22px; align-items: start; }
 @media (max-width: 760px) { .co-grid { grid-template-columns: 1fr; } .co-sum-sticky { position: static; } }
 .co-dom-select { max-width: 280px; }
 .co-dom-full { font-size: .85rem; color: var(--muted); margin: 8px 0 0; }
