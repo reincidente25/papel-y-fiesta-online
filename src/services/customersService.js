@@ -4,8 +4,7 @@
 // opera sobre los clientes locales; los de la web se leen (los gestiona el
 // propio usuario desde su perfil).
 import {
-  collection, doc, getDocs, addDoc, updateDoc, deleteDoc,
-  query, where, serverTimestamp,
+  collection, doc, getDocs, addDoc, updateDoc, deleteDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
 import { MOCK_MODE } from '../config/app';
@@ -23,16 +22,19 @@ export async function getCustomers() {
 
   const [locSnap, webSnap] = await Promise.all([
     getDocs(collection(db, COL)),
-    getDocs(query(collection(db, 'usuarios'), where('rol', '==', ROLES.CLIENTE))),
+    getDocs(collection(db, 'usuarios')),
   ]);
 
   const locales = locSnap.docs.map((d) => ({
     id: d.id, origen: 'local', tipo: 'minorista', saldoCtaCte: 0, ...d.data(),
   }));
 
-  const web = webSnap.docs.map((d) => {
-    const u = d.data();
-    return {
+  // Todos los usuarios registrados menos los admin (aunque tengan datos vacíos).
+  const web = webSnap.docs
+    .filter((d) => d.data().rol !== ROLES.ADMIN)
+    .map((d) => {
+      const u = d.data();
+      return {
       id: d.id, origen: 'web',
       nombre: nombreCompleto(u),
       email: u.email || '',
