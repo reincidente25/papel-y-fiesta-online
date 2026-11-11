@@ -1,7 +1,7 @@
 // src/components/store/AddressAutocomplete.jsx
 // Buscador de dirección (Georef) + campos editables. Devuelve el domicilio por onChange.
 import { useEffect, useState } from 'react';
-import { buscarDirecciones } from '../../services/geoService';
+import { buscarDirecciones, buscarCodigoPostal } from '../../services/geoService';
 import MiniMap from '../common/MiniMap';
 
 const AddressAutocomplete = ({ value, onChange }) => {
@@ -24,10 +24,14 @@ const AddressAutocomplete = ({ value, onChange }) => {
     return () => { clearTimeout(t); ctrl.abort(); };
   }, [busqueda]);
 
-  const elegir = (s) => {
-    onChange?.({ ...dir, calle: s.calle, numero: s.numero || dir.numero, localidad: s.localidad, provincia: s.provincia, lat: s.lat, lon: s.lon });
+  const elegir = async (s) => {
+    const base = { ...dir, calle: s.calle, numero: s.numero || dir.numero, localidad: s.localidad, provincia: s.provincia, lat: s.lat, lon: s.lon };
+    onChange?.(base);
     setBusqueda('');
     setSugerencias([]);
+    // Completa el CP por coordenadas (best-effort), sin pisar lo que haya cargado.
+    const cp = await buscarCodigoPostal(s.lat, s.lon);
+    if (cp && !dir.cp) onChange?.({ ...base, cp });
   };
 
   return (

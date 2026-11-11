@@ -6,7 +6,7 @@ import StoreLayout from '../../components/store/StoreLayout';
 import Modal from '../../components/common/Modal';
 import MiniMap from '../../components/common/MiniMap';
 import { useAuth } from '../../context/AuthContext';
-import { buscarDirecciones } from '../../services/geoService';
+import { buscarDirecciones, buscarCodigoPostal } from '../../services/geoService';
 import './store.css';
 
 const nuevoDomId = () => `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
@@ -90,7 +90,7 @@ const Profile = () => {
   const abrirEditar = (d) => { setBusqueda(''); setSugerencias([]); setModal({ ...d }); };
 
   // Completa los campos desde una sugerencia de Georef.
-  const elegirSugerencia = (s) => {
+  const elegirSugerencia = async (s) => {
     setModal((m) => ({
       ...m,
       calle: s.calle, numero: s.numero || m.numero,
@@ -99,6 +99,8 @@ const Profile = () => {
     }));
     setBusqueda('');
     setSugerencias([]);
+    const cp = await buscarCodigoPostal(s.lat, s.lon);
+    if (cp) setModal((m) => (m && !m.cp ? { ...m, cp } : m));
   };
 
   const guardarDom = async (e) => {

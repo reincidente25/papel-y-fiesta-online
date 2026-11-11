@@ -32,3 +32,18 @@ export async function buscarDirecciones(texto, { max = 8, signal } = {}) {
     };
   }).filter((d) => d.calle);
 }
+
+// Georef no trae el código postal. Lo buscamos (best-effort) por coordenadas
+// con Nominatim (OpenStreetMap). Devuelve el CP o '' si no lo encuentra.
+export async function buscarCodigoPostal(lat, lon, { signal } = {}) {
+  if (lat == null || lon == null) return '';
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+    const res = await fetch(url, { signal, headers: { 'Accept-Language': 'es' } });
+    if (!res.ok) return '';
+    const data = await res.json();
+    return data?.address?.postcode || '';
+  } catch {
+    return '';
+  }
+}
