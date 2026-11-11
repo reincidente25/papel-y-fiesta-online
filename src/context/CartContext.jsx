@@ -1,18 +1,34 @@
 // src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext(null);
-const STORAGE_KEY = 'pf_cart';
+const GUEST_KEY = 'pf_cart_guest';
+const keyFor = (user) => (user ? `pf_cart_${user.uid}` : GUEST_KEY);
+
+const leer = (key) => {
+  try { const raw = localStorage.getItem(key); return raw ? JSON.parse(raw) : []; }
+  catch { return []; }
+};
+const escribir = (key, items) => {
+  try { localStorage.setItem(key, JSON.stringify(items)); } catch { /* ignore */ }
+};
+// Fusiona dos carritos (suma cantidades por id de línea).
+const fusionar = (a = [], b = []) => {
+  const map = new Map(a.map((i) => [i.id, { ...i }]));
+  for (const it of b) {
+    const ex = map.get(it.id);
+    if (ex) ex.cantidad += it.cantidad;
+    else map.set(it.id, { ...it });
+  }
+  return [...map.values()];
+};
 
 export const CartProvider = ({ children }) => {
-  const [items, setItems] = useState(() => {
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
-  });
+  const { user } = useAuth();
+  const [items, setItems] = useState(() => leer(keyFor(user)));
+  const keyRef = useRef(keyFor(user));
+  const listo = useRef(true);
 
   // Aviso tipo "toast" (ej: "Agregado al carrito").
   const [toast, setToast] = useState('');
@@ -23,12 +39,31 @@ export const CartProvider = ({ children }) => {
     toastTimer.current = setTimeout(() => setToast(''), 2200);
   };
 
+  // Cambia el carrito al iniciar/cerrar sesión. Al loguearse, fusiona lo que
+  // el invitado tenía con el carrito guardado del usuario.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-    } catch {
-      /* ignore */
+    const nuevaKey = keyFor(user);
+    if (nuevaKey === keyRef.current) return;
+    const anterior = keyRef.current;
+    listo.current = false;
+    if (user && anterior === GUEST_KEY) {
+      const invitado = leer(GUEST_KEY);
+      const delUsuario = leer(nuevaKey);
+      const merged = invitado.length ? fusionar(delUsuario, invitado) : delUsuario;
+      setItems(merged);
+      escribir(nuevaKey, merged);
+      escribir(GUEST_KEY, []);
+    } else {
+      setItems(leer(nuevaKey));
     }
+    keyRef.current = nuevaKey;
+  }, [user]);
+
+  // Persiste el carrito en la clave actual. Tras un cambio de sesión salteamos
+  // una vuelta para no pisar el carrito ya fusionado con el estado viejo.
+  useEffect(() => {
+    if (!listo.current) { listo.current = true; return; }
+    escribir(keyRef.current, items);
   }, [items]);
 
   const addItem = (product, cantidad = 1, variante = null) => {
