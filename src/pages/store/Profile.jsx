@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import Modal from '../../components/common/Modal';
 import { useAuth } from '../../context/AuthContext';
+import { buscarDirecciones } from '../../services/geoService';
 import './store.css';
 
 const nuevoDomId = () => `d${Date.now().toString(36)}${Math.random().toString(36).slice(2, 5)}`;
@@ -21,6 +22,11 @@ const Profile = () => {
   const [modal, setModal] = useState(null); // domicilio en edición (o null)
   const [savingDom, setSavingDom] = useState(false);
 
+  // Autocompletado de direcciones (Georef)
+  const [busqueda, setBusqueda] = useState('');
+  const [sugerencias, setSugerencias] = useState([]);
+  const [buscando, setBuscando] = useState(false);
+
   useEffect(() => {
     if (!profile) return;
     setDatos({
@@ -31,6 +37,21 @@ const Profile = () => {
     });
     setDomicilios(profile.domicilios || []);
   }, [profile, user]);
+
+  // Busca direcciones (con debounce) mientras se escribe en el buscador.
+  useEffect(() => {
+    if (!modal) return undefined;
+    if (busqueda.trim().length < 4) { setSugerencias([]); return undefined; }
+    const ctrl = new AbortController();
+    const t = setTimeout(async () => {
+      setBuscando(true);
+      try {
+        setSugerencias(await buscarDirecciones(busqueda, { signal: ctrl.signal }));
+      } catch { /* abortado o sin red */ }
+      finally { setBuscando(false); }
+    }, 350);
+    return () => { clearTimeout(t); ctrl.abort(); };
+  }, [busqueda, modal]);
 
   if (!user) {
     return (
@@ -64,8 +85,20 @@ const Profile = () => {
     await saveProfile({ domicilios: lista });
   };
 
-  const abrirNuevo = () => setModal({ ...DOM_VACIO, id: nuevoDomId() });
-  const abrirEditar = (d) => setModal({ ...d });
+  const abrirNuevo = () => { setBusqueda(''); setSugerencias([]); setModal({ ...DOM_VACIO, id: nuevoDomId() }); };
+  const abrirEditar = (d) => { setBusqueda(''); setSugerencias([]); setModal({ ...d }); };
+
+  // Completa los campos desde una sugerencia de Georef.
+  const elegirSugerencia = (s) => {
+    setModal((m) => ({
+      ...m,
+      calle: s.calle, numero: s.numero || m.numero,
+      localidad: s.localidad, provincia: s.provincia,
+      lat: s.lat, lon: s.lon,
+    }));
+    setBusqueda('');
+    setSugerencias([]);
+  };
 
   const guardarDom = async (e) => {
     e.preventDefault();
@@ -163,6 +196,28 @@ const Profile = () => {
       <Modal open={Boolean(modal)} onClose={() => setModal(null)} title={modal && domicilios.some((d) => d.id === modal.id) ? 'Editar domicilio' : 'Nuevo domicilio'} width={540}>
         {modal && (
           <form className="stack gap-12" onSubmit={guardarDom}>
+            <div className="field dir-search">
+              <label>Buscar dirección 🔎</label>
+              <input className="input" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
+                placeholder="Ej: Av. Corrientes 1234, Rosario" autoComplete="off" />
+              <span className="hint">Escribí calle y altura; elegí de la lista para completar solo.</span>
+              {(buscando || sugerencias.length > 0) && (
+                <div className="dir-results">
+                  {buscando && <div className="dir-item muted">Buscando…</div>}
+                  {sugerencias.map((s, i) => (
+                    <button type="button" className="dir-item" key={i} onClick={() => elegirSugerencia(s)}>
+                      📍 {s.label}{s.localidad ? <span className="muted"> · {s.localidad}, {s.provincia}</span> : null}
+                    </button>
+                  ))}
+                  {!buscando && sugerencias.length === 0 && busqueda.trim().length >= 4 && (
+                    <div className="dir-item muted">Sin resultados. Podés cargarla a mano abajo.</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {modal.lat != null && <span className="dir-geo">📌 Ubicación detectada ({Number(modal.lat).toFixed(4)}, {Number(modal.lon).toFixed(4)})</span>}
+
             <div className="field"><label>Etiqueta</label>
               <input className="input" value={modal.etiqueta} onChange={(e) => setM('etiqueta', e.target.value)} placeholder="Casa, Trabajo…" /></div>
             <div className="form-grid">
