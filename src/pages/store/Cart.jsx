@@ -132,7 +132,7 @@ const Cart = () => {
       </div>
 
       {/* Checkout: secciones en tarjetas + resumen sticky */}
-      <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={920}>
+      <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={1080}>
         {(() => {
           const listo = form.nombre.trim() && form.telefono.trim()
             && (form.entrega === 'retiro' || (form.entrega === 'envio' && domicilioElegido?.calle));
@@ -153,16 +153,19 @@ const Cart = () => {
                   <div className="co-card">
                     <h4>📍 Domicilio</h4>
                     {domicilios.length > 0 && (
-                      <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
-                        {domicilios.map((d) => (
-                          <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
-                        ))}
-                        <option value="otra">✏️ Otra dirección…</option>
-                      </select>
+                      <>
+                        <select className="select co-dom-select" value={domSel} onChange={(e) => setDomSel(e.target.value)}>
+                          {domicilios.map((d) => (
+                            <option key={d.id} value={d.id}>{d.etiqueta || 'Domicilio'}{d.predeterminado ? ' ★' : ''}</option>
+                          ))}
+                          <option value="otra">✏️ Otra dirección…</option>
+                        </select>
+                        {domSel && domSel !== 'otra' && (
+                          <p className="co-dom-full">{resumenDir(domicilios.find((d) => d.id === domSel))}</p>
+                        )}
+                      </>
                     )}
-                    {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
-                      <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
-                    ) : (
+                    {(domicilios.length === 0 || domSel === 'otra') && (
                       <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
                     )}
                   </div>
@@ -177,8 +180,6 @@ const Cart = () => {
                       <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
                     <div className="field full"><label>Email</label>
                       <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
-                    <div className="field full"><label>Notas (opcional)</label>
-                      <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Horario de entrega, referencia…" /></div>
                   </div>
                 </div>
               </div>
