@@ -169,7 +169,7 @@ export function adminNewOrderEmail({ orden, siteUrl }) {
       cuerpo: `<strong>Cliente:</strong> ${orden.cliente || '—'}<br/>
         <strong>Email:</strong> ${orden.email || '—'}<br/>
         <strong>Teléfono:</strong> ${orden.telefono || '—'}<br/>
-        <strong>Entrega:</strong> ${orden.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro en el local'}
+        <strong>Entrega:</strong> ${orden.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro en el local'}${orden.entrega === 'envio' && orden.direccionTexto ? `<br/><strong>Domicilio:</strong> ${orden.direccionTexto}` : ''}
         ${itemsTabla(orden.items)}
         <div style="font-size:16px;font-weight:800;">Total: ${money(orden.total)}</div>
         ${orden.notas ? `<div style="font-size:13px;color:${BRAND.muted};margin-top:8px;">Notas: ${orden.notas}</div>` : ''}`,

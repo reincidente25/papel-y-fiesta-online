@@ -1,16 +1,19 @@
 // src/pages/store/Cart.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
+import AddressAutocomplete from '../../components/store/AddressAutocomplete';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
 import { formatMoney } from '../../utils/format';
 import './store.css';
 
+const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
+
 const Cart = () => {
   const { items, setQty, removeItem, total, clearCart } = useCart();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
   const [checkout, setCheckout] = useState(false);
@@ -22,7 +25,30 @@ const Cart = () => {
     notas: '',
   });
 
+  const domicilios = profile?.domicilios || [];
+  // Domicilio elegido: id guardado, 'otra' (escribir), o '' (sin elegir).
+  const [domSel, setDomSel] = useState('');
+  const [otraDir, setOtraDir] = useState({});
+
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
+
+  // Prefill con los datos del perfil cuando se abre el checkout.
+  useEffect(() => {
+    if (!profile) return;
+    setForm((f) => ({
+      ...f,
+      nombre: f.nombre || [profile.nombre, profile.apellido].filter(Boolean).join(' ') || user?.displayName || '',
+      telefono: f.telefono || profile.whatsapp || profile.telefono || '',
+      email: f.email || profile.email || user?.email || '',
+    }));
+    const pred = domicilios.find((d) => d.predeterminado) || domicilios[0];
+    if (pred && !domSel) setDomSel(pred.id);
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Domicilio final según la selección.
+  const domicilioElegido = form.entrega !== 'envio'
+    ? null
+    : (domSel && domSel !== 'otra' ? domicilios.find((d) => d.id === domSel) : otraDir);
 
   const handleCheckout = async (e) => {
     e.preventDefault();
@@ -34,6 +60,8 @@ const Cart = () => {
         email: form.email,
         telefono: form.telefono,
         entrega: form.entrega,
+        domicilio: form.entrega === 'envio' ? (domicilioElegido || null) : null,
+        direccionTexto: form.entrega === 'envio' ? resumenDir(domicilioElegido) : '',
         notas: form.notas,
         items,
         total,
@@ -112,10 +140,30 @@ const Cart = () => {
                     <option value="retiro">Retiro en el local</option>
                     <option value="envio">Envío a domicilio</option>
                   </select></div>
+
+                {form.entrega === 'envio' && (
+                  <div className="field">
+                    <label>Domicilio de entrega</label>
+                    {domicilios.length > 0 && (
+                      <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
+                        {domicilios.map((d) => (
+                          <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
+                        ))}
+                        <option value="otra">✏️ Otra dirección…</option>
+                      </select>
+                    )}
+                    {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
+                      <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
+                    ) : (
+                      <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
+                    )}
+                  </div>
+                )}
+
                 <div className="field"><label>Notas (opcional)</label>
                   <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} /></div>
-                <button type="submit" className="btn btn-primary btn-block" disabled={placing}>
-                  {placing ? 'Enviando...' : 'Confirmar pedido'}
+                <button type="submit" className="btn btn-primary btn-block" disabled={placing || (form.entrega === 'envio' && !domicilioElegido?.calle)}>
+                  {placing ? 'Enviando...' : form.entrega === 'envio' && !domicilioElegido?.calle ? 'Completá el domicilio' : 'Confirmar pedido'}
                 </button>
                 <button type="button" className="btn btn-ghost btn-block" onClick={() => setCheckout(false)}>Volver</button>
               </form>
