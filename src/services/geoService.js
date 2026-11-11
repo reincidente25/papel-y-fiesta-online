@@ -12,17 +12,23 @@ const GEOREF_URL = 'https://apis.datos.gob.ar/georef/api/direcciones';
 export async function buscarDirecciones(texto, { max = 8, signal } = {}) {
   const q = (texto || '').trim();
   if (q.length < 4) return [];
-  const url = `${GEOREF_URL}?direccion=${encodeURIComponent(q)}&max=${max}&campos=estandar`;
+  const url = `${GEOREF_URL}?direccion=${encodeURIComponent(q)}&max=${max}`;
   const res = await fetch(url, { signal });
   if (!res.ok) throw new Error(`Georef respondió ${res.status}`);
   const data = await res.json();
-  return (data.direcciones || []).map((d) => ({
-    label: d.nombre || d.calle?.nombre || '',
-    calle: d.calle?.nombre || '',
-    numero: d.altura?.valor != null ? String(d.altura.valor) : '',
-    localidad: d.localidad_censal?.nombre || d.departamento?.nombre || '',
-    provincia: d.provincia?.nombre || '',
-    lat: d.ubicacion?.lat ?? null,
-    lon: d.ubicacion?.lon ?? null,
-  })).filter((d) => d.calle);
+  return (data.direcciones || []).map((d) => {
+    const calle = d.calle?.nombre || '';
+    const numero = d.altura?.valor != null ? String(d.altura.valor) : '';
+    // Etiqueta con calle + número (Georef a veces no lo incluye en `nombre`).
+    const label = [calle, numero].filter(Boolean).join(' ');
+    return {
+      label: label || d.nombre || calle,
+      calle,
+      numero,
+      localidad: d.localidad_censal?.nombre || d.departamento?.nombre || '',
+      provincia: d.provincia?.nombre || '',
+      lat: d.ubicacion?.lat ?? null,
+      lon: d.ubicacion?.lon ?? null,
+    };
+  }).filter((d) => d.calle);
 }
