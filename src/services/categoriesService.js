@@ -19,7 +19,11 @@ export async function getCategories({ soloActivas = true } = {}) {
   const snap = await getDocs(query(collection(db, COL), orderBy('orden')));
   let cats = snap.docs.map((d) => {
     const data = d.data();
-    return { id: d.id, name: data.nombre || d.id, orden: data.orden, activa: data.activa, cantidad: data.cantidad || 0 };
+    return {
+      id: d.id, name: data.nombre || d.id, orden: data.orden, activa: data.activa,
+      cantidad: data.cantidad || 0,
+      icon: data.icon || '', imagen: data.imagen || '', descripcion: data.descripcion || '',
+    };
   });
   if (soloActivas) cats = cats.filter((c) => c.activa !== false);
   return cats;

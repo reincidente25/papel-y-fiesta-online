@@ -5,73 +5,96 @@ import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getPublicProducts } from '../../services/productsService';
+import { getCategories } from '../../services/categoriesService';
+import { getHomeConfig, HOME_DEFAULT } from '../../services/settingsService';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import './store.css';
 
+// Degradados de respaldo para categorías sin foto (se asigna por posición).
+const GRADS = [
+  'linear-gradient(135deg,#F7941E,#ffb45e)',
+  'linear-gradient(135deg,#6c5ce7,#a29bfe)',
+  'linear-gradient(135deg,#00b894,#55efc4)',
+  'linear-gradient(135deg,#e17055,#fab1a0)',
+  'linear-gradient(135deg,#0984e3,#74b9ff)',
+  'linear-gradient(135deg,#d63031,#ff7675)',
+  'linear-gradient(135deg,#fdcb6e,#ffeaa7)',
+  'linear-gradient(135deg,#2d3436,#636e72)',
+];
+
 const Home = () => {
   const [featured, setFeatured] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [home, setHome] = useState(HOME_DEFAULT);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
 
   useEffect(() => {
-    getPublicProducts()
-      .then((pub) => {
-        // Destacados: los marcados; si no hay, algunos productos web.
+    Promise.all([getPublicProducts(), getCategories(), getHomeConfig()])
+      .then(([pub, cats, cfg]) => {
         const dest = pub.filter((p) => p.destacado);
         setFeatured((dest.length ? dest : pub).slice(0, 10));
-        // Categorías que tienen productos en la web, por cantidad (hasta 10).
-        const map = new Map();
-        for (const p of pub) {
-          if (!p.categoria) continue;
-          const e = map.get(p.categoria) || { id: p.categoria, name: p.categoriaNombre || p.categoria, cantidad: 0 };
-          e.cantidad += 1;
-          map.set(p.categoria, e);
-        }
-        const top = [...map.values()].sort((a, b) => b.cantidad - a.cantidad).slice(0, 10);
-        setCategories(top);
+        // Cantidad de productos web por categoría.
+        const conteo = new Map();
+        for (const p of pub) if (p.categoria) conteo.set(p.categoria, (conteo.get(p.categoria) || 0) + 1);
+        const conProd = cats.filter((c) => conteo.get(c.id)).map((c) => ({ ...c, cantidad: conteo.get(c.id) }));
+        setCategories((conProd.length ? conProd : cats).slice(0, 8));
+        setHome(cfg);
       })
       .finally(() => setLoading(false));
   }, []);
 
+  const heroStyle = home.heroImagen
+    ? { backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen})` }
+    : undefined;
+
   return (
     <StoreLayout>
       {/* Hero */}
-      <section className="hero">
-        <div className="container hero-inner">
-          <div>
-            <span className="hero-eyebrow">🎉 Librería &amp; Cotillón online</span>
-            <h1>Todo para tu día a día y tus <span className="accent">festejos</span></h1>
-            <p>Útiles escolares, artículos de oficina, materiales de arte y todo el cotillón para tu próxima fiesta. Envíos a todo el país.</p>
-            <div className="hero-cta">
-              <Link to="/catalogo" className="btn btn-primary">Ver catálogo</Link>
-              {!user && <button className="btn btn-ghost" onClick={() => openAuth('register')}>Crear cuenta</button>}
-            </div>
-          </div>
-          <div className="hero-art">
-            <img
-              src="https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=800&q=80"
-              alt="Artículos de librería y fiesta"
-            />
+      <section className={`hero2 ${home.heroImagen ? 'has-img' : ''}`} style={heroStyle}>
+        <div className="container hero2-inner">
+          <span className="hero2-eyebrow">{home.heroEyebrow}</span>
+          <h1 className="hero2-title">{home.heroTitulo}</h1>
+          <p className="hero2-sub">{home.heroSubtitulo}</p>
+          <div className="hero2-cta">
+            <Link to={home.ctaLink || '/catalogo'} className="btn btn-primary btn-lg">{home.ctaTexto || 'Ver catálogo'}</Link>
+            {!user && <button className="btn btn-light" onClick={() => openAuth('register')}>Crear cuenta</button>}
           </div>
         </div>
       </section>
 
-      {/* Categorías */}
+      {/* Tiras de valor */}
+      <section className="container">
+        <div className="valores">
+          <div className="valor"><span>🚚</span><div><strong>Envíos a todo el país</strong><small>Correo Argentino y retiro en el local</small></div></div>
+          <div className="valor"><span>🎁</span><div><strong>Regalería para sorprender</strong><small>Ideas para cada ocasión</small></div></div>
+          <div className="valor"><span>🎉</span><div><strong>Todo el cotillón</strong><small>Armamos combos a medida</small></div></div>
+          <div className="valor"><span>✏️</span><div><strong>Librería completa</strong><small>Escolar, oficina y arte</small></div></div>
+        </div>
+      </section>
+
+      {/* Categorías (estilo recorrido) */}
       <section className="section container">
         <div className="section-head">
           <div>
             <h2 className="section-title">Explorá por categoría</h2>
-            <p>Encontrá rápido lo que buscás.</p>
+            <p>Encontrá rápido lo que buscás, sea para estudiar, festejar o regalar.</p>
           </div>
+          <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
         </div>
-        <div className="cat-grid">
-          {categories.map((cat) => (
-            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-chip">
-              <span className="cat-icon">{cat.icon || '🏷️'}</span>
-              <span className="cat-name">{cat.name}</span>
+        <div className="cat-cards">
+          {categories.map((cat, i) => (
+            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-card2">
+              <div className="cat-card2-media" style={cat.imagen ? { backgroundImage: `url(${cat.imagen})` } : { background: GRADS[i % GRADS.length] }}>
+                {!cat.imagen && <span className="cat-card2-emoji">{cat.icon || '🏷️'}</span>}
+              </div>
+              <div className="cat-card2-body">
+                <h3>{cat.name}</h3>
+                <p>{cat.descripcion || `Descubrí todo en ${cat.name}`}</p>
+                <span className="cat-card2-link">Ver productos →</span>
+              </div>
             </Link>
           ))}
         </div>
@@ -86,9 +109,7 @@ const Home = () => {
           </div>
           <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
         </div>
-        {loading ? (
-          <Loader />
-        ) : (
+        {loading ? <Loader /> : (
           <div className="product-grid">
             {featured.map((p) => <ProductCard key={p.id} product={p} />)}
           </div>
@@ -99,10 +120,10 @@ const Home = () => {
       <section className="section container">
         <div className="promo">
           <div>
-            <h2>¿Organizás un evento?</h2>
-            <p>Armamos combos de cotillón a medida. Consultanos por cantidades mayoristas.</p>
+            <h2>¿Organizás un evento o buscás un regalo?</h2>
+            <p>Armamos combos de cotillón y regalería a medida. Consultanos por cantidades mayoristas.</p>
           </div>
-          <Link to="/catalogo?cat=fiesta" className="btn btn-primary">Ver cotillón</Link>
+          <Link to="/catalogo" className="btn btn-primary">Ver catálogo</Link>
         </div>
       </section>
     </StoreLayout>

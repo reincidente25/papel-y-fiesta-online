@@ -30,6 +30,16 @@ export async function uploadProductImage(file, codigo = 'varios') {
   return getDownloadURL(r);
 }
 
+// Subida genérica de una imagen a una carpeta (ej. "landing", "categorias").
+export async function uploadImage(file, carpeta = 'varios') {
+  if (useMock) return URL.createObjectURL(file);
+  const nombre = `${Date.now()}-${slug(file.name)}`;
+  const path = `${slug(carpeta)}/${nombre}`;
+  const r = ref(storage, path);
+  await uploadBytes(r, file, { contentType: file.type });
+  return getDownloadURL(r);
+}
+
 export async function uploadProductImages(files, codigo) {
   const arr = Array.from(files || []);
   return Promise.all(arr.map((f) => uploadProductImage(f, codigo)));
