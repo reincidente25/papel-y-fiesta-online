@@ -175,22 +175,32 @@ const Profile = () => {
             <p className="muted">Todavía no cargaste domicilios. Agregá uno para agilizar tus pedidos.</p>
           </div>
         ) : (
-          <div className="dom-grid">
-            {domicilios.map((d) => (
-              <div className={`card dom-card ${d.predeterminado ? 'is-default' : ''}`} key={d.id}>
-                <div className="dom-top">
-                  <strong>{d.etiqueta || 'Domicilio'}</strong>
-                  {d.predeterminado && <span className="badge badge-success">Predeterminado</span>}
-                </div>
-                <p className="dom-dir">{resumen(d)}</p>
-                {d.notas && <p className="muted" style={{ fontSize: '.85rem' }}>{d.notas}</p>}
-                <div className="dom-actions">
-                  {!d.predeterminado && <button className="btn btn-ghost btn-sm" onClick={() => marcarDefault(d.id)}>Usar por defecto</button>}
-                  <button className="btn btn-ghost btn-sm" onClick={() => abrirEditar(d)}>Editar</button>
-                  <button className="btn btn-ghost btn-sm" onClick={() => eliminarDom(d.id)}>Eliminar</button>
-                </div>
-              </div>
-            ))}
+          <div className="card dom-table-wrap">
+            <table className="dom-table">
+              <thead>
+                <tr><th>Etiqueta</th><th>Dirección</th><th>Default</th><th className="dom-th-acc">Acciones</th></tr>
+              </thead>
+              <tbody>
+                {domicilios.map((d) => (
+                  <tr key={d.id} className={d.predeterminado ? 'is-default' : ''}>
+                    <td data-label="Etiqueta"><strong>{d.etiqueta || 'Domicilio'}</strong></td>
+                    <td data-label="Dirección">
+                      {resumen(d)}
+                      {d.notas && <span className="dom-notas">{d.notas}</span>}
+                    </td>
+                    <td data-label="Default">
+                      {d.predeterminado
+                        ? <span className="badge badge-success">★ Predeterminado</span>
+                        : <button className="btn btn-ghost btn-sm" onClick={() => marcarDefault(d.id)}>Usar por defecto</button>}
+                    </td>
+                    <td data-label="Acciones" className="dom-td-acc">
+                      <button className="btn btn-ghost btn-sm" onClick={() => abrirEditar(d)}>Editar</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => eliminarDom(d.id)}>Eliminar</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         )}
       </div>

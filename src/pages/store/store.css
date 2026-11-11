@@ -154,12 +154,24 @@
 .profile { max-width: 860px; padding-bottom: 48px; }
 .profile-card { padding: 22px; }
 .save-ok { color: var(--success, #1faa59); font-weight: 600; font-size: .9rem; align-self: center; }
-.dom-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
-.dom-card { padding: 16px; border: 1px solid var(--border); }
-.dom-card.is-default { border-color: var(--brand-orange, #F7941E); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
-.dom-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
-.dom-dir { font-size: .92rem; margin: 0 0 6px; }
-.dom-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.dom-table-wrap { padding: 0; overflow: hidden; }
+.dom-table { width: 100%; border-collapse: collapse; }
+.dom-table thead th { text-align: left; font-size: .76rem; text-transform: uppercase; letter-spacing: .05em; font-weight: 700; color: var(--brand-ink, #2b2b2b); background: var(--brand-orange-soft, #fde9cf); padding: 12px 16px; }
+.dom-table th.dom-th-acc { text-align: right; }
+.dom-table tbody td { padding: 14px 16px; border-top: 1px solid var(--border); font-size: .92rem; vertical-align: middle; }
+.dom-table tbody tr.is-default { background: color-mix(in srgb, var(--brand-orange, #F7941E) 7%, transparent); }
+.dom-table tbody tr.is-default td:first-child { box-shadow: inset 3px 0 0 var(--brand-orange, #F7941E); }
+.dom-notas { display: block; color: var(--muted); font-size: .82rem; margin-top: 2px; }
+.dom-td-acc { text-align: right; white-space: nowrap; }
+@media (max-width: 620px) {
+  .dom-table thead { display: none; }
+  .dom-table, .dom-table tbody, .dom-table tr, .dom-table td { display: block; width: 100%; }
+  .dom-table tbody tr { border-top: 1px solid var(--border); padding: 6px 0; }
+  .dom-table tbody td { border: none; padding: 6px 16px; }
+  .dom-table tbody td::before { content: attr(data-label) ': '; font-weight: 700; color: var(--muted); }
+  .dom-td-acc, .dom-table th.dom-th-acc { text-align: left; }
+  .dom-table tbody tr.is-default td:first-child { box-shadow: none; }
+}
 .nav-user-name { text-decoration: none; color: inherit; font-weight: 600; }
 .nav-user-name:hover { color: var(--brand-orange, #F7941E); }
 
