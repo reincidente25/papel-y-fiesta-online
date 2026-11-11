@@ -13,6 +13,7 @@ export const HOME_DEFAULT = {
   ctaTexto: 'Ver catálogo',
   ctaLink: '/catalogo',
   heroImagen: '',
+  heroPos: 'center', // alineación vertical de la imagen: top | center | bottom
 };
 
 export async function getHomeConfig() {

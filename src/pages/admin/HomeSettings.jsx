@@ -51,6 +51,12 @@ const HomeSettings = () => {
               <input className="input" value={form.ctaTexto} onChange={(e) => set('ctaTexto', e.target.value)} /></div>
             <div className="field"><label>Link del botón</label>
               <input className="input" value={form.ctaLink} onChange={(e) => set('ctaLink', e.target.value)} placeholder="/catalogo" /></div>
+            <div className="field full"><label>Alineación de la imagen</label>
+              <select className="select" value={form.heroPos || 'center'} onChange={(e) => set('heroPos', e.target.value)}>
+                <option value="top">Mostrar la parte de arriba</option>
+                <option value="center">Centrada</option>
+                <option value="bottom">Mostrar la parte de abajo</option>
+              </select></div>
           </div>
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : 'Guardar cambios'}</button>

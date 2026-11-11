@@ -47,7 +47,10 @@ const Home = () => {
   }, []);
 
   const heroStyle = home.heroImagen
-    ? { backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen})` }
+    ? {
+      backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen})`,
+      backgroundPosition: `center ${home.heroPos || 'center'}`,
+    }
     : undefined;
 
   return (
