@@ -241,3 +241,16 @@
 .co-sum-name { font-weight: 600; font-size: .82rem; line-height: 1.2; }
 .co-sum-price { font-weight: 700; font-size: .82rem; white-space: nowrap; }
 .co-sum-total { display: flex; justify-content: space-between; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); font-family: var(--font-head, inherit); font-weight: 800; font-size: 1.05rem; }
+
+/* Checkout opción C: tarjetas + resumen sticky */
+.co-grid { display: grid; grid-template-columns: 1fr 290px; gap: 20px; align-items: start; }
+@media (max-width: 720px) { .co-grid { grid-template-columns: 1fr; } .co-sum-sticky { position: static; } }
+.co-cards { display: flex; flex-direction: column; gap: 14px; }
+.co-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+.co-card h4 { margin: 0 0 12px; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.co-seg { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.co-seg button { flex: 1; text-align: center; padding: 11px; font-size: .88rem; font-weight: 600; background: var(--surface, #fff); color: var(--text); border: none; cursor: pointer; }
+.co-seg button + button { border-left: 1px solid var(--border); }
+.co-seg button.on { background: var(--brand-orange, #F7941E); color: #fff; }
+.co-sum-sticky { position: sticky; top: 8px; }
+.co-sum-row { display: flex; justify-content: space-between; font-size: .88rem; margin-top: 8px; }

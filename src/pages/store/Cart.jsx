@@ -18,7 +18,6 @@ const Cart = () => {
   const navigate = useNavigate();
   const [placing, setPlacing] = useState(false);
   const [checkout, setCheckout] = useState(false);
-  const [step, setStep] = useState(1); // 1 Entrega · 2 Datos · 3 Confirmar
   const [form, setForm] = useState({
     nombre: user?.displayName || '',
     email: user?.email || '',
@@ -52,7 +51,7 @@ const Cart = () => {
     ? null
     : (domSel && domSel !== 'otra' ? domicilios.find((d) => d.id === domSel) : otraDir);
 
-  const abrirCheckout = () => { setStep(1); setCheckout(true); };
+  const abrirCheckout = () => setCheckout(true);
 
   const handleCheckout = async (e) => {
     e?.preventDefault();
@@ -132,126 +131,79 @@ const Cart = () => {
         </div>
       </div>
 
-      {/* Checkout en pasos (stepper) */}
-      <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={840}>
+      {/* Checkout: secciones en tarjetas + resumen sticky */}
+      <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={920}>
         {(() => {
-          const paso1Ok = form.entrega === 'retiro' || (form.entrega === 'envio' && domicilioElegido?.calle);
-          const paso2Ok = form.nombre.trim() && form.telefono.trim();
-          const PASOS = ['Entrega', 'Datos', 'Confirmar'];
+          const listo = form.nombre.trim() && form.telefono.trim()
+            && (form.entrega === 'retiro' || (form.entrega === 'envio' && domicilioElegido?.calle));
           return (
-            <>
-              <div className="co-steps">
-                {PASOS.map((l, i) => {
-                  const n = i + 1;
-                  return (
-                    <div className={`co-step ${step === n ? 'on' : ''} ${step > n ? 'done' : ''}`} key={l}>
-                      <span className="co-n">{step > n ? '✓' : n}</span> {l}
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="co-body">
-                <div className="co-main">
-                  {/* Paso 1: Entrega */}
-                  {step === 1 && (
-                    <>
-                      <span className="mini-label">¿Cómo lo recibís?</span>
-                      <div className="co-pills">
-                        <button type="button" className={`co-pill ${form.entrega === 'envio' ? 'sel' : ''}`} onClick={() => set('entrega', 'envio')}>🏠 Envío a domicilio</button>
-                        <button type="button" className={`co-pill ${form.entrega === 'retiro' ? 'sel' : ''}`} onClick={() => set('entrega', 'retiro')}>🏪 Retiro en el local</button>
-                      </div>
-
-                      {form.entrega === 'envio' ? (
-                        <div className="field" style={{ marginTop: 16 }}>
-                          <label>Domicilio de entrega</label>
-                          {domicilios.length > 0 && (
-                            <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
-                              {domicilios.map((d) => (
-                                <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
-                              ))}
-                              <option value="otra">✏️ Otra dirección…</option>
-                            </select>
-                          )}
-                          {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
-                            <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
-                          ) : (
-                            <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
-                          )}
-                        </div>
-                      ) : (
-                        <p className="hint" style={{ marginTop: 16 }}>Retirás tu pedido por el local cuando esté listo. Te avisamos.</p>
-                      )}
-
-                      <div className="co-actions">
-                        <button type="button" className="btn btn-ghost" onClick={() => setCheckout(false)}>Cancelar</button>
-                        <button type="button" className="btn btn-primary" disabled={!paso1Ok} onClick={() => setStep(2)}>
-                          {paso1Ok ? 'Continuar →' : 'Completá el domicilio'}
-                        </button>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Paso 2: Datos */}
-                  {step === 2 && (
-                    <>
-                      <span className="mini-label">Tus datos de contacto</span>
-                      <div className="form-grid" style={{ marginTop: 10 }}>
-                        <div className="field"><label>Nombre y apellido *</label>
-                          <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required /></div>
-                        <div className="field"><label>Teléfono / WhatsApp *</label>
-                          <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
-                        <div className="field full"><label>Email</label>
-                          <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
-                        <div className="field full"><label>Notas (opcional)</label>
-                          <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Horario de entrega, referencia…" /></div>
-                      </div>
-                      <div className="co-actions">
-                        <button type="button" className="btn btn-ghost" onClick={() => setStep(1)}>← Volver</button>
-                        <button type="button" className="btn btn-primary" disabled={!paso2Ok} onClick={() => setStep(3)}>Continuar →</button>
-                      </div>
-                    </>
-                  )}
-
-                  {/* Paso 3: Confirmar */}
-                  {step === 3 && (
-                    <>
-                      <span className="mini-label">Revisá y confirmá</span>
-                      <div className="co-review">
-                        <div className="co-rev-row"><span className="muted">Nombre</span><span>{form.nombre || '—'}</span></div>
-                        <div className="co-rev-row"><span className="muted">WhatsApp</span><span>{form.telefono || '—'}</span></div>
-                        {form.email && <div className="co-rev-row"><span className="muted">Email</span><span>{form.email}</span></div>}
-                        <div className="co-rev-row"><span className="muted">Entrega</span><span>{form.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro en el local'}</span></div>
-                        {form.entrega === 'envio' && <div className="co-rev-row"><span className="muted">Domicilio</span><span>{resumenDir(domicilioElegido) || '—'}</span></div>}
-                        {form.notas && <div className="co-rev-row"><span className="muted">Notas</span><span>{form.notas}</span></div>}
-                      </div>
-                      <p className="hint" style={{ marginTop: 12 }}>💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.</p>
-                      <div className="co-actions">
-                        <button type="button" className="btn btn-ghost" onClick={() => setStep(2)}>← Volver</button>
-                        <button type="button" className="btn btn-primary" disabled={placing} onClick={handleCheckout}>
-                          {placing ? 'Enviando…' : 'Confirmar pedido'}
-                        </button>
-                      </div>
-                    </>
-                  )}
+            <div className="co-grid">
+              {/* Columna izquierda: tarjetas */}
+              <div className="co-cards">
+                <div className="co-card">
+                  <h4>🚚 Entrega</h4>
+                  <div className="co-seg">
+                    <button type="button" className={form.entrega === 'envio' ? 'on' : ''} onClick={() => set('entrega', 'envio')}>Envío a domicilio</button>
+                    <button type="button" className={form.entrega === 'retiro' ? 'on' : ''} onClick={() => set('entrega', 'retiro')}>Retiro en el local</button>
+                  </div>
+                  {form.entrega === 'retiro' && <p className="hint" style={{ marginTop: 10 }}>Retirás por el local cuando esté listo. Te avisamos.</p>}
                 </div>
 
-                {/* Resumen siempre visible */}
-                <aside className="co-sum">
-                  <div className="co-sum-title">Tu pedido · {items.reduce((n, i) => n + i.cantidad, 0)} u.</div>
-                  <div className="co-sum-items">
-                    {items.map((item) => (
-                      <div className="co-sum-item" key={item.id}>
-                        {item.imagen ? <img src={item.imagen} alt="" /> : <span className="co-sum-ph">📦</span>}
-                        <div><div className="co-sum-name">{item.nombre}</div><div className="muted" style={{ fontSize: '.76rem' }}>{item.cantidad} × {formatMoney(item.precio)}</div></div>
-                        <div className="co-sum-price">{formatMoney(item.precio * item.cantidad)}</div>
-                      </div>
-                    ))}
+                {form.entrega === 'envio' && (
+                  <div className="co-card">
+                    <h4>📍 Domicilio</h4>
+                    {domicilios.length > 0 && (
+                      <select className="select" value={domSel} onChange={(e) => setDomSel(e.target.value)} style={{ marginBottom: 10 }}>
+                        {domicilios.map((d) => (
+                          <option key={d.id} value={d.id}>{(d.etiqueta ? d.etiqueta + ' — ' : '') + resumenDir(d)}{d.predeterminado ? ' ★' : ''}</option>
+                        ))}
+                        <option value="otra">✏️ Otra dirección…</option>
+                      </select>
+                    )}
+                    {domicilios.length > 0 && domSel && domSel !== 'otra' ? (
+                      <p className="hint">📍 {resumenDir(domicilios.find((d) => d.id === domSel))}</p>
+                    ) : (
+                      <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
+                    )}
                   </div>
-                  <div className="co-sum-total"><span>Total</span><span>{formatMoney(total)}</span></div>
-                </aside>
+                )}
+
+                <div className="co-card">
+                  <h4>👤 Tus datos</h4>
+                  <div className="form-grid">
+                    <div className="field"><label>Nombre y apellido *</label>
+                      <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required /></div>
+                    <div className="field"><label>Teléfono / WhatsApp *</label>
+                      <input className="input" value={form.telefono} onChange={(e) => set('telefono', e.target.value)} required /></div>
+                    <div className="field full"><label>Email</label>
+                      <input className="input" type="email" value={form.email} onChange={(e) => set('email', e.target.value)} /></div>
+                    <div className="field full"><label>Notas (opcional)</label>
+                      <textarea className="textarea" value={form.notas} onChange={(e) => set('notas', e.target.value)} placeholder="Horario de entrega, referencia…" /></div>
+                  </div>
+                </div>
               </div>
-            </>
+
+              {/* Columna derecha: resumen sticky */}
+              <aside className="co-sum co-sum-sticky">
+                <div className="co-sum-title">Tu pedido · {items.reduce((n, i) => n + i.cantidad, 0)} u.</div>
+                <div className="co-sum-items">
+                  {items.map((item) => (
+                    <div className="co-sum-item" key={item.id}>
+                      {item.imagen ? <img src={item.imagen} alt="" /> : <span className="co-sum-ph">📦</span>}
+                      <div><div className="co-sum-name">{item.nombre}</div><div className="muted" style={{ fontSize: '.76rem' }}>{item.cantidad} × {formatMoney(item.precio)}</div></div>
+                      <div className="co-sum-price">{formatMoney(item.precio * item.cantidad)}</div>
+                    </div>
+                  ))}
+                </div>
+                <div className="co-sum-row"><span className="muted">Subtotal</span><span>{formatMoney(total)}</span></div>
+                <div className="co-sum-row"><span className="muted">Envío</span><span>A coordinar</span></div>
+                <div className="co-sum-total"><span>Total</span><span>{formatMoney(total)}</span></div>
+                <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 14 }} disabled={placing || !listo} onClick={handleCheckout}>
+                  {placing ? 'Enviando…' : listo ? 'Confirmar pedido' : 'Completá tus datos'}
+                </button>
+                <p className="hint" style={{ marginTop: 10 }}>💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.</p>
+              </aside>
+            </div>
           );
         })()}
       </Modal>
