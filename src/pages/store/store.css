@@ -324,3 +324,9 @@
 /* La descripcion toma el color del texto; el titulo usa su color propio (inline) */
 .promo-pop2 .overlay p { color: inherit; }
 .promo-pop2-content.plano h3, .promo-pop2-content.plano p { color: var(--text); }
+
+/* Popup clickeable + hint (reemplaza el botón) */
+.promo-pop2.clickeable { cursor: pointer; }
+.promo-pop2-hint { display: inline-block; font-weight: 700; font-size: .95rem; color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.promo-pop2.texto-blanco .promo-pop2-content.plano .promo-pop2-hint,
+.promo-pop2 .promo-pop2-content.plano .promo-pop2-hint { color: var(--brand-orange, #F7941E); }

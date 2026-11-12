@@ -359,5 +359,5 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 
 /* Vista previa del popup en el panel */
 .promo-preview-box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-.promo-preview-box .promo-pop2 { max-width: 460px; animation: none; }
+.promo-preview-box .promo-pop2 { max-width: 340px; animation: none; }
 .promo-preview-off { font-size: .85rem; color: var(--muted); }

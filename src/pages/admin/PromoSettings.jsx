@@ -52,9 +52,9 @@ const PromoSettings = () => {
               <input className="input" value={form.titulo} onChange={(e) => set('titulo', e.target.value)} placeholder="Ej: ¡Vuelta al cole!" /></div>
             <div className="field full"><label>Texto</label>
               <textarea className="textarea" value={form.texto} onChange={(e) => set('texto', e.target.value)} placeholder="Ej: 20% off en toda la lista escolar hasta el 15/02." /></div>
-            <div className="field"><label>Texto del botón</label>
+            <div className="field"><label>Texto del enlace</label>
               <input className="input" value={form.ctaTexto} onChange={(e) => set('ctaTexto', e.target.value)} placeholder="Ver más" /></div>
-            <div className="field"><label>Link del botón</label>
+            <div className="field"><label>Link (al hacer clic)</label>
               <input className="input" value={form.ctaLink} onChange={(e) => set('ctaLink', e.target.value)} placeholder="/catalogo" /></div>
             <div className="field"><label>Color del título</label>
               <select className="select" value={form.tituloColor || 'blanco'} onChange={(e) => set('tituloColor', e.target.value)}>
@@ -89,7 +89,7 @@ const PromoSettings = () => {
         <aside className="editor-aside">
           <div className="card" style={{ padding: 18 }}>
             <label className="aside-title">Imagen del popup</label>
-            <div className="img-preview" style={{ marginBottom: 12 }}>
+            <div className="img-preview" style={{ marginBottom: 12, maxWidth: 200 }}>
               {form.imagen
                 ? <img src={form.imagen} alt="" onError={(e) => { e.target.style.display = 'none'; }} />
                 : <span className="ph">📷<br />Imagen de la<br />promoción</span>}
@@ -115,7 +115,7 @@ const PromoSettings = () => {
             <div className={`promo-pop2-content ${tieneImg ? `overlay v-${form.alignV || 'bottom'}` : 'plano'}`} style={{ textAlign: form.alignH || 'left' }}>
               {form.titulo && <h3 style={{ color: col(form.tituloColor) }}>{form.titulo}</h3>}
               {form.texto && <p>{form.texto}</p>}
-              {form.ctaLink && form.ctaTexto && <span className="btn btn-primary">{form.ctaTexto}</span>}
+              {form.ctaLink && form.ctaTexto && <span className="promo-pop2-hint">{form.ctaTexto} →</span>}
             </div>
           )}
           {!tieneImg && !hayTexto && <div className="promo-pop2-content plano muted">Cargá una imagen o un texto para ver la vista previa.</div>}
