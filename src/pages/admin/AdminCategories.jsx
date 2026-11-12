@@ -35,7 +35,13 @@ const AdminCategories = () => {
   useEffect(load, []);
 
   const openNew = () => { setForm({ ...EMPTY, orden: cats.length + 1 }); setEditId(null); setModal(true); };
-  const openEdit = (c) => { setForm({ ...EMPTY, ...c }); setEditId(c.id); setModal(true); };
+  const openEdit = (c) => {
+    setForm({
+      nombre: c.name || '', icon: c.icon || '', descripcion: c.descripcion || '',
+      imagen: c.imagen || '', orden: c.orden ?? 999, activa: c.activa !== false,
+    });
+    setEditId(c.id); setModal(true);
+  };
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const subirFoto = async (file) => {
@@ -115,46 +121,53 @@ const AdminCategories = () => {
         </div>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title={editId ? 'Editar categoría' : 'Nueva categoría'} width={640}>
-        <form onSubmit={save} className="editor-grid">
-          <div style={{ padding: 2 }}>
-            <div className="form-grid">
-              <div className="field"><label>Nombre *</label>
-                <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
-                {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
-              <div className="field"><label>Ícono (emoji)</label>
-                <input className="input" value={form.icon} onChange={(e) => set('icon', e.target.value)} placeholder="🎨" maxLength={4} /></div>
-              <div className="field full"><label>Descripción (subtítulo en la landing)</label>
-                <textarea className="textarea" value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} placeholder="Ej: Todo para tus manualidades y arte" /></div>
-              <div className="field"><label>Orden</label>
-                <input className="input" type="number" value={form.orden} onChange={(e) => set('orden', e.target.value)} /></div>
-              <div className="field" style={{ justifyContent: 'flex-end' }}>
-                <label className="switch" style={{ marginTop: 22 }}>
+      <Modal open={modal} onClose={() => setModal(false)} title={editId ? 'Editar categoría' : 'Nueva categoría'} width={820}>
+        <form onSubmit={save}>
+          <div className="cat-modal">
+            {/* Campos */}
+            <div className="cat-modal-fields">
+              <div className="cat-row2">
+                <div className="field"><label>Nombre *</label>
+                  <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
+                  {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
+                <div className="field" style={{ maxWidth: 110 }}><label>Ícono</label>
+                  <input className="input" value={form.icon} onChange={(e) => set('icon', e.target.value)} placeholder="🎨" maxLength={4} style={{ textAlign: 'center', fontSize: '1.3rem' }} /></div>
+              </div>
+
+              <div className="field"><label>Descripción <span className="muted" style={{ fontWeight: 400 }}>(subtítulo en la landing)</span></label>
+                <textarea className="textarea" value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} placeholder="Ej: Todo para tus manualidades y arte" rows={3} /></div>
+
+              <div className="cat-row2">
+                <div className="field" style={{ maxWidth: 140 }}><label>Orden</label>
+                  <input className="input" type="number" value={form.orden} onChange={(e) => set('orden', e.target.value)} /></div>
+                <label className="switch cat-switch">
                   <input type="checkbox" checked={form.activa !== false} onChange={(e) => set('activa', e.target.checked)} />
                   <span className="track" /><span className="switch-label">Activa<small>Se muestra en la tienda</small></span>
                 </label>
               </div>
             </div>
-            <div className="form-actions">
-              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : editId ? 'Guardar' : 'Crear'}</button>
-              <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
-            </div>
+
+            {/* Imagen */}
+            <aside className="cat-modal-img">
+              <label className="aside-title">Imagen de la categoría</label>
+              <div className="img-preview">
+                {form.imagen
+                  ? <img src={form.imagen} alt="" onError={(e) => { e.target.style.display = 'none'; }} />
+                  : <span className="ph">📷<br />Foto para la tarjeta<br />de la landing</span>}
+              </div>
+              <div className="row gap-8" style={{ flexWrap: 'wrap', marginTop: 12 }}>
+                <button type="button" className="btn btn-soft btn-sm" onClick={() => fileRef.current?.click()} disabled={subiendo}>{subiendo ? 'Subiendo…' : '＋ Subir'}</button>
+                <button type="button" className="btn btn-ghost btn-sm" onClick={() => { const u = window.prompt('URL de la imagen:', form.imagen || 'https://'); if (u !== null) set('imagen', u.startsWith('http') ? u : ''); }}>🔗 URL</button>
+                {form.imagen && <button type="button" className="btn btn-ghost btn-sm" onClick={() => set('imagen', '')}>Quitar</button>}
+              </div>
+              <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { subirFoto(e.target.files?.[0]); e.target.value = ''; }} />
+            </aside>
           </div>
 
-          <aside className="editor-aside">
-            <label className="aside-title">Imagen de la categoría</label>
-            <div className="img-preview" style={{ marginBottom: 12 }}>
-              {form.imagen
-                ? <img src={form.imagen} alt="" onError={(e) => { e.target.style.display = 'none'; }} />
-                : <span className="ph">📷<br />Foto para la<br />tarjeta de la landing</span>}
-            </div>
-            <div className="row gap-8" style={{ flexWrap: 'wrap' }}>
-              <button type="button" className="btn btn-soft btn-sm" onClick={() => fileRef.current?.click()} disabled={subiendo}>{subiendo ? 'Subiendo…' : '＋ Subir'}</button>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => { const u = window.prompt('URL de la imagen:', form.imagen || 'https://'); if (u !== null) set('imagen', u.startsWith('http') ? u : ''); }}>🔗 URL</button>
-              {form.imagen && <button type="button" className="btn btn-ghost btn-sm" onClick={() => set('imagen', '')}>Quitar</button>}
-            </div>
-            <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { subirFoto(e.target.files?.[0]); e.target.value = ''; }} />
-          </aside>
+          <div className="form-actions" style={{ marginTop: 20 }}>
+            <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : editId ? 'Guardar cambios' : 'Crear categoría'}</button>
+            <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
+          </div>
         </form>
       </Modal>
     </AdminLayout>
