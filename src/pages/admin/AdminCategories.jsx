@@ -7,10 +7,7 @@ import { getCategories, createCategory, updateCategory, deleteCategory } from '.
 import { getProducts } from '../../services/productsService';
 import { uploadImage } from '../../services/storageService';
 
-const EMPTY = { nombre: '', icon: '', descripcion: '', imagen: '', orden: 999, activa: true };
-
-// Emojis sugeridos para el ícono de la categoría (respaldo si no hay foto).
-const EMOJIS = ['✏️', '📚', '🎒', '🖊️', '📐', '✂️', '🎨', '🖌️', '🖍️', '📎', '🗂️', '📔', '🎉', '🎈', '🎊', '🪅', '🎁', '🎀', '🧸', '🏷️'];
+const EMPTY = { nombre: '', descripcion: '', imagen: '', orden: 999, activa: true };
 
 const AdminCategories = () => {
   const [cats, setCats] = useState([]);
@@ -40,7 +37,7 @@ const AdminCategories = () => {
   const openNew = () => { setForm({ ...EMPTY, orden: cats.length + 1 }); setEditId(null); setModal(true); };
   const openEdit = (c) => {
     setForm({
-      nombre: c.name || '', icon: c.icon || '', descripcion: c.descripcion || '',
+      nombre: c.name || '', descripcion: c.descripcion || '',
       imagen: c.imagen || '', orden: c.orden ?? 999, activa: c.activa !== false,
     });
     setEditId(c.id); setModal(true);
@@ -59,7 +56,7 @@ const AdminCategories = () => {
     setSaving(true);
     try {
       const payload = {
-        nombre: form.nombre, icon: form.icon, descripcion: form.descripcion,
+        nombre: form.nombre, descripcion: form.descripcion,
         imagen: form.imagen, orden: Number(form.orden) || 999, activa: form.activa !== false,
       };
       if (editId) await updateCategory(editId, payload);
@@ -132,14 +129,6 @@ const AdminCategories = () => {
               <div className="field"><label>Nombre *</label>
                 <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
                 {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
-
-              <div className="field"><label>Ícono <span className="muted" style={{ fontWeight: 400 }}>(se usa si la categoría no tiene foto)</span></label>
-                <div className="emoji-pick">
-                  {EMOJIS.map((e) => (
-                    <button type="button" key={e} className={`emoji-chip ${form.icon === e ? 'sel' : ''}`} onClick={() => set('icon', form.icon === e ? '' : e)}>{e}</button>
-                  ))}
-                </div>
-              </div>
 
               <div className="field"><label>Descripción <span className="muted" style={{ fontWeight: 400 }}>(subtítulo en la landing)</span></label>
                 <textarea className="textarea" value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} placeholder="Ej: Todo para tus manualidades y arte" rows={3} /></div>
