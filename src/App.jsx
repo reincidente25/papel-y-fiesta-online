@@ -30,6 +30,7 @@ import Customers from './pages/admin/Customers';
 import Cash from './pages/admin/Cash';
 import Reports from './pages/admin/Reports';
 import AbandonedCarts from './pages/admin/AbandonedCarts';
+import PromoSettings from './pages/admin/PromoSettings';
 
 const App = () => (
   <AuthProvider>
@@ -63,6 +64,7 @@ const App = () => (
           <Route path="/admin/reportes" element={<AdminRoute><Reports /></AdminRoute>} />
           <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
           <Route path="/admin/carritos" element={<AdminRoute><AbandonedCarts /></AdminRoute>} />
+          <Route path="/admin/promo" element={<AdminRoute><PromoSettings /></AdminRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

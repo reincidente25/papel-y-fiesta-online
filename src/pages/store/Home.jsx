@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import ProductCard from '../../components/store/ProductCard';
+import PromoPopup from '../../components/store/PromoPopup';
 import Loader from '../../components/common/Loader';
 import { getPublicProducts } from '../../services/productsService';
 import { getCategories } from '../../services/categoriesService';
@@ -55,6 +56,7 @@ const Home = () => {
 
   return (
     <StoreLayout>
+      <PromoPopup />
       {/* Hero */}
       <section className={`hero2 ${home.heroImagen ? 'has-img' : ''}`} style={heroStyle}>
         <div className="container hero2-inner">
