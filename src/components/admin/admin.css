@@ -356,3 +356,8 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .emoji-chip { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
 .emoji-chip:hover { border-color: var(--primary); background: var(--brand-orange-soft); }
 .emoji-chip.sel { border-color: var(--primary); background: var(--brand-orange-soft); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
+
+/* Vista previa del popup en el panel */
+.promo-preview-box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.promo-preview-box .promo-pop2 { max-width: 460px; animation: none; }
+.promo-preview-off { font-size: .85rem; color: var(--muted); }

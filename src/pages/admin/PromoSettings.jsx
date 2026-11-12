@@ -5,6 +5,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import { getPopup, savePopup, POPUP_DEFAULT } from '../../services/popupService';
 import { uploadImage } from '../../services/storageService';
+import '../store/store.css';
 
 const PromoSettings = () => {
   const [form, setForm] = useState(POPUP_DEFAULT);
@@ -32,6 +33,10 @@ const PromoSettings = () => {
   };
 
   if (loading) return <AdminLayout title="Popup promocional"><Loader /></AdminLayout>;
+
+  const col = (c) => (c === 'negro' ? '#1a1a1a' : '#fff');
+  const tieneImg = Boolean(form.imagen);
+  const hayTexto = form.titulo || form.texto || (form.ctaLink && form.ctaTexto);
 
   return (
     <AdminLayout title="Popup promocional">
@@ -99,6 +104,23 @@ const PromoSettings = () => {
           </div>
         </aside>
       </form>
+
+      {/* Vista previa en vivo */}
+      <div className="toolbar" style={{ marginTop: 24 }}><h2 className="section-title">Vista previa</h2></div>
+      <div className="promo-preview-box">
+        {!form.activo && <div className="promo-preview-off">El popup está desactivado — así se vería si lo activás.</div>}
+        <div className={`promo-pop2 texto-${form.textoColor || 'blanco'}`} style={{ maxHeight: 'none' }}>
+          {tieneImg && <img className="promo-pop2-img" src={form.imagen} alt="" />}
+          {hayTexto && (
+            <div className={`promo-pop2-content ${tieneImg ? `overlay v-${form.alignV || 'bottom'}` : 'plano'}`} style={{ textAlign: form.alignH || 'left' }}>
+              {form.titulo && <h3 style={{ color: col(form.tituloColor) }}>{form.titulo}</h3>}
+              {form.texto && <p>{form.texto}</p>}
+              {form.ctaLink && form.ctaTexto && <span className="btn btn-primary">{form.ctaTexto}</span>}
+            </div>
+          )}
+          {!tieneImg && !hayTexto && <div className="promo-pop2-content plano muted">Cargá una imagen o un texto para ver la vista previa.</div>}
+        </div>
+      </div>
     </AdminLayout>
   );
 };
