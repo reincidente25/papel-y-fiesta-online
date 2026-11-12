@@ -51,6 +51,11 @@ const PromoSettings = () => {
               <input className="input" value={form.ctaTexto} onChange={(e) => set('ctaTexto', e.target.value)} placeholder="Ver más" /></div>
             <div className="field"><label>Link del botón</label>
               <input className="input" value={form.ctaLink} onChange={(e) => set('ctaLink', e.target.value)} placeholder="/catalogo" /></div>
+            <div className="field full"><label>Color del texto (sobre la imagen)</label>
+              <select className="select" value={form.textoColor || 'blanco'} onChange={(e) => set('textoColor', e.target.value)}>
+                <option value="blanco">Blanco (imagen oscura)</option>
+                <option value="negro">Negro (imagen clara)</option>
+              </select></div>
           </div>
           <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? 'Guardando…' : 'Guardar'}</button>

@@ -13,7 +13,8 @@ export const POPUP_DEFAULT = {
   imagen: '',
   ctaTexto: 'Ver más',
   ctaLink: '/catalogo',
-  ver: 0, // versión (timestamp de la última edición) para re-mostrarlo al cambiarlo
+  textoColor: 'blanco', // 'blanco' | 'negro' (color del texto sobre la imagen)
+  ver: 0,
 };
 
 export async function getPopup() {

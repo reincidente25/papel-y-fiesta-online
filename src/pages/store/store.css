@@ -297,14 +297,19 @@
 .cat-card2-link { font-weight: 700; font-size: .88rem; color: var(--brand-orange, #F7941E); }
 
 /* Popup promocional de la landing */
-.promo-pop-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,.6); display: flex; align-items: center; justify-content: center; padding: 20px; animation: promoFade .2s ease; }
+.promo-pop-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 20px; animation: promoFade .2s ease; }
 @keyframes promoFade { from { opacity: 0; } to { opacity: 1; } }
-.promo-pop { position: relative; background: var(--surface, #fff); color: var(--text); border-radius: 18px; overflow: hidden; max-width: 460px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,.35); animation: promoIn .25s ease; }
+.promo-pop2 { position: relative; width: 100%; max-width: 620px; max-height: 92vh; border-radius: 18px; overflow: hidden; background: var(--surface, #fff); box-shadow: 0 24px 60px rgba(0,0,0,.4); animation: promoIn .25s ease; }
 @keyframes promoIn { from { transform: translateY(16px) scale(.98); opacity: 0; } to { transform: none; opacity: 1; } }
-.promo-pop-x { position: absolute; top: 10px; right: 10px; z-index: 2; width: 34px; height: 34px; border: none; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; font-size: 1rem; }
-.promo-pop-x:hover { background: rgba(0,0,0,.8); }
-.promo-pop-img { width: 100%; aspect-ratio: 4/3; background-size: cover; background-position: center; }
-.promo-pop-body { padding: 22px; }
-.promo-pop-body h3 { font-family: var(--font-head, inherit); font-size: 1.4rem; margin: 0 0 8px; }
-.promo-pop-body p { color: var(--text-soft, #555); margin: 0 0 18px; line-height: 1.5; }
-.promo-pop-cta { display: flex; gap: 10px; flex-wrap: wrap; }
+.promo-pop-x { position: absolute; top: 12px; right: 12px; z-index: 3; width: 36px; height: 36px; border: none; border-radius: 50%; background: rgba(0,0,0,.55); color: #fff; cursor: pointer; font-size: 1.05rem; }
+.promo-pop-x:hover { background: rgba(0,0,0,.85); }
+.promo-pop2-img { width: 100%; display: block; max-height: 82vh; object-fit: cover; }
+.promo-pop2-content { padding: 26px; }
+.promo-pop2-content.overlay { position: absolute; left: 0; right: 0; bottom: 0; }
+.promo-pop2-content h3 { font-family: var(--font-head, inherit); font-size: 1.6rem; margin: 0 0 8px; }
+.promo-pop2-content p { margin: 0 0 18px; line-height: 1.5; font-size: 1rem; }
+/* Color del texto sobre la imagen + velo para legibilidad */
+.promo-pop2.texto-blanco .promo-pop2-content.overlay { background: linear-gradient(transparent, rgba(0,0,0,.35) 35%, rgba(0,0,0,.8)); color: #fff; padding-top: 70px; }
+.promo-pop2.texto-negro .promo-pop2-content.overlay { background: linear-gradient(transparent, rgba(255,255,255,.55) 35%, rgba(255,255,255,.92)); color: #1a1a1a; padding-top: 70px; }
+.promo-pop2 .promo-pop2-content.plano h3,
+.promo-pop2 .promo-pop2-content.plano p { color: var(--text); }

@@ -22,21 +22,23 @@ const PromoPopup = () => {
 
   if (!open || !promo) return null;
 
+  const tieneImg = Boolean(promo.imagen);
+  const hayTexto = promo.titulo || promo.texto || (promo.ctaLink && promo.ctaTexto);
+
   return (
     <div className="promo-pop-overlay" onClick={cerrar}>
-      <div className="promo-pop" onClick={(e) => e.stopPropagation()}>
+      <div className={`promo-pop2 texto-${promo.textoColor || 'blanco'}`} onClick={(e) => e.stopPropagation()}>
         <button className="promo-pop-x" onClick={cerrar} aria-label="Cerrar">✕</button>
-        {promo.imagen && <div className="promo-pop-img" style={{ backgroundImage: `url(${promo.imagen})` }} />}
-        <div className="promo-pop-body">
-          {promo.titulo && <h3>{promo.titulo}</h3>}
-          {promo.texto && <p>{promo.texto}</p>}
-          <div className="promo-pop-cta">
+        {tieneImg && <img className="promo-pop2-img" src={promo.imagen} alt={promo.titulo || 'Promoción'} />}
+        {hayTexto && (
+          <div className={`promo-pop2-content ${tieneImg ? 'overlay' : 'plano'}`}>
+            {promo.titulo && <h3>{promo.titulo}</h3>}
+            {promo.texto && <p>{promo.texto}</p>}
             {promo.ctaLink && promo.ctaTexto && (
               <Link to={promo.ctaLink} className="btn btn-primary" onClick={cerrar}>{promo.ctaTexto}</Link>
             )}
-            <button className="btn btn-ghost" onClick={cerrar}>Cerrar</button>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
