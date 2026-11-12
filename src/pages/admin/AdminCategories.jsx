@@ -9,6 +9,9 @@ import { uploadImage } from '../../services/storageService';
 
 const EMPTY = { nombre: '', icon: '', descripcion: '', imagen: '', orden: 999, activa: true };
 
+// Emojis sugeridos para el ícono de la categoría (respaldo si no hay foto).
+const EMOJIS = ['✏️', '📚', '🎒', '🖊️', '📐', '✂️', '🎨', '🖌️', '🖍️', '📎', '🗂️', '📔', '🎉', '🎈', '🎊', '🪅', '🎁', '🎀', '🧸', '🏷️'];
+
 const AdminCategories = () => {
   const [cats, setCats] = useState([]);
   const [counts, setCounts] = useState({});
@@ -126,12 +129,16 @@ const AdminCategories = () => {
           <div className="cat-modal">
             {/* Campos */}
             <div className="cat-modal-fields">
-              <div className="cat-row2">
-                <div className="field"><label>Nombre *</label>
-                  <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
-                  {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
-                <div className="field" style={{ maxWidth: 110 }}><label>Ícono</label>
-                  <input className="input" value={form.icon} onChange={(e) => set('icon', e.target.value)} placeholder="🎨" maxLength={4} style={{ textAlign: 'center', fontSize: '1.3rem' }} /></div>
+              <div className="field"><label>Nombre *</label>
+                <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
+                {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
+
+              <div className="field"><label>Ícono <span className="muted" style={{ fontWeight: 400 }}>(se usa si la categoría no tiene foto)</span></label>
+                <div className="emoji-pick">
+                  {EMOJIS.map((e) => (
+                    <button type="button" key={e} className={`emoji-chip ${form.icon === e ? 'sel' : ''}`} onClick={() => set('icon', form.icon === e ? '' : e)}>{e}</button>
+                  ))}
+                </div>
               </div>
 
               <div className="field"><label>Descripción <span className="muted" style={{ fontWeight: 400 }}>(subtítulo en la landing)</span></label>

@@ -350,3 +350,9 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .cat-row2 { display: flex; gap: 16px; align-items: flex-start; }
 .cat-switch { align-self: center; margin-top: 18px; }
 .cat-modal-img .img-preview { aspect-ratio: 4/3; }
+
+/* Selector de emoji (categorías) */
+.emoji-pick { display: flex; flex-wrap: wrap; gap: 6px; }
+.emoji-chip { width: 40px; height: 40px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); cursor: pointer; font-size: 1.2rem; line-height: 1; display: flex; align-items: center; justify-content: center; padding: 0; }
+.emoji-chip:hover { border-color: var(--primary); background: var(--brand-orange-soft); }
+.emoji-chip.sel { border-color: var(--primary); background: var(--brand-orange-soft); box-shadow: 0 0 0 2px var(--brand-orange-soft); }
