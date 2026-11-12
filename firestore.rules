@@ -32,9 +32,6 @@ service cloud.firestore {
     match /cajaSesiones/{id}  { allow read, write: if isAdmin(); }
     match /clientes/{id}      { allow read, write: if isAdmin(); }
 
-    // Configuración de la tienda (hero de la landing): lectura pública, escritura admin.
-    match /config/{id} { allow read: if true; allow write: if isAdmin(); }
-
     // Pedidos: crea cualquier usuario logueado; lee/actualiza su dueño o el admin.
     match /pedidos/{id} {
       allow create: if isSignedIn();

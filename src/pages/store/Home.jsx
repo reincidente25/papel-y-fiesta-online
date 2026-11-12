@@ -6,7 +6,7 @@ import ProductCard from '../../components/store/ProductCard';
 import Loader from '../../components/common/Loader';
 import { getPublicProducts } from '../../services/productsService';
 import { getCategories } from '../../services/categoriesService';
-import { getHomeConfig, HOME_DEFAULT } from '../../services/settingsService';
+import { LANDING } from '../../config/landing';
 import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import './store.css';
@@ -26,14 +26,13 @@ const GRADS = [
 const Home = () => {
   const [featured, setFeatured] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [home, setHome] = useState(HOME_DEFAULT);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
   const { openAuth } = useAuthModal();
 
   useEffect(() => {
-    Promise.all([getPublicProducts(), getCategories(), getHomeConfig()])
-      .then(([pub, cats, cfg]) => {
+    Promise.all([getPublicProducts(), getCategories()])
+      .then(([pub, cats]) => {
         const dest = pub.filter((p) => p.destacado);
         setFeatured((dest.length ? dest : pub).slice(0, 10));
         // Cantidad de productos web por categoría.
@@ -41,14 +40,15 @@ const Home = () => {
         for (const p of pub) if (p.categoria) conteo.set(p.categoria, (conteo.get(p.categoria) || 0) + 1);
         const conProd = cats.filter((c) => conteo.get(c.id)).map((c) => ({ ...c, cantidad: conteo.get(c.id) }));
         setCategories((conProd.length ? conProd : cats).slice(0, 8));
-        setHome(cfg);
       })
       .finally(() => setLoading(false));
   }, []);
 
+  const home = LANDING;
   const heroStyle = home.heroImagen
     ? {
-      backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen})`,
+      // La última capa (degradado de marca) se ve si la imagen falta.
+      backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen}), linear-gradient(135deg,#2b2b2b,#4a3a2a)`,
       backgroundPosition: `center ${home.heroPos || 'center'}`,
     }
     : undefined;
