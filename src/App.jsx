@@ -20,6 +20,7 @@ import Register from './pages/auth/Register';
 // Admin
 import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/AdminProducts';
+import AdminCategories from './pages/admin/AdminCategories';
 import ProductForm from './pages/admin/ProductForm';
 import AdminOrders from './pages/admin/AdminOrders';
 import Sales from './pages/admin/Sales';
@@ -51,6 +52,7 @@ const App = () => (
           {/* Panel de administración */}
           <Route path="/admin" element={<AdminRoute><Dashboard /></AdminRoute>} />
           <Route path="/admin/productos" element={<AdminRoute><AdminProducts /></AdminRoute>} />
+          <Route path="/admin/categorias" element={<AdminRoute><AdminCategories /></AdminRoute>} />
           <Route path="/admin/productos/nuevo" element={<AdminRoute><ProductForm /></AdminRoute>} />
           <Route path="/admin/productos/:id" element={<AdminRoute><ProductForm /></AdminRoute>} />
           <Route path="/admin/ventas" element={<AdminRoute><Sales /></AdminRoute>} />
