@@ -102,25 +102,26 @@ const PromoSettings = () => {
             <input ref={fileRef} type="file" accept="image/*" hidden onChange={(e) => { subirFoto(e.target.files?.[0]); e.target.value = ''; }} />
             <span className="hint">Ideal vertical u horizontal grande (ej. 800×600).</span>
           </div>
+
+          {/* Vista previa en vivo, debajo de la imagen */}
+          <div className="card" style={{ padding: 18 }}>
+            <label className="aside-title">Vista previa{!form.activo && <span className="muted" style={{ fontWeight: 400 }}> (desactivado)</span>}</label>
+            <div className="promo-preview-box">
+              <div className={`promo-pop2 texto-${form.textoColor || 'blanco'}`} style={{ maxHeight: 'none' }}>
+                {tieneImg && <img className="promo-pop2-img" src={form.imagen} alt="" />}
+                {hayTexto && (
+                  <div className={`promo-pop2-content ${tieneImg ? `overlay v-${form.alignV || 'bottom'}` : 'plano'}`} style={{ textAlign: form.alignH || 'left' }}>
+                    {form.titulo && <h3 style={{ color: col(form.tituloColor) }}>{form.titulo}</h3>}
+                    {form.texto && <p>{form.texto}</p>}
+                    {form.ctaLink && form.ctaTexto && <span className="promo-pop2-hint">{form.ctaTexto} →</span>}
+                  </div>
+                )}
+                {!tieneImg && !hayTexto && <div className="promo-pop2-content plano muted">Cargá una imagen o un texto para ver la vista previa.</div>}
+              </div>
+            </div>
+          </div>
         </aside>
       </form>
-
-      {/* Vista previa en vivo */}
-      <div className="toolbar" style={{ marginTop: 24 }}><h2 className="section-title">Vista previa</h2></div>
-      <div className="promo-preview-box">
-        {!form.activo && <div className="promo-preview-off">El popup está desactivado — así se vería si lo activás.</div>}
-        <div className={`promo-pop2 texto-${form.textoColor || 'blanco'}`} style={{ maxHeight: 'none' }}>
-          {tieneImg && <img className="promo-pop2-img" src={form.imagen} alt="" />}
-          {hayTexto && (
-            <div className={`promo-pop2-content ${tieneImg ? `overlay v-${form.alignV || 'bottom'}` : 'plano'}`} style={{ textAlign: form.alignH || 'left' }}>
-              {form.titulo && <h3 style={{ color: col(form.tituloColor) }}>{form.titulo}</h3>}
-              {form.texto && <p>{form.texto}</p>}
-              {form.ctaLink && form.ctaTexto && <span className="promo-pop2-hint">{form.ctaTexto} →</span>}
-            </div>
-          )}
-          {!tieneImg && !hayTexto && <div className="promo-pop2-content plano muted">Cargá una imagen o un texto para ver la vista previa.</div>}
-        </div>
-      </div>
     </AdminLayout>
   );
 };
