@@ -5,27 +5,20 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getPopup } from '../../services/popupService';
 
-const KEY = 'pf_popup_ver';
-
 const PromoPopup = () => {
   const [promo, setPromo] = useState(null);
   const [open, setOpen] = useState(false);
 
+  // Se muestra cada vez que se abre la landing (sin recordar el cierre).
   useEffect(() => {
     getPopup().then((p) => {
       if (!p.activo || (!p.imagen && !p.titulo)) return;
-      let visto = '';
-      try { visto = localStorage.getItem(KEY) || ''; } catch { /* ignore */ }
-      if (String(p.ver) === visto) return; // ya lo cerró en esta versión
       setPromo(p);
       setOpen(true);
     });
   }, []);
 
-  const cerrar = () => {
-    setOpen(false);
-    try { localStorage.setItem(KEY, String(promo?.ver || '')); } catch { /* ignore */ }
-  };
+  const cerrar = () => setOpen(false);
 
   if (!open || !promo) return null;
 
