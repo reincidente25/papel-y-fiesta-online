@@ -18,6 +18,7 @@ const AdminCategories = () => {
   const [editId, setEditId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
+  const [search, setSearch] = useState('');
   const fileRef = useRef(null);
 
   const load = () => {
@@ -64,6 +65,8 @@ const AdminCategories = () => {
   };
 
   const totalProd = Object.values(counts).reduce((n, v) => n + v, 0);
+  const q = search.trim().toLowerCase();
+  const visibles = cats.filter((c) => `${c.name || ''} ${c.id || ''} ${c.descripcion || ''}`.toLowerCase().includes(q));
 
   return (
     <AdminLayout title="Categorías">
@@ -74,7 +77,7 @@ const AdminCategories = () => {
       </div>
 
       <div className="toolbar">
-        <h2 className="section-title">Categorías de la tienda</h2>
+        <input className="input" style={{ maxWidth: 320 }} placeholder="🔎 Buscar categoría..." value={search} onChange={(e) => setSearch(e.target.value)} />
         <button className="btn btn-primary" onClick={openNew}>+ Nueva categoría</button>
       </div>
 
@@ -85,9 +88,9 @@ const AdminCategories = () => {
               <tr><th style={{ width: 64 }}>Imagen</th><th>Categoría</th><th>Descripción</th><th className="num">Productos</th><th>Orden</th><th>Estado</th><th></th></tr>
             </thead>
             <tbody>
-              {cats.length === 0 ? (
-                <tr><td colSpan={7} className="muted">Todavía no hay categorías. Creá la primera.</td></tr>
-              ) : cats.map((c) => (
+              {visibles.length === 0 ? (
+                <tr><td colSpan={7} className="muted">{cats.length === 0 ? 'Todavía no hay categorías. Creá la primera.' : 'No hay categorías que coincidan con la búsqueda.'}</td></tr>
+              ) : visibles.map((c) => (
                 <tr key={c.id}>
                   <td>
                     {c.imagen
