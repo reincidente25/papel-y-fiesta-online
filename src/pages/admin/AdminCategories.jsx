@@ -127,8 +127,8 @@ const AdminCategories = () => {
             {/* Campos */}
             <div className="cat-modal-fields">
               <div className="field"><label>Nombre *</label>
-                <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required readOnly={Boolean(editId)} />
-                {editId && <span className="hint">El nombre define el ID; no se cambia.</span>}</div>
+                <input className="input" value={form.nombre} onChange={(e) => set('nombre', e.target.value)} required />
+                {editId && <span className="hint">Podés cambiar el nombre; el ID interno (<strong>{editId}</strong>) se mantiene.</span>}</div>
 
               <div className="field"><label>Descripción <span className="muted" style={{ fontWeight: 400 }}>(subtítulo en la landing)</span></label>
                 <textarea className="textarea" value={form.descripcion} onChange={(e) => set('descripcion', e.target.value)} placeholder="Ej: Todo para tus manualidades y arte" rows={3} /></div>
