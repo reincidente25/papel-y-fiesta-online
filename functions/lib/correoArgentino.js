@@ -55,17 +55,22 @@ async function asegurarSesion(cfg) {
  */
 export async function cotizar(cfg, q) {
   const { base } = await asegurarSesion(cfg);
-  const dim = q.dimensiones || { length: 20, width: 15, height: 10 };
+  const dim = q.dimensiones || { height: 10, width: 20, length: 30 };
+  const cant = q.cantidad || 1;
+  // Peso total = peso por ítem × cantidad (gramos, 1..50000 según la API).
+  const pesoTotal = Math.max(1, Math.min(50000, Math.round((q.pesoGramos || 500) * cant)));
   const body = {
     customerId: cache.customerId,
     postalCodeOrigin: cpNumerico(q.cpOrigen),
     postalCodeDestination: cpNumerico(q.cpDestino),
+    // Sin deliveredType la API devuelve domicilio (D) y sucursal (S) a la vez.
     ...(q.deliveredType ? { deliveredType: q.deliveredType } : {}),
-    dimensions: [{
-      weight: Math.max(1, Math.min(25000, Math.round(q.pesoGramos || 500))),
-      length: dim.length, width: dim.width, height: dim.height,
-      quantity: q.cantidad || 1,
-    }],
+    dimensions: {
+      weight: pesoTotal,
+      height: Number(dim.height) || 10,
+      width: Number(dim.width) || 20,
+      length: Number(dim.length) || 30,
+    },
   };
   return post(base, '/rates', { authorization: `Bearer ${cache.token}` }, body);
 }
