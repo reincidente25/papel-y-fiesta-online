@@ -51,10 +51,27 @@ const PromoSettings = () => {
               <input className="input" value={form.ctaTexto} onChange={(e) => set('ctaTexto', e.target.value)} placeholder="Ver más" /></div>
             <div className="field"><label>Link del botón</label>
               <input className="input" value={form.ctaLink} onChange={(e) => set('ctaLink', e.target.value)} placeholder="/catalogo" /></div>
-            <div className="field full"><label>Color del texto (sobre la imagen)</label>
+            <div className="field"><label>Color del título</label>
+              <select className="select" value={form.tituloColor || 'blanco'} onChange={(e) => set('tituloColor', e.target.value)}>
+                <option value="blanco">Blanco</option>
+                <option value="negro">Negro</option>
+              </select></div>
+            <div className="field"><label>Color de la descripción</label>
               <select className="select" value={form.textoColor || 'blanco'} onChange={(e) => set('textoColor', e.target.value)}>
-                <option value="blanco">Blanco (imagen oscura)</option>
-                <option value="negro">Negro (imagen clara)</option>
+                <option value="blanco">Blanco</option>
+                <option value="negro">Negro</option>
+              </select></div>
+            <div className="field"><label>Alineación horizontal</label>
+              <select className="select" value={form.alignH || 'left'} onChange={(e) => set('alignH', e.target.value)}>
+                <option value="left">Izquierda</option>
+                <option value="center">Centro</option>
+                <option value="right">Derecha</option>
+              </select></div>
+            <div className="field"><label>Alineación vertical</label>
+              <select className="select" value={form.alignV || 'bottom'} onChange={(e) => set('alignV', e.target.value)}>
+                <option value="top">Arriba</option>
+                <option value="center">Centro</option>
+                <option value="bottom">Abajo</option>
               </select></div>
           </div>
           <div className="form-actions">

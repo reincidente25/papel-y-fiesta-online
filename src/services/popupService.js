@@ -13,7 +13,10 @@ export const POPUP_DEFAULT = {
   imagen: '',
   ctaTexto: 'Ver más',
   ctaLink: '/catalogo',
-  textoColor: 'blanco', // 'blanco' | 'negro' (color del texto sobre la imagen)
+  tituloColor: 'blanco', // color del título
+  textoColor: 'blanco',  // color de la descripción
+  alignH: 'left',        // 'left' | 'center' | 'right'
+  alignV: 'bottom',      // 'top' | 'center' | 'bottom'
   ver: 0,
 };
 

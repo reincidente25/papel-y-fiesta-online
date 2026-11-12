@@ -305,11 +305,22 @@
 .promo-pop-x:hover { background: rgba(0,0,0,.85); }
 .promo-pop2-img { width: 100%; display: block; max-height: 82vh; object-fit: cover; }
 .promo-pop2-content { padding: 26px; }
-.promo-pop2-content.overlay { position: absolute; left: 0; right: 0; bottom: 0; }
 .promo-pop2-content h3 { font-family: var(--font-head, inherit); font-size: 1.6rem; margin: 0 0 8px; }
 .promo-pop2-content p { margin: 0 0 18px; line-height: 1.5; font-size: 1rem; }
-/* Color del texto sobre la imagen + velo para legibilidad */
-.promo-pop2.texto-blanco .promo-pop2-content.overlay { background: linear-gradient(transparent, rgba(0,0,0,.35) 35%, rgba(0,0,0,.8)); color: #fff; padding-top: 70px; }
-.promo-pop2.texto-negro .promo-pop2-content.overlay { background: linear-gradient(transparent, rgba(255,255,255,.55) 35%, rgba(255,255,255,.92)); color: #1a1a1a; padding-top: 70px; }
-.promo-pop2 .promo-pop2-content.plano h3,
-.promo-pop2 .promo-pop2-content.plano p { color: var(--text); }
+
+/* Superpuesto sobre la imagen, con velo segun posicion vertical */
+.promo-pop2-content.overlay { position: absolute; left: 0; right: 0; }
+.promo-pop2-content.v-top { top: 0; padding-bottom: 72px; }
+.promo-pop2-content.v-bottom { bottom: 0; padding-top: 72px; }
+.promo-pop2-content.v-center { top: 0; bottom: 0; display: flex; flex-direction: column; justify-content: center; }
+.promo-pop2.texto-blanco .overlay { color: #fff; }
+.promo-pop2.texto-negro .overlay { color: #1a1a1a; }
+.promo-pop2.texto-blanco .overlay.v-bottom { background: linear-gradient(transparent, rgba(0,0,0,.82)); }
+.promo-pop2.texto-blanco .overlay.v-top { background: linear-gradient(rgba(0,0,0,.82), transparent); }
+.promo-pop2.texto-blanco .overlay.v-center { background: rgba(0,0,0,.45); }
+.promo-pop2.texto-negro .overlay.v-bottom { background: linear-gradient(transparent, rgba(255,255,255,.9)); }
+.promo-pop2.texto-negro .overlay.v-top { background: linear-gradient(rgba(255,255,255,.9), transparent); }
+.promo-pop2.texto-negro .overlay.v-center { background: rgba(255,255,255,.7); }
+/* La descripcion toma el color del texto; el titulo usa su color propio (inline) */
+.promo-pop2 .overlay p { color: inherit; }
+.promo-pop2-content.plano h3, .promo-pop2-content.plano p { color: var(--text); }

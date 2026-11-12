@@ -24,6 +24,9 @@ const PromoPopup = () => {
 
   const tieneImg = Boolean(promo.imagen);
   const hayTexto = promo.titulo || promo.texto || (promo.ctaLink && promo.ctaTexto);
+  const col = (c) => (c === 'negro' ? '#1a1a1a' : '#fff');
+  const alignH = promo.alignH || 'left';
+  const alignV = promo.alignV || 'bottom';
 
   return (
     <div className="promo-pop-overlay" onClick={cerrar}>
@@ -31,8 +34,8 @@ const PromoPopup = () => {
         <button className="promo-pop-x" onClick={cerrar} aria-label="Cerrar">✕</button>
         {tieneImg && <img className="promo-pop2-img" src={promo.imagen} alt={promo.titulo || 'Promoción'} />}
         {hayTexto && (
-          <div className={`promo-pop2-content ${tieneImg ? 'overlay' : 'plano'}`}>
-            {promo.titulo && <h3>{promo.titulo}</h3>}
+          <div className={`promo-pop2-content ${tieneImg ? `overlay v-${alignV}` : 'plano'}`} style={{ textAlign: alignH }}>
+            {promo.titulo && <h3 style={{ color: col(promo.tituloColor) }}>{promo.titulo}</h3>}
             {promo.texto && <p>{promo.texto}</p>}
             {promo.ctaLink && promo.ctaTexto && (
               <Link to={promo.ctaLink} className="btn btn-primary" onClick={cerrar}>{promo.ctaTexto}</Link>
