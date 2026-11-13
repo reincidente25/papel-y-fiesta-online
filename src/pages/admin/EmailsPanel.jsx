@@ -26,8 +26,7 @@ const EmailsPanel = () => {
   return (
     <div>
       <p className="hint" style={{ marginBottom: 16 }}>
-        Activá o desactivá cada correo y editá su asunto y texto. Si dejás un campo vacío, se usa el texto por defecto.
-        La marca, el botón y (en pedidos) la lista de productos y el total se arman solos.
+        Activá o desactivá cada correo. El contenido y el diseño se manejan desde el código; acá solo elegís cuáles se envían.
       </p>
 
       {EMAIL_CATALOG.map((g) => (
@@ -46,13 +45,7 @@ const EmailsPanel = () => {
                       <span className="track" /><span className="switch-label">{activo ? 'Activo' : 'Desactivado'}</span>
                     </label>
                   </div>
-                  <div className="field"><label>Asunto</label>
-                    <input className="input" value={o.asunto || ''} placeholder={it.asunto} onChange={(e) => set(it.code, 'asunto', e.target.value)} /></div>
-                  {!it.soloAsunto && (
-                    <div className="field"><label>Texto</label>
-                      <textarea className="textarea" value={o.cuerpo || ''} placeholder={it.cuerpo} onChange={(e) => set(it.code, 'cuerpo', e.target.value)} rows={3} /></div>
-                  )}
-                  <div className="mail-vars">Variables: {it.vars.map((v) => <code key={v}>{v}</code>)}</div>
+                  <p className="hint" style={{ margin: 0 }}>Asunto: {it.asunto}</p>
                 </div>
               );
             })}
