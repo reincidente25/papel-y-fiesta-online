@@ -12,6 +12,11 @@ const BRAND = {
 const money = (n) =>
   new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(Number(n) || 0);
 
+// Reemplaza variables {clave} con sus valores.
+const fill = (t, vars = {}) => String(t == null ? '' : t).replace(/\{(\w+)\}/g, (_, k) => (vars[k] != null ? vars[k] : ''));
+// Texto del admin → HTML (variables + saltos de línea).
+const htmlText = (t, vars = {}) => fill(t, vars).replace(/\n/g, '<br/>');
+
 // Estados de pedido → texto para el cliente (espejo de src/constants ORDER_STATUS).
 const ESTADOS = {
   pendiente:      { label: 'Pedido recibido',       desc: 'Estamos verificando la disponibilidad de stock.' },
@@ -54,16 +59,19 @@ function layout({ titulo, cuerpo, cta, siteUrl }) {
   </table></body></html>`;
 }
 
-export function welcomeEmail({ nombre, siteUrl, verifyLink }) {
+export function welcomeEmail({ nombre, siteUrl, verifyLink, o = {} }) {
   const cuerpoVerif = verifyLink
     ? `<br/><br/>Para empezar, confirmá tu email con el botón de abajo.`
     : '';
+  const cuerpoBase = o.cuerpo
+    ? htmlText(o.cuerpo, { nombre })
+    : `Tu cuenta en <strong>Papel &amp; Fiesta</strong> ya está activa. Desde ahora podés hacer pedidos y seguir su estado en todo momento.`;
   return {
-    subject: '¡Bienvenido/a a Papel & Fiesta! 🎉',
+    subject: o.asunto ? fill(o.asunto, { nombre }) : '¡Bienvenido/a a Papel & Fiesta! 🎉',
     html: layout({
       siteUrl,
       titulo: `¡Hola${nombre ? ' ' + nombre : ''}! 👋`,
-      cuerpo: `Tu cuenta en <strong>Papel &amp; Fiesta</strong> ya está activa. Desde ahora podés hacer pedidos y seguir su estado en todo momento.${cuerpoVerif}<br/><br/>¡Gracias por sumarte!`,
+      cuerpo: `${cuerpoBase}${cuerpoVerif}<br/><br/>¡Gracias por sumarte!`,
       cta: verifyLink
         ? { url: verifyLink, label: 'Confirmar mi email' }
         : (siteUrl ? { url: `${siteUrl}/catalogo`, label: 'Ver el catálogo' } : null),
@@ -71,25 +79,25 @@ export function welcomeEmail({ nombre, siteUrl, verifyLink }) {
   };
 }
 
-export function verifyEmail({ nombre, link, siteUrl }) {
+export function verifyEmail({ nombre, link, siteUrl, o = {} }) {
   return {
-    subject: 'Confirmá tu email · Papel & Fiesta',
+    subject: o.asunto ? fill(o.asunto, { nombre }) : 'Confirmá tu email · Papel & Fiesta',
     html: layout({
       siteUrl,
       titulo: 'Confirmá tu email ✉️',
-      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, hacé clic en el botón para verificar tu dirección de correo y activar todas las funciones de tu cuenta.<br/><br/>Si no creaste una cuenta en Papel &amp; Fiesta, ignorá este mensaje.`,
+      cuerpo: o.cuerpo ? htmlText(o.cuerpo, { nombre }) : `Hola${nombre ? ' ' + nombre : ''}, hacé clic en el botón para verificar tu dirección de correo y activar todas las funciones de tu cuenta.<br/><br/>Si no creaste una cuenta en Papel &amp; Fiesta, ignorá este mensaje.`,
       cta: { url: link, label: 'Verificar mi email' },
     }),
   };
 }
 
-export function passwordResetEmail({ nombre, link, siteUrl }) {
+export function passwordResetEmail({ nombre, link, siteUrl, o = {} }) {
   return {
-    subject: 'Restablecé tu contraseña · Papel & Fiesta',
+    subject: o.asunto ? fill(o.asunto, { nombre }) : 'Restablecé tu contraseña · Papel & Fiesta',
     html: layout({
       siteUrl,
       titulo: 'Restablecer contraseña 🔑',
-      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, recibimos un pedido para restablecer la contraseña de tu cuenta. Hacé clic en el botón para elegir una nueva.<br/><br/>El enlace vence en 1 hora. Si no fuiste vos, ignorá este correo: tu contraseña no cambia.`,
+      cuerpo: o.cuerpo ? htmlText(o.cuerpo, { nombre }) : `Hola${nombre ? ' ' + nombre : ''}, recibimos un pedido para restablecer la contraseña de tu cuenta. Hacé clic en el botón para elegir una nueva.<br/><br/>El enlace vence en 1 hora. Si no fuiste vos, ignorá este correo: tu contraseña no cambia.`,
       cta: { url: link, label: 'Crear nueva contraseña' },
     }),
   };
@@ -131,14 +139,15 @@ function itemsTabla(items = []) {
   return `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:14px 0;">${filas}</table>`;
 }
 
-export function orderReceivedEmail({ nombre, orden, siteUrl }) {
+export function orderReceivedEmail({ nombre, orden, siteUrl, o = {} }) {
   const total = money(orden.total);
+  const intro = o.cuerpo ? htmlText(o.cuerpo, { nombre, total }) : 'Ya lo registramos y estamos verificando el stock. Te avisaremos cuando esté confirmado.';
   return {
-    subject: '¡Recibimos tu pedido! 🧾',
+    subject: o.asunto ? fill(o.asunto, { nombre, total }) : '¡Recibimos tu pedido! 🧾',
     html: layout({
       siteUrl,
       titulo: `¡Gracias por tu pedido${nombre ? ', ' + nombre : ''}!`,
-      cuerpo: `Ya lo registramos y estamos verificando el stock. Te avisaremos cuando esté confirmado.
+      cuerpo: `${intro}
         ${itemsTabla(orden.items)}
         <div style="font-size:16px;font-weight:800;margin-top:6px;">Total: ${total}</div>
         <div style="font-size:13px;color:${BRAND.muted};margin-top:6px;">El pago no se procesa en la web: te pasamos los datos para transferir cuando confirmemos el stock.</div>`,
@@ -147,8 +156,10 @@ export function orderReceivedEmail({ nombre, orden, siteUrl }) {
   };
 }
 
-export function orderStatusEmail({ nombre, orden, estado, siteUrl, transferencia }) {
+export function orderStatusEmail({ nombre, orden, estado, siteUrl, transferencia, o = {} }) {
   const info = ESTADOS[estado] || { label: 'Actualización de tu pedido', desc: '' };
+  const label = o.asunto ? fill(o.asunto, { nombre }) : info.label;
+  const desc = o.cuerpo ? htmlText(o.cuerpo, { nombre }) : info.desc;
   // En "confirmado" se agregan los datos de transferencia, si están configurados.
   const bloqueTransfer = (estado === 'confirmado' && transferencia)
     ? `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
@@ -157,19 +168,19 @@ export function orderStatusEmail({ nombre, orden, estado, siteUrl, transferencia
        </div>`
     : '';
   return {
-    subject: `Tu pedido: ${info.label}`,
+    subject: `Tu pedido: ${label}`,
     html: layout({
       siteUrl,
-      titulo: info.label,
-      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${info.desc}${bloqueTransfer}`,
+      titulo: label,
+      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${desc}${bloqueTransfer}`,
       cta: siteUrl && orden.id ? { url: `${siteUrl}/pedido/${orden.id}`, label: 'Ver mi pedido' } : null,
     }),
   };
 }
 
-export function adminNewOrderEmail({ orden, siteUrl }) {
+export function adminNewOrderEmail({ orden, siteUrl, o = {} }) {
   return {
-    subject: `🛒 Nuevo pedido de ${orden.cliente || 'un cliente'} · ${money(orden.total)}`,
+    subject: o.asunto ? fill(o.asunto, { cliente: orden.cliente || '', total: money(orden.total) }) : `🛒 Nuevo pedido de ${orden.cliente || 'un cliente'} · ${money(orden.total)}`,
     html: layout({
       siteUrl,
       titulo: 'Nuevo pedido en la web',

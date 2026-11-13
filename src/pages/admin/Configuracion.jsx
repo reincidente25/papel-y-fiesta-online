@@ -5,11 +5,13 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import AdminCategories from './AdminCategories';
 import PromoSettings from './PromoSettings';
 import PagosPanel from './PagosPanel';
+import EmailsPanel from './EmailsPanel';
 
 const TABS = [
   { id: 'categorias', label: '🏷️ Categorías' },
   { id: 'promo', label: '🎯 Promoción' },
   { id: 'pagos', label: '🏦 Pagos' },
+  { id: 'correos', label: '✉️ Correos' },
 ];
 
 const Configuracion = () => {
@@ -24,6 +26,7 @@ const Configuracion = () => {
       {tab === 'categorias' && <AdminCategories embedded />}
       {tab === 'promo' && <PromoSettings embedded />}
       {tab === 'pagos' && <PagosPanel />}
+      {tab === 'correos' && <EmailsPanel />}
     </AdminLayout>
   );
 };

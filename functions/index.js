@@ -40,6 +40,17 @@ const NOTIFY_ESTADOS = defineString('NOTIFY_ESTADOS', {
 
 // Datos de transferencia para el mail de "Confirmado — a pagar".
 // Fuente única: documento Firestore config/pagos (editable desde el panel).
+// Config editable de correos (config/emails): { [code]: { activo, asunto, cuerpo } }.
+async function emailsCfg() {
+  try {
+    const s = await tiendaDb.doc('config/emails').get();
+    return s.exists ? (s.data() || {}) : {};
+  } catch {
+    return {};
+  }
+}
+const cfgActivo = (cfg, code) => cfg[code]?.activo !== false; // por defecto activo
+
 async function transferenciaHtml() {
   try {
     const snap = await tiendaDb.doc('config/pagos').get();
@@ -167,7 +178,9 @@ export const onUsuarioCreado = onDocumentCreated(
     } catch (err) {
       logger.warn('No se pudo generar link de verificación:', err.message);
     }
-    const { subject, html } = welcomeEmail({ nombre: u.nombre, siteUrl: siteUrl(), verifyLink });
+    const cfg = await emailsCfg();
+    if (!cfgActivo(cfg, 'bienvenida')) return;
+    const { subject, html } = welcomeEmail({ nombre: u.nombre, siteUrl: siteUrl(), verifyLink, o: cfg.bienvenida });
     await enviar({ to: [{ email: u.email, name: u.nombre || undefined }], subject, html });
   }
 );
@@ -182,7 +195,8 @@ export const enviarVerificacion = onCall(
     if (!userRec.email) throw new HttpsError('failed-precondition', 'Tu cuenta no tiene email.');
     if (userRec.emailVerified) return { ok: true, yaVerificado: true };
     const link = await getAuth(tiendaApp).generateEmailVerificationLink(userRec.email, actionSettings());
-    const { subject, html } = verifyEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl() });
+    const cfg = await emailsCfg();
+    const { subject, html } = verifyEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl(), o: cfg.verificacion });
     await enviar({ to: [{ email: userRec.email, name: userRec.displayName || undefined }], subject, html });
     return { ok: true };
   }
@@ -198,7 +212,8 @@ export const enviarResetPassword = onCall(
     try {
       const userRec = await getAuth(tiendaApp).getUserByEmail(email);
       const link = await getAuth(tiendaApp).generatePasswordResetLink(email, actionSettings());
-      const { subject, html } = passwordResetEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl() });
+      const cfg = await emailsCfg();
+      const { subject, html } = passwordResetEmail({ nombre: userRec.displayName, link, siteUrl: siteUrl(), o: cfg.reset });
       await enviar({ to: [{ email, name: userRec.displayName || undefined }], subject, html });
     } catch (err) {
       // No filtramos si el email existe: respondemos ok igual.
@@ -233,13 +248,14 @@ export const onPedidoCreado = onDocumentCreated(
     const d = event.data?.data();
     if (!d) return;
     const orden = { id: event.params.id, ...d };
-    if (orden.email) {
-      const { subject, html } = orderReceivedEmail({ nombre: orden.cliente, orden, siteUrl: siteUrl() });
+    const cfg = await emailsCfg();
+    if (orden.email && cfgActivo(cfg, 'pedidoRecibido')) {
+      const { subject, html } = orderReceivedEmail({ nombre: orden.cliente, orden, siteUrl: siteUrl(), o: cfg.pedidoRecibido });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
     }
     const adminMail = ADMIN_NOTIFY_EMAIL.value();
-    if (adminMail) {
-      const { subject, html } = adminNewOrderEmail({ orden, siteUrl: siteUrl() });
+    if (adminMail && cfgActivo(cfg, 'avisoAdmin')) {
+      const { subject, html } = adminNewOrderEmail({ orden, siteUrl: siteUrl(), o: cfg.avisoAdmin });
       await enviar({ to: [{ email: adminMail }], subject, html });
     }
   }
@@ -255,9 +271,12 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
     if (antes.estado !== despues.estado && despues.email) {
       const permitidos = NOTIFY_ESTADOS.value().split(',').map((s) => s.trim()).filter(Boolean);
       if (!permitidos.includes(despues.estado)) return; // estado silenciado
+      const cfg = await emailsCfg();
+      const code = `estado_${despues.estado}`;
+      if (!cfgActivo(cfg, code)) return;
       const orden = { id: event.params.id, ...despues };
       const transferencia = despues.estado === 'confirmado' ? await transferenciaHtml() : '';
-      const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl(), transferencia });
+      const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl(), transferencia, o: cfg[code] });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
     }
   }
