@@ -7,6 +7,17 @@ import { getOrders, updateOrderStatus } from '../../services/ordersService';
 import { ORDER_STATUS, ORDER_STATUS_LIST, ORDER_NEXT_ACTIONS } from '../../constants';
 import { formatMoney, formatDate } from '../../utils/format';
 
+// Arma el link de WhatsApp (wa.me) a partir de un teléfono argentino libre.
+const waLink = (telefono, mensaje = '') => {
+  let d = String(telefono || '').replace(/\D/g, '');
+  if (!d) return '';
+  if (!d.startsWith('54')) {
+    d = d.replace(/^0/, '');          // saca el 0 inicial
+    d = '549' + d.replace(/^9/, '');  // AR móvil: 54 9 + número
+  }
+  return `https://wa.me/${d}${mensaje ? `?text=${encodeURIComponent(mensaje)}` : ''}`;
+};
+
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -84,7 +95,18 @@ const AdminOrders = () => {
 
               <div className="card" style={{ padding: 14, marginBottom: 14 }}>
                 <div className="pay-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}><span className="muted">Cliente</span><span>{detail.cliente || '—'}</span></div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}><span className="muted">Contacto</span><span>{detail.telefono || detail.email || '—'}</span></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, padding: '4px 0' }}>
+                  <span className="muted">Contacto</span>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {detail.telefono || detail.email || '—'}
+                    {detail.telefono && (
+                      <a className="wa-btn" href={waLink(detail.telefono, `Hola ${detail.cliente || ''}, te escribimos de Papel & Fiesta por tu pedido #${detail.id.slice(-6)}.`)} target="_blank" rel="noopener noreferrer" title="Contactar por WhatsApp">
+                        <svg viewBox="0 0 32 32" width="15" height="15" fill="currentColor" aria-hidden="true"><path d="M16 3C9.4 3 4 8.4 4 15c0 2.1.6 4.2 1.6 6L4 29l8.2-1.6c1.7.9 3.7 1.4 5.8 1.4h.02C22.6 28.8 28 23.4 28 16.8 28 9.4 22.6 3 16 3zm0 23.3c-1.8 0-3.5-.5-5-1.4l-.4-.2-4.9.9.9-4.8-.2-.4c-1-1.6-1.5-3.4-1.5-5.3C4.9 10 9.9 5 16 5s11.1 5 11.1 11.1S22.1 26.3 16 26.3zm5.5-7.8c-.3-.2-1.8-.9-2-1-.3-.1-.5-.2-.7.1-.2.3-.8 1-1 1.2-.2.2-.4.2-.7.1-.3-.2-1.3-.5-2.4-1.5-.9-.8-1.5-1.8-1.7-2.1-.2-.3 0-.5.1-.6.1-.1.3-.4.4-.5.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.2-.7-1.6-.9-2.2-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.5s1.1 2.9 1.2 3.1c.2.2 2.1 3.3 5.2 4.6.7.3 1.3.5 1.7.6.7.2 1.4.2 1.9.1.6-.1 1.8-.7 2-1.4.2-.7.2-1.3.2-1.4-.1-.2-.3-.2-.6-.4z"/></svg>
+                        WhatsApp
+                      </a>
+                    )}
+                  </span>
+                </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}><span className="muted">Entrega</span><span>{detail.entrega === 'envio' ? 'Envío a domicilio' : 'Retiro en local'}</span></div>
                 {detail.notas && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0' }}><span className="muted">Notas</span><span>{detail.notas}</span></div>}
               </div>

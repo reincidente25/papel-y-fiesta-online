@@ -361,3 +361,8 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .promo-preview-box { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .promo-preview-box .promo-pop2 { max-width: 340px; animation: none; }
 .promo-preview-off { font-size: .85rem; color: var(--muted); }
+
+/* Botón WhatsApp (contactar cliente) */
+.wa-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: #fff; text-decoration: none; font-weight: 700; font-size: .82rem; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
+.wa-btn:hover { background: #1ebe5b; }
+.wa-btn svg { display: block; }
