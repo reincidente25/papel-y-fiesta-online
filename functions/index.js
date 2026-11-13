@@ -20,7 +20,7 @@ import {
 
 // ── Parámetros de configuración (se definen al desplegar) ──────────────────
 // projectId del POS y nombre de la colección de productos en el POS.
-const POS_PROJECT_ID = defineString('POS_PROJECT_ID');
+const POS_PROJECT_ID = defineString('POS_PROJECT_ID', { default: '' });
 const POS_COLLECTION = defineString('POS_COLLECTION', { default: 'productos' });
 
 // ── Emails transaccionales (Brevo) ─────────────────────────────────────────
