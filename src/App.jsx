@@ -11,6 +11,7 @@ import Catalog from './pages/store/Catalog';
 import ProductDetail from './pages/store/ProductDetail';
 import Cart from './pages/store/Cart';
 import OrderStatus from './pages/store/OrderStatus';
+import MyOrders from './pages/store/MyOrders';
 import Profile from './pages/store/Profile';
 
 // Auth
@@ -45,6 +46,7 @@ const App = () => (
           <Route path="/producto/:id" element={<ProductDetail />} />
           <Route path="/carrito" element={<Cart />} />
           <Route path="/pedido/:id" element={<OrderStatus />} />
+          <Route path="/mis-pedidos" element={<MyOrders />} />
           <Route path="/perfil" element={<Profile />} />
 
           {/* Autenticación */}

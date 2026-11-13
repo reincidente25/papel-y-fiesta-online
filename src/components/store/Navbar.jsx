@@ -40,6 +40,7 @@ const Navbar = () => {
 
           {user ? (
             <div className="nav-user">
+              <NavLink to="/mis-pedidos" onClick={() => setOpen(false)}>Mis pedidos</NavLink>
               <Link to="/perfil" className="nav-user-name" onClick={() => setOpen(false)}>👤 {user.displayName || user.email}</Link>
               <button className="btn btn-ghost btn-sm" onClick={handleLogout}>Salir</button>
             </div>

@@ -1,0 +1,16 @@
+/* src/pages/store/MyOrders.css */
+.orders-table { width: 100%; border-collapse: collapse; background: var(--surface, #fff); border-radius: 14px; overflow: hidden; box-shadow: 0 1px 2px rgba(0,0,0,.05); }
+.orders-table th, .orders-table td { padding: 13px 16px; text-align: left; border-bottom: 1px solid var(--border, #eee); font-size: .92rem; vertical-align: middle; }
+.orders-table th { background: var(--surface-alt, #faf7f2); font-weight: 700; color: var(--text-soft, #666); font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; }
+.orders-table tbody tr:last-child td { border-bottom: none; }
+.orders-table tr:hover td { background: var(--surface-alt, #faf7f2); }
+
+.order-detail-row td { background: var(--surface-alt, #faf7f2); padding: 0; }
+.order-detail { padding: 12px 18px; display: flex; flex-direction: column; gap: 8px; }
+.order-detail-item { display: flex; justify-content: space-between; gap: 16px; font-size: .9rem; color: var(--text-soft, #555); }
+.order-detail-item.total { border-top: 1px dashed var(--border, #ddd); padding-top: 8px; font-weight: 800; color: var(--brand-ink, #2B2B2B); }
+
+@media (max-width: 620px) {
+  .orders-table th:nth-child(3), .orders-table td:nth-child(3) { display: none; }
+  .orders-table th, .orders-table td { padding: 10px 10px; font-size: .85rem; }
+}
