@@ -38,6 +38,18 @@ const NOTIFY_ESTADOS = defineString('NOTIFY_ESTADOS', {
   default: 'confirmado,pagado,enviado,entregado,cancelado',
 });
 
+// Datos de transferencia (se incluyen en el mail de "Confirmado — a pagar").
+const TRANSFER_TITULAR = defineString('TRANSFER_TITULAR', { default: '' });
+const TRANSFER_BANCO = defineString('TRANSFER_BANCO', { default: '' });
+const TRANSFER_CBU = defineString('TRANSFER_CBU', { default: '' });
+const TRANSFER_ALIAS = defineString('TRANSFER_ALIAS', { default: '' });
+const transferenciaHtml = () => [
+  TRANSFER_TITULAR.value() && `Titular: ${TRANSFER_TITULAR.value()}`,
+  TRANSFER_BANCO.value() && `Banco: ${TRANSFER_BANCO.value()}`,
+  TRANSFER_CBU.value() && `CBU: ${TRANSFER_CBU.value()}`,
+  TRANSFER_ALIAS.value() && `Alias: ${TRANSFER_ALIAS.value()}`,
+].filter(Boolean).join('<br/>');
+
 // ── Envíos (Mi Correo Argentino) ───────────────────────────────────────────
 const CA_ENV = defineString('CA_ENV', { default: 'prod' }); // 'test' | 'prod'
 const CA_USER_TOKEN = defineSecret('CA_USER_TOKEN');
@@ -238,7 +250,7 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
       const permitidos = NOTIFY_ESTADOS.value().split(',').map((s) => s.trim()).filter(Boolean);
       if (!permitidos.includes(despues.estado)) return; // estado silenciado
       const orden = { id: event.params.id, ...despues };
-      const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl() });
+      const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl(), transferencia: transferenciaHtml() });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
     }
   }

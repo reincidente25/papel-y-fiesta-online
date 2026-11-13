@@ -147,14 +147,21 @@ export function orderReceivedEmail({ nombre, orden, siteUrl }) {
   };
 }
 
-export function orderStatusEmail({ nombre, orden, estado, siteUrl }) {
+export function orderStatusEmail({ nombre, orden, estado, siteUrl, transferencia }) {
   const info = ESTADOS[estado] || { label: 'Actualización de tu pedido', desc: '' };
+  // En "confirmado" se agregan los datos de transferencia, si están configurados.
+  const bloqueTransfer = (estado === 'confirmado' && transferencia)
+    ? `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
+         <strong>Datos para transferir:</strong><br/>${transferencia}
+         <br/><br/><span style="color:${BRAND.muted};font-size:13px;">Cuando transfieras, envianos el comprobante.</span>
+       </div>`
+    : '';
   return {
     subject: `Tu pedido: ${info.label}`,
     html: layout({
       siteUrl,
       titulo: info.label,
-      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${info.desc}`,
+      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${info.desc}${bloqueTransfer}`,
       cta: siteUrl && orden.id ? { url: `${siteUrl}/pedido/${orden.id}`, label: 'Ver mi pedido' } : null,
     }),
   };
