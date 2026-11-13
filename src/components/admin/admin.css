@@ -366,3 +366,15 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .wa-btn { display: inline-flex; align-items: center; gap: 6px; background: #25D366; color: #fff; text-decoration: none; font-weight: 700; font-size: .82rem; padding: 5px 11px; border-radius: 999px; white-space: nowrap; }
 .wa-btn:hover { background: #1ebe5b; }
 .wa-btn svg { display: block; }
+
+/* Gestión de pedido: ítems con imagen + disponibilidad */
+.wa-btn.wa-icon-only { padding: 6px; border-radius: 8px; }
+.ord-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.ord-item { display: grid; grid-template-columns: 44px 1fr auto auto; gap: 12px; align-items: center; padding: 8px; border: 1px solid var(--border); border-radius: 10px; }
+.ord-item .table-thumb { width: 44px; height: 44px; }
+.ord-item-info { min-width: 0; }
+.ord-item-name { font-weight: 600; font-size: .9rem; }
+.ord-item-amount { font-weight: 700; font-size: .9rem; white-space: nowrap; }
+.ord-item.is-off { opacity: .6; background: var(--surface-alt, #f7f6f3); }
+.ord-item.is-off .ord-item-name { text-decoration: line-through; }
+.ord-chk { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
