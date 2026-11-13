@@ -8,7 +8,15 @@ import Loader from '../../components/common/Loader';
 import { useAuth } from '../../context/AuthContext';
 import { getOrdersByUser } from '../../services/ordersService';
 import { ORDER_STATUS } from '../../constants';
+import { STORE_INFO } from '../../config/store';
 import { formatMoney, formatDate } from '../../utils/format';
+
+// Link de WhatsApp al local con un mensaje prearmado por pedido.
+const waLocal = (o) => {
+  const num = (STORE_INFO.whatsapp || '').replace(/[^\d]/g, '');
+  const msg = `¡Hola Papel & Fiesta! 👋 Te consulto por mi pedido *#${o.id.slice(-6)}* (${formatMoney(o.total)}).`;
+  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+};
 
 const MyOrders = () => {
   const { user } = useAuth();
@@ -97,6 +105,9 @@ const MyOrders = () => {
                           {abiertoEste ? 'Ocultar' : 'Ver detalle'}
                         </button>
                         <Link to={`/pedido/${o.id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: 6 }}>Seguir</Link>
+                        <a className="btn btn-wa btn-sm" href={waLocal(o)} target="_blank" rel="noreferrer" style={{ marginLeft: 6 }} title="Consultar por WhatsApp">
+                          <span aria-hidden>💬</span> WhatsApp
+                        </a>
                       </td>
                     </tr>
                     {abiertoEste && (
@@ -105,7 +116,12 @@ const MyOrders = () => {
                           <div className="order-detail">
                             {items.map((i, idx) => (
                               <div className="order-detail-item" key={idx}>
-                                <span>{i.cantidad}× {i.nombre}{i.variante ? ` (${i.variante})` : ''}</span>
+                                <span className="odi-prod">
+                                  {i.imagen
+                                    ? <img src={i.imagen} alt={i.nombre} className="odi-thumb" loading="lazy" />
+                                    : <span className="odi-thumb odi-thumb-ph">🎁</span>}
+                                  <span>{i.cantidad}× {i.nombre}{i.variante ? ` (${i.variante})` : ''}</span>
+                                </span>
                                 <span>{formatMoney((i.precio || i.precioUnit || 0) * (i.cantidad || 1))}</span>
                               </div>
                             ))}

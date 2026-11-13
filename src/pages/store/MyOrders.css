@@ -7,8 +7,14 @@
 
 .order-detail-row td { background: var(--surface-alt, #faf7f2); padding: 0; }
 .order-detail { padding: 12px 18px; display: flex; flex-direction: column; gap: 8px; }
-.order-detail-item { display: flex; justify-content: space-between; gap: 16px; font-size: .9rem; color: var(--text-soft, #555); }
+.order-detail-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: .9rem; color: var(--text-soft, #555); }
 .order-detail-item.total { border-top: 1px dashed var(--border, #ddd); padding-top: 8px; font-weight: 800; color: var(--brand-ink, #2B2B2B); }
+.odi-prod { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.odi-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #fff; border: 1px solid var(--border, #eee); flex-shrink: 0; }
+.odi-thumb-ph { display: inline-grid; place-items: center; font-size: 1.1rem; }
+
+.btn-wa { background: #25D366; color: #fff; border: none; }
+.btn-wa:hover { background: #1ebe5a; color: #fff; }
 
 @media (max-width: 620px) {
   .orders-table th:nth-child(3), .orders-table td:nth-child(3) { display: none; }
