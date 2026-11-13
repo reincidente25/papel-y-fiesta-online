@@ -33,7 +33,28 @@
 }
 
 .nav-user, .nav-auth { display: flex; align-items: center; gap: 10px; }
-.nav-user-name { font-size: .85rem; color: var(--text-soft); max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nav-user { position: relative; }
+.nav-user-name {
+  display: inline-flex; align-items: center; gap: 6px; cursor: pointer;
+  background: none; border: 1px solid var(--border); border-radius: 999px;
+  padding: 6px 12px; font-size: .85rem; color: var(--text-soft);
+  max-width: 200px; white-space: nowrap; transition: background .15s, border-color .15s;
+}
+.nav-user-name:hover { background: var(--surface-alt); border-color: var(--primary); }
+.nav-caret { font-size: .7rem; opacity: .7; }
+
+.nav-dropdown {
+  position: absolute; top: calc(100% + 8px); right: 0; z-index: 50;
+  min-width: 180px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; box-shadow: var(--shadow); padding: 6px; display: flex; flex-direction: column;
+}
+.nav-dropdown a, .nav-dropdown button {
+  display: flex; align-items: center; gap: 8px; text-align: left; width: 100%;
+  padding: 10px 12px; border: none; background: none; cursor: pointer;
+  font-size: .9rem; color: var(--text); border-radius: 8px; text-decoration: none;
+}
+.nav-dropdown a:hover, .nav-dropdown button:hover { background: var(--surface-alt); }
+.nav-dropdown button { color: var(--danger, #d14343); border-top: 1px solid var(--border); margin-top: 4px; }
 
 .nav-toggle { display: none; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
@@ -49,6 +70,5 @@
   .nav-links a { width: 100%; padding: 10px 0; }
   .nav-links a.active::after { display: none; }
   .nav-toggle { display: block; }
-  .nav-auth .btn, .nav-user-name { display: none; }
-  .nav-user .btn { display: inline-flex; }
+  .nav-auth .btn { display: none; }
 }

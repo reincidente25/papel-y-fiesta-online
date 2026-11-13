@@ -1,5 +1,5 @@
 // src/components/store/Navbar.jsx
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useCart } from '../../context/CartContext';
@@ -13,11 +13,24 @@ const Navbar = () => {
   const { openAuth } = useAuthModal();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [menu, setMenu] = useState(false);
+  const userRef = useRef(null);
 
   const handleLogout = async () => {
+    setMenu(false);
     await logout();
     navigate('/');
   };
+
+  // Cerrar el menú del usuario al hacer clic fuera.
+  useEffect(() => {
+    if (!menu) return undefined;
+    const onClick = (e) => { if (userRef.current && !userRef.current.contains(e.target)) setMenu(false); };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [menu]);
+
+  const closeAll = () => { setOpen(false); setMenu(false); };
 
   return (
     <header className="nav">
@@ -39,10 +52,17 @@ const Navbar = () => {
           </Link>
 
           {user ? (
-            <div className="nav-user">
-              <NavLink to="/mis-pedidos" onClick={() => setOpen(false)}>Mis pedidos</NavLink>
-              <Link to="/perfil" className="nav-user-name" onClick={() => setOpen(false)}>👤 {user.displayName || user.email}</Link>
-              <button className="btn btn-ghost btn-sm" onClick={handleLogout}>Salir</button>
+            <div className="nav-user" ref={userRef}>
+              <button className="nav-user-name" onClick={() => setMenu((m) => !m)} aria-haspopup="true" aria-expanded={menu}>
+                👤 {user.displayName || user.email} <span className="nav-caret">▾</span>
+              </button>
+              {menu && (
+                <div className="nav-dropdown">
+                  <Link to="/perfil" onClick={closeAll}>👤 Mi perfil</Link>
+                  <Link to="/mis-pedidos" onClick={closeAll}>🧾 Mis pedidos</Link>
+                  <button onClick={handleLogout}>↩ Salir</button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="nav-auth">
