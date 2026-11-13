@@ -378,3 +378,6 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .ord-item.is-off { opacity: .6; background: var(--surface-alt, #f7f6f3); }
 .ord-item.is-off .ord-item-name { text-decoration: line-through; }
 .ord-chk { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; font-weight: 600; white-space: nowrap; cursor: pointer; }
+
+/* Confirmación de guardado (paneles admin) */
+.save-ok { color: var(--success, #1faa59); font-weight: 600; font-size: .9rem; }

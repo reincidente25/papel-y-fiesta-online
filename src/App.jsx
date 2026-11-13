@@ -21,6 +21,7 @@ import Register from './pages/auth/Register';
 import Dashboard from './pages/admin/Dashboard';
 import AdminProducts from './pages/admin/AdminProducts';
 import AdminCategories from './pages/admin/AdminCategories';
+import Configuracion from './pages/admin/Configuracion';
 import ProductForm from './pages/admin/ProductForm';
 import AdminOrders from './pages/admin/AdminOrders';
 import Sales from './pages/admin/Sales';
@@ -65,6 +66,7 @@ const App = () => (
           <Route path="/admin/pedidos" element={<AdminRoute><AdminOrders /></AdminRoute>} />
           <Route path="/admin/carritos" element={<AdminRoute><AbandonedCarts /></AdminRoute>} />
           <Route path="/admin/promo" element={<AdminRoute><PromoSettings /></AdminRoute>} />
+          <Route path="/admin/configuracion" element={<AdminRoute><Configuracion /></AdminRoute>} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />

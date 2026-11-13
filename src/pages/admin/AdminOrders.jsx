@@ -6,7 +6,7 @@ import Modal from '../../components/common/Modal';
 import { getOrders, updateOrderStatus } from '../../services/ordersService';
 import { ORDER_STATUS, ORDER_STATUS_LIST, ORDER_NEXT_ACTIONS } from '../../constants';
 import { formatMoney, formatDate } from '../../utils/format';
-import { transferenciaTexto } from '../../config/tienda';
+import { getPagos, transferenciaTexto } from '../../services/pagosService';
 
 // Icono WhatsApp inline reutilizable.
 const WaIcon = ({ size = 15 }) => (
@@ -32,9 +32,11 @@ const AdminOrders = () => {
   const [detail, setDetail] = useState(null);
   const [filter, setFilter] = useState('todos');
   const [noDisp, setNoDisp] = useState(() => new Set()); // índices de ítems sin stock
+  const [pagos, setPagos] = useState({});
 
   const load = () => { setLoading(true); getOrders().then(setOrders).finally(() => setLoading(false)); };
   useEffect(load, []);
+  useEffect(() => { getPagos().then(setPagos); }, []);
 
   // Al abrir otro pedido, todos los ítems arrancan como disponibles.
   useEffect(() => { setNoDisp(new Set()); }, [detail?.id]);
@@ -48,15 +50,15 @@ const AdminOrders = () => {
     const disp = items.filter((_, idx) => !noDisp.has(idx));
     const falt = items.filter((_, idx) => noDisp.has(idx));
     const nombre = detail.cliente || '';
-    const nro = detail.id.slice(-6);
-    const linea = (i) => `• ${i.nombre} x${i.cantidad}`;
+    const linea = (i) => `🔸 ${i.nombre} x${i.cantidad}`;
+    const transf = transferenciaTexto(pagos);
     let msg;
     if (falt.length === 0) {
-      msg = `Hola ${nombre}! 👋 Tu pedido #${nro} está confirmado ✅\n\nTenemos todo disponible:\n${disp.map(linea).join('\n')}\n\nTotal: ${formatMoney(detail.total)}\n\nPara abonar por transferencia:\n${transferenciaTexto()}\n\nCuando transfieras, mandanos el comprobante por acá. ¡Gracias! 🎉`;
+      msg = `¡Hola ${nombre}! 👋🎉\n\nTu pedido en *Papel & Fiesta* está confirmado ✅\n\n🛍️ Tenemos todo disponible:\n${disp.map(linea).join('\n')}\n\n💰 Total: ${formatMoney(detail.total)}\n\n🏦 Para abonar por transferencia:\n${transf || '(datos a cargar)'}\n\n📲 Cuando transfieras, mandanos el comprobante por acá.\n\n¡Gracias por tu compra! 🎈✨`;
       changeStatus(detail.id, 'confirmado');
     } else {
       const totalDisp = disp.reduce((n, i) => n + itemPrecio(i), 0);
-      msg = `Hola ${nombre}! 👋 Sobre tu pedido #${nro}:\n\n✅ Disponibles:\n${disp.map(linea).join('\n') || '(ninguno)'}\n\n❌ Sin stock por el momento:\n${falt.map(linea).join('\n')}\n\n¿Querés avanzar con lo disponible (${formatMoney(totalDisp)})? Si confirmás, te paso los datos para transferir. ¡Gracias!`;
+      msg = `¡Hola ${nombre}! 👋\n\nSobre tu pedido en *Papel & Fiesta*:\n\n✅ Disponibles:\n${disp.map(linea).join('\n') || '(ninguno)'}\n\n❌ Sin stock por el momento:\n${falt.map(linea).join('\n')}\n\n¿Querés avanzar con lo disponible (${formatMoney(totalDisp)})? 😊 Si confirmás, te paso los datos para transferir.\n\n¡Gracias! 🎈`;
     }
     const url = waLink(detail.telefono, msg);
     if (url) window.open(url, '_blank', 'noopener');

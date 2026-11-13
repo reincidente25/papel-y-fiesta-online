@@ -19,12 +19,11 @@ const NAV = [
   ]},
   { section: 'Catálogo', items: [
     { path: '/admin/productos', label: 'Productos', icon: '📦' },
-    { path: '/admin/categorias', label: 'Categorías', icon: '🏷️' },
   ]},
   { section: 'Tienda online', items: [
     { path: '/admin/pedidos', label: 'Pedidos web', icon: '🛍️' },
     { path: '/admin/carritos', label: 'Abandonados', icon: '🛒' },
-    { path: '/admin/promo', label: 'Popup promo', icon: '🎯' },
+    { path: '/admin/configuracion', label: 'Configuración', icon: '⚙️' },
   ]},
 ];
 

@@ -1,5 +1,5 @@
 // src/pages/admin/AdminCategories.jsx
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Fragment } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
@@ -9,7 +9,7 @@ import { uploadImage } from '../../services/storageService';
 
 const EMPTY = { nombre: '', descripcion: '', imagen: '', orden: 999, activa: true };
 
-const AdminCategories = () => {
+const AdminCategories = ({ embedded = false }) => {
   const [cats, setCats] = useState([]);
   const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
@@ -74,8 +74,10 @@ const AdminCategories = () => {
   const q = search.trim().toLowerCase();
   const visibles = cats.filter((c) => `${c.name || ''} ${c.id || ''} ${c.descripcion || ''}`.toLowerCase().includes(q));
 
+  const Wrap = embedded ? Fragment : AdminLayout;
+  const wrapProps = embedded ? {} : { title: 'Categorías' };
   return (
-    <AdminLayout title="Categorías">
+    <Wrap {...wrapProps}>
       <div className="stats-row" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
         <div className="stat info"><span className="stat-ic">🏷️</span><div><div className="stat-v">{cats.length}</div><div className="stat-l">Categorías</div></div></div>
         <div className="stat ok"><span className="stat-ic">✅</span><div><div className="stat-v">{cats.filter((c) => c.activa !== false).length}</div><div className="stat-l">Activas</div></div></div>
@@ -166,7 +168,7 @@ const AdminCategories = () => {
           </div>
         </form>
       </Modal>
-    </AdminLayout>
+    </Wrap>
   );
 };
 

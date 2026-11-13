@@ -1,13 +1,13 @@
 // src/pages/admin/PromoSettings.jsx
 // Gestión del popup promocional de la landing.
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Fragment } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import { getPopup, savePopup, POPUP_DEFAULT } from '../../services/popupService';
 import { uploadImage } from '../../services/storageService';
 import '../store/store.css';
 
-const PromoSettings = () => {
+const PromoSettings = ({ embedded = false }) => {
   const [form, setForm] = useState(POPUP_DEFAULT);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -32,14 +32,17 @@ const PromoSettings = () => {
     finally { setSaving(false); }
   };
 
-  if (loading) return <AdminLayout title="Popup promocional"><Loader /></AdminLayout>;
+  const Wrap = embedded ? Fragment : AdminLayout;
+  const wrapProps = embedded ? {} : { title: 'Popup promocional' };
+
+  if (loading) return <Wrap {...wrapProps}><Loader /></Wrap>;
 
   const col = (c) => (c === 'negro' ? '#1a1a1a' : '#fff');
   const tieneImg = Boolean(form.imagen);
   const hayTexto = form.titulo || form.texto || (form.ctaLink && form.ctaTexto);
 
   return (
-    <AdminLayout title="Popup promocional">
+    <Wrap {...wrapProps}>
       <form onSubmit={guardar} className="editor-grid">
         <div className="card" style={{ padding: 24 }}>
           <label className="switch" style={{ marginBottom: 18 }}>
@@ -122,7 +125,7 @@ const PromoSettings = () => {
           </div>
         </aside>
       </form>
-    </AdminLayout>
+    </Wrap>
   );
 };
 
