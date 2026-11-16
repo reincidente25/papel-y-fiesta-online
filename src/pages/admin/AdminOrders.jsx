@@ -49,16 +49,34 @@ const AdminOrders = () => {
     const items = detail.items || [];
     const disp = items.filter((_, idx) => !noDisp.has(idx));
     const falt = items.filter((_, idx) => noDisp.has(idx));
-    const nombre = detail.cliente || '';
-    const linea = (i) => `🔸 ${i.nombre} x${i.cantidad}`;
-    const transf = transferenciaTexto(pagos);
+    const nombre = (detail.cliente || '').split(' ')[0] || detail.cliente || '';
+    const linea = (i) => `🎈 ${i.nombre}  ·  x${i.cantidad}`;
+    // Datos de transferencia con emojis por campo.
+    const transf = [
+      pagos.titular && `👤 Titular: ${pagos.titular}`,
+      pagos.banco && `🏦 Banco: ${pagos.banco}`,
+      pagos.cbu && `🔢 CBU: ${pagos.cbu}`,
+      pagos.alias && `🏷️ Alias: ${pagos.alias}`,
+    ].filter(Boolean).join('\n') || transferenciaTexto(pagos) || '(datos a cargar)';
     let msg;
     if (falt.length === 0) {
-      msg = `¡Hola ${nombre}! 👋🎉\n\nTu pedido en *Papel & Fiesta* está confirmado ✅\n\n🛍️ Tenemos todo disponible:\n${disp.map(linea).join('\n')}\n\n💰 Total: ${formatMoney(detail.total)}\n\n🏦 Para abonar por transferencia:\n${transf || '(datos a cargar)'}\n\n📲 Cuando transfieras, mandanos el comprobante por acá.\n\n¡Gracias por tu compra! 🎈✨`;
+      msg = `¡Hola ${nombre}! 👋🎉\n\n`
+        + `¡Buenas noticias! Tu pedido en *Papel & Fiesta* ya está *confirmado* ✅\n\n`
+        + `🛍️ *Esto es lo que preparamos para vos:*\n${disp.map(linea).join('\n')}\n\n`
+        + `🧾 *Total a abonar:* ${formatMoney(detail.total)}\n\n`
+        + `💳 *Datos para transferir:*\n${transf}\n\n`
+        + `📸 Cuando hagas la transferencia, mandanos el *comprobante* por acá y dejamos todo listo 🎁\n\n`
+        + `¡Gracias por elegirnos! 🧡🎉🎈`;
       changeStatus(detail.id, 'confirmado');
     } else {
       const totalDisp = disp.reduce((n, i) => n + itemPrecio(i), 0);
-      msg = `¡Hola ${nombre}! 👋\n\nSobre tu pedido en *Papel & Fiesta*:\n\n✅ Disponibles:\n${disp.map(linea).join('\n') || '(ninguno)'}\n\n❌ Sin stock por el momento:\n${falt.map(linea).join('\n')}\n\n¿Querés avanzar con lo disponible (${formatMoney(totalDisp)})? 😊 Si confirmás, te paso los datos para transferir.\n\n¡Gracias! 🎈`;
+      msg = `¡Hola ${nombre}! 👋\n\n`
+        + `Te contamos cómo viene tu pedido en *Papel & Fiesta* 📝\n\n`
+        + `✅ *Disponibles ahora:*\n${disp.map(linea).join('\n') || '— (ninguno)'}\n\n`
+        + `😔 *Sin stock por el momento:*\n${falt.map((i) => `▫️ ${i.nombre} · x${i.cantidad}`).join('\n')}\n\n`
+        + `¿Querés que avancemos con lo disponible? 🛍️\n`
+        + `🧾 Serían *${formatMoney(totalDisp)}* y te paso los datos para transferir 💳\n\n`
+        + `¡Gracias por tu paciencia! 🧡🎈`;
     }
     const url = waLink(detail.telefono, msg);
     if (url) window.open(url, '_blank', 'noopener');
