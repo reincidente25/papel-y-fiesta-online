@@ -23,7 +23,8 @@ const waLink = (telefono, mensaje = '') => {
     d = d.replace(/^0/, '');          // saca el 0 inicial
     d = '549' + d.replace(/^9/, '');  // AR móvil: 54 9 + número
   }
-  return `https://wa.me/${d}${mensaje ? `?text=${encodeURIComponent(mensaje)}` : ''}`;
+  // api.whatsapp.com conserva mejor los emojis del texto precargado que wa.me en WhatsApp Web.
+  return `https://api.whatsapp.com/send?phone=${d}${mensaje ? `&text=${encodeURIComponent(mensaje)}` : ''}`;
 };
 
 const AdminOrders = () => {

@@ -15,7 +15,7 @@ import { formatMoney, formatDate } from '../../utils/format';
 const waLocal = (o) => {
   const num = (STORE_INFO.whatsapp || '').replace(/[^\d]/g, '');
   const msg = `¡Hola Papel & Fiesta! 👋 Te consulto por mi pedido *#${o.id.slice(-6)}* (${formatMoney(o.total)}).`;
-  return `https://wa.me/${num}?text=${encodeURIComponent(msg)}`;
+  return `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`;
 };
 
 const MyOrders = () => {
