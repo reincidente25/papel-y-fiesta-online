@@ -230,7 +230,7 @@ const Sales = () => {
         </p>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={1140}>
+      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width="min(1360px, 95vw)">
         <div className="pos-grid" style={{ minHeight: '62vh' }}>
         <div>
         <div className="field pos-search" style={{ marginBottom: 6 }}>

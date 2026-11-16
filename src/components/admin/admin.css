@@ -189,12 +189,12 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .sale-totals { border-top: 1px dashed var(--border-strong); padding-top: 14px; margin-top: 6px; }
 
 /* Modal POS a dos columnas */
-.pos-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
+.pos-grid { display: grid; grid-template-columns: 1fr 620px; gap: 20px; align-items: start; }
 .pos-aside { background: var(--surface-alt); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }
-.pos-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.pos-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
-/* Medio de pago como tiles */
-.pay-tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+/* Medio de pago como tiles (una sola fila) */
+.pay-tiles { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
 .pay-tile {
   display: flex; flex-direction: column; align-items: center; gap: 2px;
   padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 12px;
@@ -235,8 +235,12 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .pos-summary .spread.desc { color: var(--success, #2e9e5b); font-weight: 600; }
 .pos-summary .spread.rec { color: var(--warning, #c47f17); font-weight: 600; }
 
-@media (max-width: 500px) {
-  .pay-tiles { grid-template-columns: 1fr 1fr; }
+@media (max-width: 1040px) {
+  .pos-grid { grid-template-columns: 1fr; }
+  .pos-aside { position: static; }
+}
+@media (max-width: 560px) {
+  .pay-tiles { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 780px) {
