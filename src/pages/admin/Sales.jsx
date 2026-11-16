@@ -393,7 +393,7 @@ const Sales = () => {
       </Modal>
 
       {/* Consulta de venta realizada (comprobante) */}
-      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={720}>
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Detalle de venta" width={860}>
         {detail && (() => {
           const descuento = detail.montoDesc ?? detail.descuento ?? 0;
           const unidades = detail.items.reduce((n, i) => n + i.cantidad, 0);
@@ -413,16 +413,24 @@ const Sales = () => {
                 <div className="ti"><span className="k">Unidades</span><span className="v">{unidades} ({detail.items.length} ítem/s)</span></div>
               </div>
 
+              <div className="sale-items-head">
+                <span>Productos</span>
+                <span className="badge badge-muted">{detail.items.length} ítem/s · {unidades} u.</span>
+              </div>
               <div className="sale-items">
                 {detail.items.map((i, idx) => {
                   const img = itemImg(i);
                   return (
                     <div className="sale-item" key={idx}>
                       {img ? <img className="table-thumb" src={img} alt="" /> : <span className="table-thumb thumb-ph">📦</span>}
-                      <div>
+                      <div className="si-main">
                         <div className="si-name">{i.nombre}</div>
-                        <div className="si-meta">{i.codigo ? `${i.codigo} · ` : ''}{i.cantidad} × {formatMoney(i.precioUnit)}</div>
+                        <div className="si-meta">
+                          {i.codigo ? <span className="code-chip">{i.codigo}</span> : null}
+                          <span>{formatMoney(i.precioUnit)} c/u</span>
+                        </div>
                       </div>
+                      <span className="si-qty">×{i.cantidad}</span>
                       <div className="si-amount">{formatMoney(i.subtotal ?? i.precioUnit * i.cantidad)}</div>
                     </div>
                   );
