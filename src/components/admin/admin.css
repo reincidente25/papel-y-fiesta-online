@@ -189,8 +189,55 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .sale-totals { border-top: 1px dashed var(--border-strong); padding-top: 14px; margin-top: 6px; }
 
 /* Modal POS a dos columnas */
-.pos-grid { display: grid; grid-template-columns: 1fr 280px; gap: 20px; align-items: start; }
+.pos-grid { display: grid; grid-template-columns: 1fr 360px; gap: 20px; align-items: start; }
 .pos-aside { background: var(--surface-alt); border-radius: var(--radius); padding: 16px; display: flex; flex-direction: column; gap: 12px; position: sticky; top: 0; }
+.pos-row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+/* Medio de pago como tiles */
+.pay-tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.pay-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 12px;
+  background: var(--surface); cursor: pointer; text-align: center; transition: all .12s;
+}
+.pay-tile:hover { border-color: var(--primary); }
+.pay-tile.active { border-color: var(--primary); background: var(--primary-soft, #fff3e3); box-shadow: 0 0 0 2px var(--primary-soft, #fff3e3); }
+.pt-ic { font-size: 1.25rem; line-height: 1; }
+.pt-label { font-size: .8rem; font-weight: 700; color: var(--brand-ink); }
+.pt-rec { font-size: .68rem; color: var(--muted); }
+.pay-tile.active .pt-rec { color: var(--primary); font-weight: 700; }
+
+/* Chips (cuotas / % rápidos) */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px;
+  border: 1.5px solid var(--border); border-radius: 999px; background: var(--surface);
+  cursor: pointer; font-size: .82rem; font-weight: 600; color: var(--text-soft); transition: all .12s;
+}
+.chip small { color: var(--muted); font-weight: 600; }
+.chip:hover { border-color: var(--primary); }
+.chip.active { border-color: var(--primary); background: var(--primary); color: #fff; }
+.chip.active small { color: rgba(255,255,255,.85); }
+.chips-sm .chip { padding: 5px 10px; font-size: .78rem; }
+
+/* Descuento */
+.desc-box { display: flex; flex-direction: column; gap: 8px; }
+.seg { display: inline-flex; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden; }
+.seg button { flex: 1; padding: 7px 10px; border: none; background: none; cursor: pointer; font-size: .82rem; font-weight: 600; color: var(--text-soft); }
+.seg button.active { background: var(--primary); color: #fff; }
+.input-pct { position: relative; display: flex; align-items: center; }
+.input-pct input { padding-right: 28px; }
+.input-pct span { position: absolute; right: 12px; color: var(--muted); font-weight: 700; }
+
+/* Resumen */
+.pos-summary { background: var(--surface); border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; }
+.pos-summary .spread { font-size: .9rem; }
+.pos-summary .spread.desc { color: var(--success, #2e9e5b); font-weight: 600; }
+.pos-summary .spread.rec { color: var(--warning, #c47f17); font-weight: 600; }
+
+@media (max-width: 500px) {
+  .pay-tiles { grid-template-columns: 1fr 1fr; }
+}
 
 @media (max-width: 780px) {
   .editor-grid { grid-template-columns: 1fr; }

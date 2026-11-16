@@ -230,7 +230,7 @@ const Sales = () => {
         </p>
       )}
 
-      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={1060}>
+      <Modal open={modal} onClose={() => setModal(false)} title="Nueva venta" width={1140}>
         <div className="pos-grid" style={{ minHeight: '62vh' }}>
         <div>
         <div className="field pos-search" style={{ marginBottom: 6 }}>
@@ -302,51 +302,90 @@ const Sales = () => {
 
         {/* Resumen / cobro */}
         <aside className="pos-aside">
-          <div className="field"><label>Canal</label>
-            <select className="select" value={canal} onChange={(e) => setCanal(e.target.value)}>
-              {Object.values(SALE_CHANNELS).map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
-            </select></div>
-          <div className="field"><label>Medio de pago</label>
-            <select className="select" value={metodoPago} onChange={(e) => cambiarMetodo(e.target.value)}>
-              {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
-            </select></div>
-
-          {metodoPago === 'debito' && (
-            <p className="hint">1 cuota · recargo {RECARGO_DEBITO}%</p>
-          )}
-          {metodoPago === 'credito' && (
-            <div className="field"><label>Cuotas</label>
-              <select className="select" value={cuotas} onChange={(e) => setCuotas(Number(e.target.value))}>
-                {CREDITO_OPCIONES.map((c) => <option key={c.cuotas} value={c.cuotas}>{c.label}</option>)}
+          <div className="pos-row2">
+            <div className="field"><label>Canal</label>
+              <select className="select" value={canal} onChange={(e) => setCanal(e.target.value)}>
+                {Object.values(SALE_CHANNELS).map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
               </select></div>
-          )}
+            <div className="field"><label>Cliente</label>
+              <select className="select" value={clienteId} onChange={(e) => setClienteId(e.target.value)}>
+                <option value="">Consumidor final</option>
+                {customers.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
+              </select></div>
+          </div>
 
-          <div className="field"><label>Descuento</label>
-            <div className="row gap-8">
-              {descTipo === 'monto' ? (
-                <div style={{ flex: 1 }}><MoneyInput value={descuento} onChange={(n) => setDescuento(n)} /></div>
-              ) : (
-                <input className="input" type="number" min="0" value={descuento} onChange={(e) => setDescuento(e.target.value)} style={{ flex: 1 }} />
-              )}
-              <select className="select" style={{ width: 70 }} value={descTipo} onChange={(e) => setDescTipo(e.target.value)}>
-                <option value="monto">$</option>
-                <option value="porcentaje">%</option>
-              </select>
+          <div className="field">
+            <label>Medio de pago</label>
+            <div className="pay-tiles">
+              {PAYMENT_METHODS_LIST.map((m) => {
+                const rec = m.value === 'debito' ? `+${RECARGO_DEBITO}%`
+                  : m.value === 'credito' ? 'según cuotas' : 'sin recargo';
+                return (
+                  <button type="button" key={m.value}
+                    className={`pay-tile ${metodoPago === m.value ? 'active' : ''}`}
+                    onClick={() => cambiarMetodo(m.value)}>
+                    <span className="pt-ic">{m.icon}</span>
+                    <span className="pt-label">{m.label}</span>
+                    <span className="pt-rec">{rec}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          <div className="field"><label>Cliente</label>
-            <select className="select" value={clienteId} onChange={(e) => setClienteId(e.target.value)}>
-              <option value="">Consumidor final</option>
-              {customers.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
-            </select></div>
 
-          <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
-          {montoDesc > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Descuento{descTipo === 'porcentaje' ? ` (${descValor}%)` : ''}</span><span>− {formatMoney(montoDesc)}</span></div>}
-          {recargoMonto > 0 && <div className="spread" style={{ fontSize: '.88rem' }}><span className="muted">Recargo ({recargoPct}%)</span><span>+ {formatMoney(recargoMonto)}</span></div>}
-          <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
+          {metodoPago === 'credito' && (
+            <div className="field"><label>Cuotas</label>
+              <div className="chips">
+                {CREDITO_OPCIONES.map((c) => (
+                  <button type="button" key={c.cuotas}
+                    className={`chip ${cuotas === c.cuotas ? 'active' : ''}`}
+                    onClick={() => setCuotas(c.cuotas)}>
+                    {c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'}<small>+{c.recargo}%</small>
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <div className="field">
+            <label>Descuento</label>
+            <div className="desc-box">
+              <div className="seg">
+                <button type="button" className={descTipo === 'monto' ? 'active' : ''} onClick={() => setDescTipo('monto')}>$ Monto</button>
+                <button type="button" className={descTipo === 'porcentaje' ? 'active' : ''} onClick={() => setDescTipo('porcentaje')}>% Porcentaje</button>
+              </div>
+              {descTipo === 'monto' ? (
+                <MoneyInput value={descuento} onChange={(n) => setDescuento(n)} />
+              ) : (
+                <>
+                  <div className="input-pct">
+                    <input className="input" type="number" min="0" max="100" value={descuento}
+                      onChange={(e) => setDescuento(e.target.value)} placeholder="0" />
+                    <span>%</span>
+                  </div>
+                  <div className="chips chips-sm">
+                    {[10, 15, 20, 25, 30, 50].map((p) => (
+                      <button type="button" key={p} className={`chip ${Number(descuento) === p ? 'active' : ''}`} onClick={() => setDescuento(p)}>{p}%</button>
+                    ))}
+                  </div>
+                </>
+              )}
+              {montoDesc > 0 && <p className="hint" style={{ margin: '2px 0 0' }}>Se descuenta {formatMoney(montoDesc)}</p>}
+            </div>
+          </div>
+
+          <div className="pos-summary">
+            <div className="spread"><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
+            {montoDesc > 0 && <div className="spread desc"><span>Descuento{descTipo === 'porcentaje' ? ` (${descValor}%)` : ''}</span><span>− {formatMoney(montoDesc)}</span></div>}
+            {recargoMonto > 0 && <div className="spread rec"><span>Recargo ({recargoPct}%)</span><span>+ {formatMoney(recargoMonto)}</span></div>}
+            <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
+            {cuotas > 1 && metodoPago === 'credito' && (
+              <p className="hint" style={{ textAlign: 'right', margin: '4px 0 0' }}>{cuotas} cuotas de {formatMoney(total / cuotas)}</p>
+            )}
+          </div>
 
           <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0}>
-            {saving ? 'Registrando...' : 'Registrar venta'}
+            {saving ? 'Registrando...' : `Registrar venta · ${formatMoney(total)}`}
           </button>
           <button className="btn btn-ghost btn-block" onClick={() => setModal(false)}>Cancelar</button>
         </aside>
