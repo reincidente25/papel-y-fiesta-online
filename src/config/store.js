@@ -3,7 +3,7 @@
 
 export const STORE_INFO = {
   nombre: 'Papel & Fiesta',
-  whatsapp: '+54 9 351 000-0000',
+  whatsapp: '+54 9 11 5606-0710', // temporal
   email: 'hola@papelyfiesta.com',
 };
 
