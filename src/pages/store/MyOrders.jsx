@@ -6,17 +6,25 @@ import StoreLayout from '../../components/store/StoreLayout';
 import './MyOrders.css';
 import Loader from '../../components/common/Loader';
 import { useAuth } from '../../context/AuthContext';
-import { getOrdersByUser } from '../../services/ordersService';
+import { getOrdersByUser, updateOrderStatus } from '../../services/ordersService';
 import { ORDER_STATUS } from '../../constants';
 import { STORE_INFO } from '../../config/store';
 import { formatMoney, formatDate } from '../../utils/format';
 
-// Link de WhatsApp al local con un mensaje prearmado por pedido.
-const waLocal = (o) => {
+const waUrl = (msg) => {
   const num = (STORE_INFO.whatsapp || '').replace(/[^\d]/g, '');
-  const msg = `¡Hola Papel & Fiesta! 👋 Te consulto por mi pedido *#${o.id.slice(-6)}* (${formatMoney(o.total)}).`;
   return `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`;
 };
+
+// Link de WhatsApp al local con un mensaje prearmado por pedido.
+const waLocal = (o) => waUrl(`¡Hola Papel & Fiesta! 👋 Te consulto por mi pedido *#${o.id.slice(-6)}* (${formatMoney(o.total)}).`);
+
+// Link para informar el pago de un pedido.
+const waInformarPago = (o) => waUrl(
+  `¡Hola Papel & Fiesta! 👋\n\nYa realicé el pago de mi pedido *#${o.id.slice(-6)}* 💳\n`
+  + `🧾 Total: ${formatMoney(o.total)}\n\n`
+  + `Te adjunto el comprobante de la transferencia 📸 ¡Gracias! 🎉`,
+);
 
 const MyOrders = () => {
   const { user } = useAuth();
@@ -41,6 +49,13 @@ const MyOrders = () => {
       })
       .finally(() => setLoading(false));
   }, [user]);
+
+  const informarPago = (o) => {
+    window.open(waInformarPago(o), '_blank', 'noopener');
+    updateOrderStatus(o.id, 'pago_informado')
+      .then(() => setOrders((prev) => prev.map((x) => (x.id === o.id ? { ...x, estado: 'pago_informado' } : x))))
+      .catch(() => {});
+  };
 
   if (loading) return <StoreLayout><Loader /></StoreLayout>;
 
@@ -105,9 +120,15 @@ const MyOrders = () => {
                           {abiertoEste ? 'Ocultar' : 'Ver detalle'}
                         </button>
                         <Link to={`/pedido/${o.id}`} className="btn btn-ghost btn-sm" style={{ marginLeft: 6 }}>Seguir</Link>
-                        <a className="btn btn-wa btn-sm" href={waLocal(o)} target="_blank" rel="noreferrer" style={{ marginLeft: 6 }} title="Consultar por WhatsApp">
-                          <span aria-hidden>💬</span> WhatsApp
-                        </a>
+                        {o.estado === 'confirmado' ? (
+                          <button className="btn btn-primary btn-sm" onClick={() => informarPago(o)} style={{ marginLeft: 6 }} title="Avisar que ya transferiste">
+                            💳 Informar pago
+                          </button>
+                        ) : (
+                          <a className="btn btn-wa btn-sm" href={waLocal(o)} target="_blank" rel="noreferrer" style={{ marginLeft: 6 }} title="Consultar por WhatsApp">
+                            <span aria-hidden>💬</span> WhatsApp
+                          </a>
+                        )}
                       </td>
                     </tr>
                     {abiertoEste && (
