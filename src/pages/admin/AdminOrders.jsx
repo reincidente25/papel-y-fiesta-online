@@ -50,7 +50,7 @@ const AdminOrders = () => {
     const disp = items.filter((_, idx) => !noDisp.has(idx));
     const falt = items.filter((_, idx) => noDisp.has(idx));
     const nombre = (detail.cliente || '').split(' ')[0] || detail.cliente || '';
-    const linea = (i) => `🎈 ${i.nombre}  ·  x${i.cantidad}`;
+    const linea = (i) => `🎈 ${i.nombre}  ·  x${i.cantidad}  =  ${formatMoney(itemPrecio(i))}`;
     // Datos de transferencia con emojis por campo.
     const transf = [
       pagos.titular && `👤 Titular: ${pagos.titular}`,
@@ -73,7 +73,7 @@ const AdminOrders = () => {
       msg = `¡Hola ${nombre}! 👋\n\n`
         + `Te contamos cómo viene tu pedido en *Papel & Fiesta* 📝\n\n`
         + `✅ *Disponibles ahora:*\n${disp.map(linea).join('\n') || '— (ninguno)'}\n\n`
-        + `😔 *Sin stock por el momento:*\n${falt.map((i) => `▫️ ${i.nombre} · x${i.cantidad}`).join('\n')}\n\n`
+        + `😔 *Sin stock por el momento:*\n${falt.map((i) => `▫️ ${i.nombre}  ·  x${i.cantidad}`).join('\n')}\n\n`
         + `¿Querés que avancemos con lo disponible? 🛍️\n`
         + `🧾 Serían *${formatMoney(totalDisp)}* y te paso los datos para transferir 💳\n\n`
         + `¡Gracias por tu paciencia! 🧡🎈`;
