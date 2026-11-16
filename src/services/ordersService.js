@@ -50,3 +50,13 @@ export async function updateOrderStatus(id, estado) {
   }
   await updateDoc(doc(db, COL, id), { estado, actualizadoEn: serverTimestamp() });
 }
+
+// Actualiza campos arbitrarios del pedido (ej. estado + ventaId al confirmar el pago).
+export async function updateOrderFields(id, data) {
+  if (useMock) {
+    const i = MOCK_ORDERS.findIndex((o) => o.id === id);
+    if (i >= 0) MOCK_ORDERS[i] = { ...MOCK_ORDERS[i], ...data };
+    return;
+  }
+  await updateDoc(doc(db, COL, id), { ...data, actualizadoEn: serverTimestamp() });
+}

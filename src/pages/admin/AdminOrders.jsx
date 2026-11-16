@@ -3,10 +3,28 @@ import { useEffect, useState } from 'react';
 import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
-import { getOrders, updateOrderStatus } from '../../services/ordersService';
+import { getOrders, updateOrderStatus, updateOrderFields } from '../../services/ordersService';
+import { createSale } from '../../services/salesService';
 import { ORDER_STATUS, ORDER_STATUS_LIST, ORDER_NEXT_ACTIONS } from '../../constants';
 import { formatMoney, formatDate } from '../../utils/format';
 import { getPagos, transferenciaTexto } from '../../services/pagosService';
+
+// Genera la venta desde el pedido (descuenta stock) y devuelve el ventaId.
+const crearVentaDesdePedido = (order) => {
+  const items = (order.items || []).map((i) => ({
+    productoId: i.productoId || '', codigo: i.codigo || '', varianteId: i.varianteId || '',
+    variante: i.variante || '', nombre: i.nombre,
+    cantidad: i.cantidad, precioUnit: i.precio ?? i.precioUnit ?? 0,
+  }));
+  return createSale({
+    canal: 'web', items,
+    metodoPago: order.metodoPago || 'transferencia',
+    cliente: order.cliente || 'Consumidor final',
+    clienteId: order.clienteId || order.usuarioId || '',
+    cuotas: 0, tipoDescuento: 'Monto fijo', valorDesc: 0,
+    montoDesc: Number(order.descuento) || 0, recargoPct: 0, recargoMonto: 0,
+  });
+};
 
 // Icono WhatsApp inline reutilizable.
 const WaIcon = ({ size = 15 }) => (
@@ -84,7 +102,19 @@ const AdminOrders = () => {
   };
 
   const changeStatus = async (id, estado) => {
-    await updateOrderStatus(id, estado);
+    const order = orders.find((o) => o.id === id) || (detail?.id === id ? detail : null);
+    // Al confirmar el pago: registrar la venta y descontar stock, una sola vez.
+    if (estado === 'pagado' && order && !order.ventaId) {
+      try {
+        const ventaId = await crearVentaDesdePedido(order);
+        await updateOrderFields(id, { estado, ventaId });
+      } catch (e) {
+        console.error('No se pudo generar la venta del pedido', e);
+        await updateOrderStatus(id, estado);
+      }
+    } else {
+      await updateOrderStatus(id, estado);
+    }
     const updated = await getOrders();
     setOrders(updated);
     setDetail((d) => (d ? updated.find((o) => o.id === d.id) || null : null));
@@ -211,6 +241,11 @@ const AdminOrders = () => {
                     <button key={a.to} className={`btn ${a.style}`} onClick={() => changeStatus(detail.id, a.to)}>{a.label}</button>
                   ))}
                 </div>
+              )}
+              {detail.ventaId && (
+                <p className="hint" style={{ marginTop: 10 }}>
+                  ✅ Venta registrada y stock descontado al confirmar el pago.
+                </p>
               )}
             </div>
           );
