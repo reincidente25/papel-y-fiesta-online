@@ -12,7 +12,12 @@ import { provinciaLetra } from '../lib/enviopack.js';
 const token = process.env.ENVIA_TOKEN;
 if (!token) { console.error('Falta ENVIA_TOKEN en el entorno.'); process.exit(1); }
 
-const codigo = (s) => { const v = String(s || '').trim(); return /^[A-Za-z]{1,2}$/.test(v) ? v.toUpperCase() : provinciaLetra(v); };
+const codigo = (s) => {
+  const v = String(s || '').trim();
+  if (/^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$/.test(v)) return v.toUpperCase();
+  if (/^[A-Za-z]$/.test(v)) return `AR-${v.toUpperCase()}`;
+  const l = provinciaLetra(v); return l ? `AR-${l}` : v;
+};
 
 const test = process.env.ENVIA_ENV === 'test';
 const base = test ? 'https://api-test.envia.com' : 'https://api.envia.com';

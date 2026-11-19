@@ -10,13 +10,15 @@ import { provinciaLetra } from './enviopack.js';
 
 const baseUrl = (test) => (test ? 'https://api-test.envia.com' : 'https://api.envia.com');
 
-// Envia espera el estado como código corto (ISO 3166-2 AR: C, B, X, S...).
-// Acepta un código ya corto tal cual, o convierte el nombre de provincia.
-const estadoCodigo = (s) => {
+// Envia espera el estado como código ISO 3166-2 con prefijo de país (AR-C, AR-B, AR-X...).
+// Acepta ese código tal cual, una letra suelta (le agrega AR-), o el nombre de provincia.
+const estadoCodigo = (s, pais = 'AR') => {
   const v = String(s || '').trim();
   if (!v) return '';
-  if (/^[A-Za-z]{1,2}$/.test(v)) return v.toUpperCase();
-  return provinciaLetra(v);
+  if (/^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$/.test(v)) return v.toUpperCase();   // ya es ISO (AR-C)
+  if (/^[A-Za-z]$/.test(v)) return `${pais}-${v.toUpperCase()}`;           // letra suelta
+  const letra = provinciaLetra(v);
+  return letra ? `${pais}-${letra}` : v;
 };
 
 // Toma el primer valor numérico entre varios nombres de campo posibles.
