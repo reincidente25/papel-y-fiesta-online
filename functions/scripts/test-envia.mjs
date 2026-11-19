@@ -7,17 +7,10 @@
 //
 // No imprime el token. No commitea credenciales: el token va por variable de entorno.
 
-import { provinciaLetra } from '../lib/enviopack.js';
+import { estadoCodigo as codigo } from '../lib/envia.js';
 
 const token = process.env.ENVIA_TOKEN;
 if (!token) { console.error('Falta ENVIA_TOKEN en el entorno.'); process.exit(1); }
-
-const codigo = (s) => {
-  const v = String(s || '').trim();
-  if (/^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$/.test(v)) return v.toUpperCase();
-  if (/^[A-Za-z]$/.test(v)) return `AR-${v.toUpperCase()}`;
-  const l = provinciaLetra(v); return l ? `AR-${l}` : v;
-};
 
 const test = process.env.ENVIA_ENV === 'test';
 const base = test ? 'https://api-test.envia.com' : 'https://api.envia.com';

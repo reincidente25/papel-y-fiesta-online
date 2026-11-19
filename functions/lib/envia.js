@@ -6,19 +6,28 @@
 // Cotización: POST /ship/rate/  con { origin, destination, packages, shipment }.
 // No se hardcodea nada sensible: el token viaja por Firebase secret.
 
-import { provinciaLetra } from './enviopack.js';
-
 const baseUrl = (test) => (test ? 'https://api-test.envia.com' : 'https://api.envia.com');
 
-// Envia espera el estado como código ISO 3166-2 con prefijo de país (AR-C, AR-B, AR-X...).
-// Acepta ese código tal cual, una letra suelta (le agrega AR-), o el nombre de provincia.
-const estadoCodigo = (s, pais = 'AR') => {
+// Envia espera el estado como su código de 2 letras (code_2_digits del catálogo).
+const ESTADO_COD = {
+  'buenos aires': 'BA',
+  'catamarca': 'CT', 'chaco': 'CC', 'chubut': 'CH',
+  'ciudad autonoma de buenos aires': 'DF', 'caba': 'DF', 'capital federal': 'DF',
+  'cordoba': 'CB', 'corrientes': 'CN', 'entre rios': 'ER', 'formosa': 'FM',
+  'jujuy': 'JY', 'la pampa': 'LP', 'la rioja': 'LR', 'mendoza': 'MZ',
+  'misiones': 'MN', 'neuquen': 'NQ', 'rio negro': 'RN', 'salta': 'SA',
+  'san juan': 'SJ', 'san luis': 'SL', 'santa cruz': 'SC', 'santa fe': 'SF',
+  'santiago del estero': 'SE', 'tierra del fuego': 'TF', 'tucuman': 'TM',
+};
+
+// Normaliza quitando acentos para que "Córdoba" y "Río Negro" matcheen.
+const sinAcentos = (s) => String(s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').trim().toLowerCase();
+
+export const estadoCodigo = (s) => {
   const v = String(s || '').trim();
   if (!v) return '';
-  if (/^[A-Za-z]{2}-[A-Za-z0-9]{1,3}$/.test(v)) return v.toUpperCase();   // ya es ISO (AR-C)
-  if (/^[A-Za-z]$/.test(v)) return `${pais}-${v.toUpperCase()}`;           // letra suelta
-  const letra = provinciaLetra(v);
-  return letra ? `${pais}-${letra}` : v;
+  if (/^[A-Za-z]{2}$/.test(v)) return v.toUpperCase();   // ya es código de 2 letras
+  return ESTADO_COD[sinAcentos(v)] || '';
 };
 
 // Toma el primer valor numérico entre varios nombres de campo posibles.
