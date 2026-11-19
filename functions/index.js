@@ -13,7 +13,6 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
 import { cotizar as cotizarCorreo } from './lib/correoArgentino.js';
-import { cotizar as cotizarEnviopack } from './lib/enviopack.js';
 import { cotizar as cotizarEnvia } from './lib/envia.js';
 import {
   welcomeEmail, verifyEmail, passwordResetEmail,
@@ -76,11 +75,6 @@ const CA_PASSWORD_TOKEN = defineSecret('CA_PASSWORD_TOKEN');
 const CA_EMAIL = defineSecret('CA_EMAIL');
 const CA_PASSWORD = defineSecret('CA_PASSWORD');
 const CA_CP_ORIGEN = defineString('CA_CP_ORIGEN', { default: '' });        // CP del local
-
-// Envíopack (agregador multi-correo)
-const ENVIOPACK_API_KEY = defineSecret('ENVIOPACK_API_KEY');
-const ENVIOPACK_SECRET = defineSecret('ENVIOPACK_SECRET');
-const ENVIOPACK_DEPOSITO = defineString('ENVIOPACK_DEPOSITO', { default: '' }); // id de depósito origen (opcional)
 
 // Envia.com (agregador multi-correo)
 const ENVIA_TOKEN = defineSecret('ENVIA_TOKEN');
@@ -298,7 +292,7 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
 
 // ── Callable: cotizar envío (Correo Argentino, con fallback estimado) ───────
 export const cotizarEnvio = onCall(
-  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD, ENVIOPACK_API_KEY, ENVIOPACK_SECRET, ENVIA_TOKEN] },
+  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD, ENVIA_TOKEN] },
   async (request) => {
     const cpDestino = String(request.data?.cpDestino || '').trim();
     const provincia = String(request.data?.provincia || '').trim();
@@ -324,20 +318,7 @@ export const cotizarEnvio = onCall(
       }
     }
 
-    // 2) Envíopack (otro agregador) si hay credenciales.
-    if (ENVIOPACK_API_KEY.value() && ENVIOPACK_SECRET.value()) {
-      try {
-        const r = await cotizarEnviopack(
-          { apiKey: ENVIOPACK_API_KEY.value(), secret: ENVIOPACK_SECRET.value(), deposito: ENVIOPACK_DEPOSITO.value() },
-          { cpDestino, provincia, pesoGramos },
-        );
-        if (r.rates?.length) return { estimado: false, proveedor: 'enviopack', rates: r.rates };
-      } catch (err) {
-        logger.error('Cotización Envíopack falló:', err.message);
-      }
-    }
-
-    // 3) Correo Argentino (MiCorreo) si hay credenciales.
+    // 2) Correo Argentino (MiCorreo) si hay credenciales.
     const cpOrigen = CA_CP_ORIGEN.value();
     const hayCA = CA_USER_TOKEN.value() && CA_PASSWORD_TOKEN.value() && CA_EMAIL.value() && CA_PASSWORD.value() && cpOrigen;
     if (hayCA) {
@@ -354,7 +335,7 @@ export const cotizarEnvio = onCall(
       }
     }
 
-    // 4) Estimación de respaldo.
+    // 3) Estimación de respaldo.
     return estimarFallback(cpDestino, pesoGramos, 1);
   }
 );
