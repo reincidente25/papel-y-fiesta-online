@@ -6,7 +6,18 @@
 // Cotización: POST /ship/rate/  con { origin, destination, packages, shipment }.
 // No se hardcodea nada sensible: el token viaja por Firebase secret.
 
+import { provinciaLetra } from './enviopack.js';
+
 const baseUrl = (test) => (test ? 'https://api-test.envia.com' : 'https://api.envia.com');
+
+// Envia espera el estado como código corto (ISO 3166-2 AR: C, B, X, S...).
+// Acepta un código ya corto tal cual, o convierte el nombre de provincia.
+const estadoCodigo = (s) => {
+  const v = String(s || '').trim();
+  if (!v) return '';
+  if (/^[A-Za-z]{1,2}$/.test(v)) return v.toUpperCase();
+  return provinciaLetra(v);
+};
 
 // Toma el primer valor numérico entre varios nombres de campo posibles.
 const num = (obj, ...keys) => {
@@ -49,14 +60,14 @@ export async function cotizar(cfg, {
       name: origen.nombre || 'Papel & Fiesta',
       country: origen.pais || 'AR',
       postalCode: String(origen.cp || ''),
-      state: origen.estado || '',
+      state: estadoCodigo(origen.estado),
       city: origen.ciudad || '',
     },
     destination: {
       name: 'Cliente',
       country: 'AR',
       postalCode: String(cpDestino || ''),
-      state: provincia || '',
+      state: estadoCodigo(provincia),
       city: ciudad || '',
     },
     packages: [{

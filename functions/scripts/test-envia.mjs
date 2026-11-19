@@ -7,8 +7,12 @@
 //
 // No imprime el token. No commitea credenciales: el token va por variable de entorno.
 
+import { provinciaLetra } from '../lib/enviopack.js';
+
 const token = process.env.ENVIA_TOKEN;
 if (!token) { console.error('Falta ENVIA_TOKEN en el entorno.'); process.exit(1); }
+
+const codigo = (s) => { const v = String(s || '').trim(); return /^[A-Za-z]{1,2}$/.test(v) ? v.toUpperCase() : provinciaLetra(v); };
 
 const test = process.env.ENVIA_ENV === 'test';
 const base = test ? 'https://api-test.envia.com' : 'https://api.envia.com';
@@ -17,8 +21,8 @@ const cpOrigen = process.env.ORIGEN_CP || '5000';
 const provincia = process.env.PROVINCIA || 'Buenos Aires';
 
 const body = {
-  origin: { name: 'Papel & Fiesta', country: 'AR', postalCode: cpOrigen, state: process.env.ORIGEN_PROV || 'Cordoba', city: process.env.ORIGEN_CIUDAD || 'Cordoba' },
-  destination: { name: 'Cliente', country: 'AR', postalCode: cpDestino, state: provincia, city: process.env.CIUDAD || '' },
+  origin: { name: 'Papel & Fiesta', country: 'AR', postalCode: cpOrigen, state: codigo(process.env.ORIGEN_PROV || 'Ciudad Autónoma de Buenos Aires'), city: process.env.ORIGEN_CIUDAD || 'CABA' },
+  destination: { name: 'Cliente', country: 'AR', postalCode: cpDestino, state: codigo(provincia), city: process.env.CIUDAD || '' },
   packages: [{
     content: 'Productos', amount: 1, type: 'box',
     weight: 1, insurance: 0, declaredValue: 0, weightUnit: 'KG', lengthUnit: 'CM',
