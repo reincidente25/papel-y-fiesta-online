@@ -60,13 +60,17 @@ function normalizarRates(data) {
  * cfg: { token, test?, origen: { cp, estado?, ciudad?, pais?, nombre? } }
  * datos: { cpDestino, provincia?, ciudad?, pesoGramos, valorDeclarado?, paquete? }
  */
+// Correos nacionales que se cotizan por defecto (la API pide un carrier por request).
+const CARRIERS_DEFAULT = ['andreani', 'correoArgentino', 'oca', 'urbano'];
+
 export async function cotizar(cfg, {
   cpDestino, provincia = '', ciudad = '', pesoGramos = 500, valorDeclarado = 0, paquete = {},
 } = {}) {
   const origen = cfg.origen || {};
   const pesoKg = Math.max(0.1, Math.round((Number(pesoGramos) || 500)) / 1000);
+  const carriers = (cfg.carriers && cfg.carriers.length) ? cfg.carriers : CARRIERS_DEFAULT;
 
-  const body = {
+  const baseBody = {
     origin: {
       name: origen.nombre || 'Papel & Fiesta',
       country: origen.pais || 'AR',
@@ -96,24 +100,32 @@ export async function cotizar(cfg, {
         height: Number(paquete.height) || 10,
       },
     }],
-    shipment: { type: 1 },
   };
 
-  const res = await fetch(`${baseUrl(cfg.test)}/ship/rate/`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${cfg.token}`,
-    },
-    body: JSON.stringify(body),
-  });
+  const pedir = async (carrier) => {
+    const res = await fetch(`${baseUrl(cfg.test)}/ship/rate/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${cfg.token}` },
+      body: JSON.stringify({ ...baseBody, shipment: { type: 1, carrier } }),
+    });
+    if (!res.ok) throw new Error(`Envia ${carrier} ${res.status}: ${await res.text()}`);
+    const json = await res.json();
+    if (json?.meta === 'error' || json?.error) {
+      throw new Error(`Envia ${carrier}: ${JSON.stringify(json.error || json.message || json)}`);
+    }
+    // Aseguramos el nombre del correo en cada tarifa.
+    return normalizarRates(json).map((r) => ({ ...r, meta: { ...r.meta, carrier: r.meta.carrier || carrier } }));
+  };
 
-  if (!res.ok) throw new Error(`Envia rate ${res.status}: ${await res.text()}`);
-  const json = await res.json();
-  if (json?.meta === 'error' || json?.error) {
-    throw new Error(`Envia error: ${JSON.stringify(json.error || json.message || json)}`);
+  const resultados = await Promise.allSettled(carriers.map(pedir));
+  const rates = resultados
+    .filter((r) => r.status === 'fulfilled')
+    .flatMap((r) => r.value)
+    .sort((a, b) => a.price - b.price);
+
+  if (rates.length === 0) {
+    const primerError = resultados.find((r) => r.status === 'rejected');
+    throw new Error(primerError ? String(primerError.reason?.message || primerError.reason) : 'Envia no devolvió tarifas');
   }
-  const rates = normalizarRates(json);
-  if (rates.length === 0) throw new Error('Envia no devolvió tarifas');
   return { rates };
 }

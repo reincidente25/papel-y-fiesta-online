@@ -82,6 +82,7 @@ const ENVIA_ENV = defineString('ENVIA_ENV', { default: 'prod' });        // 'tes
 const ENVIA_ORIGEN_CP = defineString('ENVIA_ORIGEN_CP', { default: '' }); // CP del local
 const ENVIA_ORIGEN_ESTADO = defineString('ENVIA_ORIGEN_ESTADO', { default: '' }); // provincia del local
 const ENVIA_ORIGEN_CIUDAD = defineString('ENVIA_ORIGEN_CIUDAD', { default: '' }); // ciudad del local
+const ENVIA_CARRIERS = defineString('ENVIA_CARRIERS', { default: '' }); // correos a cotizar, separados por coma (opcional)
 const ENVIO_PESO_ESTANDAR_G = defineString('ENVIO_PESO_ESTANDAR_G', { default: '500' });
 // Fallback (cuando no hay credenciales o falla la API): base + por kg, con factor por zona.
 const ENVIO_FALLBACK_BASE = defineString('ENVIO_FALLBACK_BASE', { default: '2500' });
@@ -309,6 +310,7 @@ export const cotizarEnvio = onCall(
           {
             token: ENVIA_TOKEN.value(), test: ENVIA_ENV.value() === 'test',
             origen: { cp: ENVIA_ORIGEN_CP.value(), estado: ENVIA_ORIGEN_ESTADO.value(), ciudad: ENVIA_ORIGEN_CIUDAD.value(), pais: 'AR' },
+            carriers: ENVIA_CARRIERS.value() ? ENVIA_CARRIERS.value().split(',').map((s) => s.trim()).filter(Boolean) : undefined,
           },
           { cpDestino, provincia, ciudad, pesoGramos, valorDeclarado },
         );
