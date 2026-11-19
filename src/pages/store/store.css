@@ -257,6 +257,20 @@
 .co-seg button { flex: 1; text-align: center; padding: 11px; font-size: .88rem; font-weight: 600; background: var(--surface, #fff); color: var(--text); border: none; cursor: pointer; }
 .co-seg button + button { border-left: 1px solid var(--border); }
 .co-seg button.on { background: var(--brand-orange, #F7941E); color: #fff; }
+/* Opciones de envío en el checkout */
+.co-ship { margin-top: 14px; border-top: 1px dashed var(--border); padding-top: 12px; }
+.co-ship-head { font-weight: 700; font-size: .9rem; margin-bottom: 8px; }
+.co-ship-list { display: flex; flex-direction: column; gap: 8px; }
+.co-ship-opt { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; cursor: pointer;
+  border: 1.5px solid var(--border); border-radius: 10px; padding: 10px 12px; background: var(--surface, #fff); transition: border-color .12s, background .12s; }
+.co-ship-opt:hover { border-color: var(--brand-orange, #F7941E); }
+.co-ship-opt.on { border-color: var(--brand-orange, #F7941E); background: #fff6ec; }
+.co-ship-radio { color: var(--brand-orange, #F7941E); font-size: 1rem; }
+.co-ship-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.co-ship-name { font-weight: 600; font-size: .88rem; }
+.co-ship-sub { font-size: .76rem; color: var(--muted); }
+.co-ship-price { font-family: var(--font-head); font-weight: 800; white-space: nowrap; }
+
 .co-sum-sticky { position: sticky; top: 8px; }
 .co-sum-row { display: flex; justify-content: space-between; font-size: .88rem; margin-top: 8px; }
 

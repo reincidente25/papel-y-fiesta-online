@@ -7,10 +7,13 @@ import AddressAutocomplete from '../../components/store/AddressAutocomplete';
 import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
+import { cotizarEnvio } from '../../services/shippingService';
 import { formatMoney } from '../../utils/format';
 import './store.css';
 
 const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
+const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
+const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Sucursal' : '🏠 Domicilio');
 
 const Cart = () => {
   const { items, setQty, removeItem, total, clearCart } = useCart();
@@ -30,6 +33,13 @@ const Cart = () => {
   // Domicilio elegido: id guardado, 'otra' (escribir), o '' (sin elegir).
   const [domSel, setDomSel] = useState('');
   const [otraDir, setOtraDir] = useState({});
+
+  // Cotización de envío
+  const [envioRates, setEnvioRates] = useState(null);
+  const [envioSel, setEnvioSel] = useState(null);
+  const [envioCargando, setEnvioCargando] = useState(false);
+  const [envioEstimado, setEnvioEstimado] = useState(false);
+  const [envioError, setEnvioError] = useState('');
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -51,6 +61,34 @@ const Cart = () => {
     ? null
     : (domSel && domSel !== 'otra' ? domicilios.find((d) => d.id === domSel) : otraDir);
 
+  const cpDest = soloDigitos(domicilioElegido?.cp);
+  const provDest = domicilioElegido?.provincia || '';
+  const unidades = items.reduce((n, i) => n + i.cantidad, 0);
+
+  // Cotizar envío cuando hay domicilio con CP.
+  useEffect(() => {
+    if (!checkout || form.entrega !== 'envio' || !cpDest) {
+      setEnvioRates(null); setEnvioSel(null); setEnvioError('');
+      return undefined;
+    }
+    let cancel = false;
+    setEnvioCargando(true); setEnvioError(''); setEnvioRates(null); setEnvioSel(null);
+    cotizarEnvio({ cpDestino: cpDest, provincia: provDest, cantidad: unidades })
+      .then((r) => {
+        if (cancel) return;
+        const rs = r.rates || [];
+        setEnvioRates(rs);
+        setEnvioEstimado(Boolean(r.estimado));
+        if (rs.length) setEnvioSel(rs[0]);
+      })
+      .catch(() => { if (!cancel) setEnvioError('No pudimos cotizar el envío. Podés continuar y lo coordinamos.'); })
+      .finally(() => { if (!cancel) setEnvioCargando(false); });
+    return () => { cancel = true; };
+  }, [checkout, form.entrega, cpDest, provDest]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const costoEnvio = form.entrega === 'envio' ? (envioSel?.price || 0) : 0;
+  const totalConEnvio = total + costoEnvio;
+
   const abrirCheckout = () => setCheckout(true);
 
   const handleCheckout = async (e) => {
@@ -65,9 +103,15 @@ const Cart = () => {
         entrega: form.entrega,
         domicilio: form.entrega === 'envio' ? (domicilioElegido || null) : null,
         direccionTexto: form.entrega === 'envio' ? resumenDir(domicilioElegido) : '',
+        envio: form.entrega === 'envio' && envioSel ? {
+          correo: envioSel.meta?.carrier || '', servicio: envioSel.meta?.servicio || envioSel.productName || '',
+          tipo: envioSel.deliveredType || 'D', precio: envioSel.price || 0, estimado: envioEstimado,
+        } : null,
+        costoEnvio,
         notas: form.notas,
         items,
-        total,
+        subtotal: total,
+        total: totalConEnvio,
       });
       clearCart();
       navigate(`/pedido/${id}`);
@@ -135,7 +179,8 @@ const Cart = () => {
       <Modal open={checkout} onClose={() => setCheckout(false)} title="Finalizar pedido" width={1080}>
         {(() => {
           const listo = form.nombre.trim() && form.telefono.trim()
-            && (form.entrega === 'retiro' || (form.entrega === 'envio' && domicilioElegido?.calle));
+            && (form.entrega === 'retiro'
+              || (form.entrega === 'envio' && domicilioElegido?.calle && (envioSel || (envioRates && envioRates.length === 0))));
           return (
             <div className="co-grid">
               {/* Columna izquierda: tarjetas */}
@@ -168,6 +213,41 @@ const Cart = () => {
                     {(domicilios.length === 0 || domSel === 'otra') && (
                       <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
                     )}
+
+                    {/* Opciones de envío cotizadas */}
+                    {cpDest && (
+                      <div className="co-ship">
+                        <div className="co-ship-head">🚚 Opciones de envío</div>
+                        {envioCargando && <p className="hint">Calculando envío…</p>}
+                        {envioError && <p className="hint" style={{ color: 'var(--danger, #d14)' }}>{envioError}</p>}
+                        {!envioCargando && envioRates && envioRates.length > 0 && (
+                          <div className="co-ship-list">
+                            {envioRates.map((r, i) => {
+                              const sel = envioSel === r;
+                              return (
+                                <button type="button" key={i} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => setEnvioSel(r)}>
+                                  <span className="co-ship-radio">{sel ? '●' : '○'}</span>
+                                  <span className="co-ship-info">
+                                    <span className="co-ship-name">{r.productName || etiquetaEntrega(r.deliveredType)}</span>
+                                    <span className="co-ship-sub">{etiquetaEntrega(r.deliveredType)}{r.meta?.dias ? ` · 🕒 ${r.meta.dias}` : ''}</span>
+                                  </span>
+                                  <span className="co-ship-price">{formatMoney(r.price)}</span>
+                                </button>
+                              );
+                            })}
+                            <p className="hint" style={{ marginTop: 6 }}>
+                              {envioEstimado ? '📊 Valores estimados; se confirman al despachar.' : 'Cotización en vivo del correo.'}
+                            </p>
+                          </div>
+                        )}
+                        {!envioCargando && envioRates && envioRates.length === 0 && (
+                          <p className="hint">No hay cotización para este CP. Lo coordinamos por WhatsApp.</p>
+                        )}
+                      </div>
+                    )}
+                    {form.entrega === 'envio' && !cpDest && (
+                      <p className="hint" style={{ marginTop: 8 }}>Cargá el domicilio (con código postal) para ver el costo de envío.</p>
+                    )}
                   </div>
                 )}
 
@@ -197,8 +277,16 @@ const Cart = () => {
                   ))}
                 </div>
                 <div className="co-sum-row"><span className="muted">Subtotal</span><span>{formatMoney(total)}</span></div>
-                <div className="co-sum-row"><span className="muted">Envío</span><span>A coordinar</span></div>
-                <div className="co-sum-total"><span>Total</span><span>{formatMoney(total)}</span></div>
+                <div className="co-sum-row">
+                  <span className="muted">Envío</span>
+                  <span>
+                    {form.entrega === 'retiro' ? 'Retiro en local'
+                      : envioCargando ? 'Calculando…'
+                        : costoEnvio > 0 ? formatMoney(costoEnvio)
+                          : 'A coordinar'}
+                  </span>
+                </div>
+                <div className="co-sum-total"><span>Total</span><span>{formatMoney(form.entrega === 'envio' ? totalConEnvio : total)}</span></div>
                 <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 14 }} disabled={placing || !listo} onClick={handleCheckout}>
                   {placing ? 'Enviando…' : listo ? 'Confirmar pedido' : 'Completá tus datos'}
                 </button>
