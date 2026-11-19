@@ -138,7 +138,7 @@ const ProductDetail = () => {
             🚚 Ver precios de envío
           </button>
 
-          <Modal open={envioOpen} onClose={() => setEnvioOpen(false)} title="Costos de envío" width={520}>
+          <Modal open={envioOpen} onClose={() => setEnvioOpen(false)} title="Costos de envío" width={760}>
             <ShippingEstimator cantidad={qty} />
           </Modal>
 

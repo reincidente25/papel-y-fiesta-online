@@ -99,21 +99,17 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
       {rates && rates.length > 0 && (
         <div className="ship-results">
           {rates.map((r, i) => {
-            const correo = capitalizar(r.meta?.carrier) || r.productName || etiquetaEntrega(r.deliveredType);
-            const servicio = r.meta?.servicio || '';
+            // El servicio ya incluye el nombre del correo (ej. "Correo Argentino Estándar a Sucursal").
+            const nombre = r.meta?.servicio || r.productName || capitalizar(r.meta?.carrier) || etiquetaEntrega(r.deliveredType);
             const dias = r.meta?.dias
               || (r.deliveryTimeMin ? `${r.deliveryTimeMin}${r.deliveryTimeMax && r.deliveryTimeMax !== r.deliveryTimeMin ? `-${r.deliveryTimeMax}` : ''} días háb.` : '');
             const logo = logoDe(r.meta?.carrier);
             return (
-              <div className="ship-opt" key={i}>
-                {logo && <img className="ship-logo" src={logo} alt={correo} onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="ship-opt-name">{correo}{servicio ? ` · ${servicio}` : ''}</div>
-                  <div className="ship-opt-sub">
-                    {etiquetaEntrega(r.deliveredType)}{dias ? ` · 🕒 ${dias}` : ''}
-                  </div>
-                </div>
-                <div className="ship-opt-price">{formatMoney(r.price)}</div>
+              <div className="ship-opt ship-opt-1l" key={i}>
+                {logo && <img className="ship-logo" src={logo} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                <span className="ship-opt-name">{nombre}</span>
+                <span className="ship-opt-meta">{etiquetaEntrega(r.deliveredType)}{dias ? ` · 🕒 ${dias}` : ''}</span>
+                <span className="ship-opt-price">{formatMoney(r.price)}</span>
               </div>
             );
           })}

@@ -209,9 +209,16 @@
 .ship-row .select { flex: 1; min-width: 150px; }
 .ship-results { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .ship-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 10px; }
-.ship-logo { width: 42px; height: 42px; object-fit: contain; flex-shrink: 0; }
+.ship-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
 .ship-opt-name { font-weight: 600; font-size: .9rem; }
 .ship-opt-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+/* Opción en una sola línea */
+.ship-opt-1l { gap: 10px; }
+.ship-opt-1l .ship-opt-name { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ship-opt-1l .ship-opt-meta { font-size: .78rem; color: var(--muted); white-space: nowrap; flex-shrink: 0; }
+@media (max-width: 560px) {
+  .ship-opt-1l .ship-opt-meta { display: none; }
+}
 .ship-opt-price { font-family: var(--font-head, inherit); font-weight: 800; color: var(--brand-ink, #2b2b2b); white-space: nowrap; }
 
 /* Checkout en pasos (stepper) */
