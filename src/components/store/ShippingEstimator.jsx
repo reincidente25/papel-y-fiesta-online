@@ -24,6 +24,12 @@ const CARRIER_LOGO = {
   urbano: '/urbano.svg',
 };
 const logoDe = (c) => CARRIER_LOGO[String(c || '').toLowerCase().replace(/[^a-z]/g, '')] || '';
+// Si el .svg no existe, prueba .png; si tampoco, oculta la imagen.
+const onLogoError = (e) => {
+  const img = e.currentTarget;
+  if (img.src.endsWith('.svg')) img.src = img.src.replace(/\.svg$/, '.png');
+  else img.style.display = 'none';
+};
 
 const PROVINCIAS = [
   'Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba',
@@ -106,7 +112,7 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
             const logo = logoDe(r.meta?.carrier);
             return (
               <div className="ship-opt ship-opt-1l" key={i}>
-                {logo && <img className="ship-logo" src={logo} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                {logo && <img className="ship-logo" src={logo} alt="" onError={onLogoError} />}
                 <span className="ship-opt-name">{nombre}</span>
                 <span className="ship-opt-meta">{etiquetaEntrega(r.deliveredType)}{dias ? ` · 🕒 ${dias}` : ''}</span>
                 <span className="ship-opt-price">{formatMoney(r.price)}</span>
