@@ -8,6 +8,13 @@ import { formatMoney } from '../../utils/format';
 const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
 
 const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Retiro en sucursal' : '🏠 A domicilio');
+const capitalizar = (s) => (s ? String(s).charAt(0).toUpperCase() + String(s).slice(1) : '');
+
+const PROVEEDOR_LABEL = {
+  envia: 'Cotización en vivo de los correos (vía Envia).',
+  enviopack: 'Cotización en vivo de los correos (vía Envíopack).',
+  correo_argentino: 'Cotización de Correo Argentino.',
+};
 
 const ShippingEstimator = ({ cantidad = 1 }) => {
   const { profile } = useAuth();
@@ -15,6 +22,7 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
   const [provincia, setProvincia] = useState('');
   const [rates, setRates] = useState(null);
   const [estimado, setEstimado] = useState(false);
+  const [proveedor, setProveedor] = useState('');
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
 
@@ -35,6 +43,7 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
       const r = await cotizarEnvio({ cpDestino: dest, provincia, cantidad });
       setRates(r.rates || []);
       setEstimado(Boolean(r.estimado));
+      setProveedor(r.proveedor || '');
     } catch {
       setError('No pudimos calcular el envío. Probá de nuevo en un momento.');
     } finally {
@@ -57,22 +66,27 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
 
       {rates && rates.length > 0 && (
         <div className="ship-results">
-          {rates.map((r, i) => (
-            <div className="ship-opt" key={i}>
-              <div>
-                <div className="ship-opt-name">{r.productName || etiquetaEntrega(r.deliveredType)}</div>
-                <div className="ship-opt-sub">
-                  {etiquetaEntrega(r.deliveredType)}
-                  {r.deliveryTimeMin ? ` · ${r.deliveryTimeMin}${r.deliveryTimeMax && r.deliveryTimeMax !== r.deliveryTimeMin ? `-${r.deliveryTimeMax}` : ''} días háb.` : ''}
+          {rates.map((r, i) => {
+            const correo = capitalizar(r.meta?.carrier) || r.productName || etiquetaEntrega(r.deliveredType);
+            const servicio = r.meta?.servicio || '';
+            const dias = r.meta?.dias
+              || (r.deliveryTimeMin ? `${r.deliveryTimeMin}${r.deliveryTimeMax && r.deliveryTimeMax !== r.deliveryTimeMin ? `-${r.deliveryTimeMax}` : ''} días háb.` : '');
+            return (
+              <div className="ship-opt" key={i}>
+                <div>
+                  <div className="ship-opt-name">{correo}{servicio ? ` · ${servicio}` : ''}</div>
+                  <div className="ship-opt-sub">
+                    {etiquetaEntrega(r.deliveredType)}{dias ? ` · 🕒 ${dias}` : ''}
+                  </div>
                 </div>
+                <div className="ship-opt-price">{formatMoney(r.price)}</div>
               </div>
-              <div className="ship-opt-price">{formatMoney(r.price)}</div>
-            </div>
-          ))}
+            );
+          })}
           <p className="hint">
             {estimado
-              ? 'Valor estimado. El costo final se confirma al despachar.'
-              : 'Cotización de Correo Argentino. Se confirma al despachar.'}
+              ? '📊 Valor estimado (sin conexión al correo). El costo final se confirma al despachar.'
+              : `${PROVEEDOR_LABEL[proveedor] || 'Cotización en vivo.'} Se confirma al despachar.`}
           </p>
         </div>
       )}
