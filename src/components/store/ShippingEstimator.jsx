@@ -16,6 +16,13 @@ const PROVEEDOR_LABEL = {
   correo_argentino: 'Cotización de Correo Argentino.',
 };
 
+const PROVINCIAS = [
+  'Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba',
+  'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones',
+  'Neuquén', 'Río Negro', 'Salta', 'San Juan', 'San Luis', 'Santa Cruz', 'Santa Fe',
+  'Santiago del Estero', 'Tierra del Fuego', 'Tucumán',
+];
+
 const ShippingEstimator = ({ cantidad = 1 }) => {
   const { profile } = useAuth();
   const [cp, setCp] = useState('');
@@ -25,22 +32,12 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
   const [proveedor, setProveedor] = useState('');
   const [cargando, setCargando] = useState(false);
   const [error, setError] = useState('');
+  const [autoHecho, setAutoHecho] = useState(false);
 
-  // Prefill con el CP del domicilio predeterminado del perfil.
-  useEffect(() => {
-    const doms = profile?.domicilios || [];
-    const pred = doms.find((d) => d.predeterminado) || doms[0];
-    if (pred?.cp && !cp) setCp(soloDigitos(pred.cp) || pred.cp);
-    if (pred?.provincia && !provincia) setProvincia(pred.provincia);
-  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  const calcular = async (e) => {
-    e?.preventDefault();
-    const dest = soloDigitos(cp);
-    if (!dest) { setError('Ingresá un código postal válido (4 dígitos).'); return; }
+  const cotizar = async (dest, prov) => {
     setError(''); setCargando(true); setRates(null);
     try {
-      const r = await cotizarEnvio({ cpDestino: dest, provincia, cantidad });
+      const r = await cotizarEnvio({ cpDestino: dest, provincia: prov, cantidad });
       setRates(r.rates || []);
       setEstimado(Boolean(r.estimado));
       setProveedor(r.proveedor || '');
@@ -51,12 +48,38 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
     }
   };
 
+  // Prefill con el domicilio predeterminado y cotización automática.
+  useEffect(() => {
+    const doms = profile?.domicilios || [];
+    const pred = doms.find((d) => d.predeterminado) || doms[0];
+    const predCp = pred?.cp ? (soloDigitos(pred.cp) || pred.cp) : '';
+    const predProv = pred?.provincia || '';
+    if (predCp && !cp) setCp(predCp);
+    if (predProv && !provincia) setProvincia(predProv);
+    // Cotiza sola una vez si hay CP + provincia del domicilio por defecto.
+    if (predCp && predProv && !autoHecho) {
+      setAutoHecho(true);
+      cotizar(soloDigitos(predCp) || predCp, predProv);
+    }
+  }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const calcular = (e) => {
+    e?.preventDefault();
+    const dest = soloDigitos(cp);
+    if (!dest) { setError('Ingresá un código postal válido (4 dígitos).'); return; }
+    cotizar(dest, provincia);
+  };
+
   return (
     <div className="ship-est">
       <div className="ship-title">🚚 Calcular envío</div>
       <form className="ship-row" onSubmit={calcular}>
         <input className="input" value={cp} onChange={(e) => setCp(e.target.value)}
-          placeholder="Código postal" inputMode="numeric" maxLength={8} />
+          placeholder="Código postal" inputMode="numeric" maxLength={8} style={{ maxWidth: 130 }} />
+        <select className="select" value={provincia} onChange={(e) => setProvincia(e.target.value)} style={{ flex: 1 }}>
+          <option value="">Provincia…</option>
+          {PROVINCIAS.map((p) => <option key={p} value={p}>{p}</option>)}
+        </select>
         <button className="btn btn-soft btn-sm" type="submit" disabled={cargando}>
           {cargando ? 'Calculando…' : 'Calcular'}
         </button>
