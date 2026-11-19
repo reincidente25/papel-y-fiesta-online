@@ -31,8 +31,10 @@ for (const base of bases) {
       let json; try { json = JSON.parse(txt); } catch { console.log(txt.slice(0, 2000)); continue; }
       const arr = Array.isArray(json?.data) ? json.data : (Array.isArray(json) ? json : []);
       if (arr.length) {
+        console.log('Campos del primer item:', JSON.stringify(arr[0]));
+        console.log('---');
         for (const s of arr) {
-          const code = s.code || s.code_2 || s.state_code || s.id || '?';
+          const code = s.code ?? s.code_2 ?? s.code_3 ?? s.state_code ?? s.iso ?? s.abbr ?? s.abbreviation ?? s.id ?? '?';
           const name = s.name || s.state || s.description || '';
           console.log(` ${String(code).padEnd(6)} ${name}`);
         }
