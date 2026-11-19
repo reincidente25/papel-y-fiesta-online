@@ -14,6 +14,7 @@ import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
 import { cotizar as cotizarCorreo } from './lib/correoArgentino.js';
 import { cotizar as cotizarEnviopack } from './lib/enviopack.js';
+import { cotizar as cotizarEnvia } from './lib/envia.js';
 import {
   welcomeEmail, verifyEmail, passwordResetEmail,
   emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
@@ -80,6 +81,13 @@ const CA_CP_ORIGEN = defineString('CA_CP_ORIGEN', { default: '' });        // CP
 const ENVIOPACK_API_KEY = defineSecret('ENVIOPACK_API_KEY');
 const ENVIOPACK_SECRET = defineSecret('ENVIOPACK_SECRET');
 const ENVIOPACK_DEPOSITO = defineString('ENVIOPACK_DEPOSITO', { default: '' }); // id de depósito origen (opcional)
+
+// Envia.com (agregador multi-correo)
+const ENVIA_TOKEN = defineSecret('ENVIA_TOKEN');
+const ENVIA_ENV = defineString('ENVIA_ENV', { default: 'prod' });        // 'test' | 'prod'
+const ENVIA_ORIGEN_CP = defineString('ENVIA_ORIGEN_CP', { default: '' }); // CP del local
+const ENVIA_ORIGEN_ESTADO = defineString('ENVIA_ORIGEN_ESTADO', { default: '' }); // provincia del local
+const ENVIA_ORIGEN_CIUDAD = defineString('ENVIA_ORIGEN_CIUDAD', { default: '' }); // ciudad del local
 const ENVIO_PESO_ESTANDAR_G = defineString('ENVIO_PESO_ESTANDAR_G', { default: '500' });
 // Fallback (cuando no hay credenciales o falla la API): base + por kg, con factor por zona.
 const ENVIO_FALLBACK_BASE = defineString('ENVIO_FALLBACK_BASE', { default: '2500' });
@@ -290,15 +298,33 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
 
 // ── Callable: cotizar envío (Correo Argentino, con fallback estimado) ───────
 export const cotizarEnvio = onCall(
-  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD, ENVIOPACK_API_KEY, ENVIOPACK_SECRET] },
+  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD, ENVIOPACK_API_KEY, ENVIOPACK_SECRET, ENVIA_TOKEN] },
   async (request) => {
     const cpDestino = String(request.data?.cpDestino || '').trim();
     const provincia = String(request.data?.provincia || '').trim();
+    const ciudad = String(request.data?.ciudad || '').trim();
     const cantidad = Number(request.data?.cantidad) || 1;
+    const valorDeclarado = Number(request.data?.valorDeclarado) || 0;
     const pesoGramos = (Number(request.data?.pesoGramos) || Number(ENVIO_PESO_ESTANDAR_G.value()) || 500) * cantidad;
     if (!cpDestino) throw new HttpsError('invalid-argument', 'Falta el código postal de destino.');
 
-    // 1) Envíopack (agregador multi-correo) si hay credenciales.
+    // 1) Envia.com (agregador multi-correo) si hay token.
+    if (ENVIA_TOKEN.value()) {
+      try {
+        const r = await cotizarEnvia(
+          {
+            token: ENVIA_TOKEN.value(), test: ENVIA_ENV.value() === 'test',
+            origen: { cp: ENVIA_ORIGEN_CP.value(), estado: ENVIA_ORIGEN_ESTADO.value(), ciudad: ENVIA_ORIGEN_CIUDAD.value(), pais: 'AR' },
+          },
+          { cpDestino, provincia, ciudad, pesoGramos, valorDeclarado },
+        );
+        if (r.rates?.length) return { estimado: false, proveedor: 'envia', rates: r.rates };
+      } catch (err) {
+        logger.error('Cotización Envia falló:', err.message);
+      }
+    }
+
+    // 2) Envíopack (otro agregador) si hay credenciales.
     if (ENVIOPACK_API_KEY.value() && ENVIOPACK_SECRET.value()) {
       try {
         const r = await cotizarEnviopack(
@@ -311,7 +337,7 @@ export const cotizarEnvio = onCall(
       }
     }
 
-    // 2) Correo Argentino (MiCorreo) si hay credenciales.
+    // 3) Correo Argentino (MiCorreo) si hay credenciales.
     const cpOrigen = CA_CP_ORIGEN.value();
     const hayCA = CA_USER_TOKEN.value() && CA_PASSWORD_TOKEN.value() && CA_EMAIL.value() && CA_PASSWORD.value() && cpOrigen;
     if (hayCA) {
@@ -328,7 +354,7 @@ export const cotizarEnvio = onCall(
       }
     }
 
-    // 3) Estimación de respaldo.
+    // 4) Estimación de respaldo.
     return estimarFallback(cpDestino, pesoGramos, 1);
   }
 );
