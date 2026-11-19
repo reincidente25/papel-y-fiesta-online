@@ -13,6 +13,7 @@ import { getFirestore } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
 import { cotizar as cotizarCorreo } from './lib/correoArgentino.js';
+import { cotizar as cotizarEnviopack } from './lib/enviopack.js';
 import {
   welcomeEmail, verifyEmail, passwordResetEmail,
   emailChangedEmail, orderReceivedEmail, orderStatusEmail, adminNewOrderEmail,
@@ -74,6 +75,11 @@ const CA_PASSWORD_TOKEN = defineSecret('CA_PASSWORD_TOKEN');
 const CA_EMAIL = defineSecret('CA_EMAIL');
 const CA_PASSWORD = defineSecret('CA_PASSWORD');
 const CA_CP_ORIGEN = defineString('CA_CP_ORIGEN', { default: '' });        // CP del local
+
+// Envíopack (agregador multi-correo)
+const ENVIOPACK_API_KEY = defineSecret('ENVIOPACK_API_KEY');
+const ENVIOPACK_SECRET = defineSecret('ENVIOPACK_SECRET');
+const ENVIOPACK_DEPOSITO = defineString('ENVIOPACK_DEPOSITO', { default: '' }); // id de depósito origen (opcional)
 const ENVIO_PESO_ESTANDAR_G = defineString('ENVIO_PESO_ESTANDAR_G', { default: '500' });
 // Fallback (cuando no hay credenciales o falla la API): base + por kg, con factor por zona.
 const ENVIO_FALLBACK_BASE = defineString('ENVIO_FALLBACK_BASE', { default: '2500' });
@@ -284,30 +290,45 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
 
 // ── Callable: cotizar envío (Correo Argentino, con fallback estimado) ───────
 export const cotizarEnvio = onCall(
-  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD] },
+  { region: REGION, secrets: [CA_USER_TOKEN, CA_PASSWORD_TOKEN, CA_EMAIL, CA_PASSWORD, ENVIOPACK_API_KEY, ENVIOPACK_SECRET] },
   async (request) => {
     const cpDestino = String(request.data?.cpDestino || '').trim();
+    const provincia = String(request.data?.provincia || '').trim();
     const cantidad = Number(request.data?.cantidad) || 1;
-    const pesoGramos = (Number(request.data?.pesoGramos) || Number(ENVIO_PESO_ESTANDAR_G.value()) || 500);
+    const pesoGramos = (Number(request.data?.pesoGramos) || Number(ENVIO_PESO_ESTANDAR_G.value()) || 500) * cantidad;
     if (!cpDestino) throw new HttpsError('invalid-argument', 'Falta el código postal de destino.');
 
-    const cpOrigen = CA_CP_ORIGEN.value();
-    const hayCreds = CA_USER_TOKEN.value() && CA_PASSWORD_TOKEN.value() && CA_EMAIL.value() && CA_PASSWORD.value() && cpOrigen;
+    // 1) Envíopack (agregador multi-correo) si hay credenciales.
+    if (ENVIOPACK_API_KEY.value() && ENVIOPACK_SECRET.value()) {
+      try {
+        const r = await cotizarEnviopack(
+          { apiKey: ENVIOPACK_API_KEY.value(), secret: ENVIOPACK_SECRET.value(), deposito: ENVIOPACK_DEPOSITO.value() },
+          { cpDestino, provincia, pesoGramos },
+        );
+        if (r.rates?.length) return { estimado: false, proveedor: 'enviopack', rates: r.rates };
+      } catch (err) {
+        logger.error('Cotización Envíopack falló:', err.message);
+      }
+    }
 
-    if (!hayCreds) {
-      return estimarFallback(cpDestino, pesoGramos, cantidad);
+    // 2) Correo Argentino (MiCorreo) si hay credenciales.
+    const cpOrigen = CA_CP_ORIGEN.value();
+    const hayCA = CA_USER_TOKEN.value() && CA_PASSWORD_TOKEN.value() && CA_EMAIL.value() && CA_PASSWORD.value() && cpOrigen;
+    if (hayCA) {
+      try {
+        const cfg = {
+          env: CA_ENV.value(),
+          userToken: CA_USER_TOKEN.value(), passwordToken: CA_PASSWORD_TOKEN.value(),
+          email: CA_EMAIL.value(), password: CA_PASSWORD.value(),
+        };
+        const r = await cotizarCorreo(cfg, { cpOrigen, cpDestino, pesoGramos, cantidad: 1 });
+        if (r.rates?.length) return { estimado: false, proveedor: 'correo_argentino', rates: r.rates, validTo: r.validTo || null };
+      } catch (err) {
+        logger.error('Cotización Correo falló:', err.message);
+      }
     }
-    try {
-      const cfg = {
-        env: CA_ENV.value(),
-        userToken: CA_USER_TOKEN.value(), passwordToken: CA_PASSWORD_TOKEN.value(),
-        email: CA_EMAIL.value(), password: CA_PASSWORD.value(),
-      };
-      const r = await cotizarCorreo(cfg, { cpOrigen, cpDestino, pesoGramos, cantidad });
-      return { estimado: false, rates: r.rates || [], validTo: r.validTo || null };
-    } catch (err) {
-      logger.error('Cotización Correo falló, uso fallback:', err.message);
-      return estimarFallback(cpDestino, pesoGramos, cantidad);
-    }
+
+    // 3) Estimación de respaldo.
+    return estimarFallback(cpDestino, pesoGramos, 1);
   }
 );

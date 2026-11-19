@@ -12,6 +12,7 @@ const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Retiro en sucursal' : '🏠 A 
 const ShippingEstimator = ({ cantidad = 1 }) => {
   const { profile } = useAuth();
   const [cp, setCp] = useState('');
+  const [provincia, setProvincia] = useState('');
   const [rates, setRates] = useState(null);
   const [estimado, setEstimado] = useState(false);
   const [cargando, setCargando] = useState(false);
@@ -22,6 +23,7 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
     const doms = profile?.domicilios || [];
     const pred = doms.find((d) => d.predeterminado) || doms[0];
     if (pred?.cp && !cp) setCp(soloDigitos(pred.cp) || pred.cp);
+    if (pred?.provincia && !provincia) setProvincia(pred.provincia);
   }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const calcular = async (e) => {
@@ -30,7 +32,7 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
     if (!dest) { setError('Ingresá un código postal válido (4 dígitos).'); return; }
     setError(''); setCargando(true); setRates(null);
     try {
-      const r = await cotizarEnvio({ cpDestino: dest, cantidad });
+      const r = await cotizarEnvio({ cpDestino: dest, provincia, cantidad });
       setRates(r.rates || []);
       setEstimado(Boolean(r.estimado));
     } catch {
