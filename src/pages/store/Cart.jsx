@@ -280,16 +280,19 @@ const Cart = () => {
 
                 <div className="co-card">
                   <h4>💳 Forma de pago</h4>
-                  <div className="pago-tiles">
-                    {PAGO_OPCIONES.map((p) => (
-                      <button type="button" key={p.value}
-                        className={`pago-tile ${metodoPago === p.value ? 'on' : ''}`}
-                        onClick={() => cambiarMetodo(p.value)}>
-                        <span className="pago-ic">{p.icon}</span>
-                        <span className="pago-label">{p.label}</span>
-                        <span className="pago-rec">{p.rec}</span>
-                      </button>
-                    ))}
+                  <div className="co-ship-list">
+                    {PAGO_OPCIONES.map((p) => {
+                      const sel = metodoPago === p.value;
+                      return (
+                        <button type="button" key={p.value} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => cambiarMetodo(p.value)}>
+                          <span className="co-ship-radio">{sel ? '●' : '○'}</span>
+                          <span className="co-ship-info">
+                            <span className="co-ship-name">{p.icon} {p.label}</span>
+                            <span className="co-ship-sub">{p.rec}</span>
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                   {metodoPago === 'credito' && (
                     <div className="pago-cuotas">
