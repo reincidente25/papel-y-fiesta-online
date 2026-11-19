@@ -259,11 +259,13 @@
 @media (max-width: 760px) { .co-grid { grid-template-columns: 1fr; } .co-sum-sticky { position: static; } }
 .co-dom-select { max-width: 280px; }
 .co-dom-full { font-size: .85rem; color: var(--muted); margin: 8px 0 0; }
-.co-cards { display: flex; flex-direction: column; gap: 14px; }
-.co-card { border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
-.co-card h4 { margin: 0 0 12px; font-size: .95rem; display: flex; align-items: center; gap: 8px; }
+.co-cards { display: flex; flex-direction: column; gap: 10px; }
+.co-card { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
+.co-card h4 { margin: 0 0 8px; font-size: .92rem; display: flex; align-items: center; gap: 8px; }
+.co-card .hint { margin-top: 6px !important; }
+.co-card .form-grid { gap: 10px; }
 .co-seg { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
-.co-seg button { flex: 1; text-align: center; padding: 11px; font-size: .88rem; font-weight: 600; background: var(--surface, #fff); color: var(--text); border: none; cursor: pointer; }
+.co-seg button { flex: 1; text-align: center; padding: 9px; font-size: .86rem; font-weight: 600; background: var(--surface, #fff); color: var(--text); border: none; cursor: pointer; }
 .co-seg button + button { border-left: 1px solid var(--border); }
 .co-seg button.on { background: var(--brand-orange, #F7941E); color: #fff; }
 /* Opciones de envío en el checkout */
@@ -285,8 +287,8 @@
 
 /* Forma de pago en el checkout */
 .pago-tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
-.pago-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px;
-  border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface, #fff); cursor: pointer; text-align: center; transition: all .12s; }
+.pago-tile { display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 8px 6px;
+  border: 1.5px solid var(--border); border-radius: 10px; background: var(--surface, #fff); cursor: pointer; text-align: center; transition: all .12s; }
 .pago-tile:hover { border-color: var(--brand-orange, #F7941E); }
 .pago-tile.on { border-color: var(--brand-orange, #F7941E); background: #fff6ec; }
 .pago-ic { font-size: 1.2rem; line-height: 1; }
