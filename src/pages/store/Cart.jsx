@@ -12,10 +12,14 @@ import { formatMoney } from '../../utils/format';
 import { RECARGO_DEBITO, CREDITO_OPCIONES, recargoPctDe } from '../../config/recargos';
 import './store.css';
 
-const PAGO_OPCIONES = [
-  { value: 'transferencia', label: 'Transferencia', icon: '🏦', rec: 'sin recargo' },
-  { value: 'debito', label: 'Débito', icon: '💳', rec: `+${RECARGO_DEBITO}%` },
-  { value: 'credito', label: 'Crédito', icon: '💳', rec: 'en cuotas' },
+// Lista "aplanada" para el modal: el crédito ya viene por cuotas (un toque = elección completa).
+const PAGO_LISTA = [
+  { key: 'transferencia', metodo: 'transferencia', cuotas: 0, nombre: '🏦 Transferencia', sub: 'sin recargo' },
+  { key: 'debito', metodo: 'debito', cuotas: 1, nombre: '💳 Débito', sub: `+${RECARGO_DEBITO}%` },
+  ...CREDITO_OPCIONES.map((c) => ({
+    key: `cred${c.cuotas}`, metodo: 'credito', cuotas: c.cuotas,
+    nombre: '💳 Crédito', sub: `${c.cuotas} ${c.cuotas === 1 ? 'pago' : 'pagos'} · +${c.recargo}%`,
+  })),
 ];
 
 const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
@@ -57,6 +61,7 @@ const Cart = () => {
   const [envioModal, setEnvioModal] = useState(false);
   const [metodoPago, setMetodoPago] = useState('transferencia');
   const [cuotas, setCuotas] = useState(1);
+  const [pagoModal, setPagoModal] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -111,7 +116,9 @@ const Cart = () => {
   const recargoMonto = total * (recargoPct / 100);
   const totalFinal = total + recargoMonto; // productos + recargo (el envío va aparte)
 
-  const cambiarMetodo = (m) => { setMetodoPago(m); setCuotas(1); };
+  // Opción de pago actualmente elegida (para mostrarla en la fila).
+  const pagoSel = PAGO_LISTA.find((p) => p.metodo === metodoPago && (metodoPago !== 'credito' || p.cuotas === cuotas)) || PAGO_LISTA[0];
+  const elegirPago = (p) => { setMetodoPago(p.metodo); setCuotas(p.cuotas || 1); setPagoModal(false); };
 
   const abrirCheckout = () => setCheckout(true);
 
@@ -280,36 +287,18 @@ const Cart = () => {
 
                 <div className="co-card">
                   <h4>💳 Forma de pago</h4>
-                  <div className="co-ship-list">
-                    {PAGO_OPCIONES.map((p) => {
-                      const sel = metodoPago === p.value;
-                      return (
-                        <button type="button" key={p.value} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => cambiarMetodo(p.value)}>
-                          <span className="co-ship-radio">{sel ? '●' : '○'}</span>
-                          <span className="co-ship-info">
-                            <span className="co-ship-name">{p.icon} {p.label}</span>
-                            <span className="co-ship-sub">{p.rec}</span>
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  {metodoPago === 'credito' && (
-                    <div className="pago-cuotas">
-                      {CREDITO_OPCIONES.map((c) => (
-                        <button type="button" key={c.cuotas}
-                          className={`chip-cuota ${cuotas === c.cuotas ? 'on' : ''}`}
-                          onClick={() => setCuotas(c.cuotas)}>
-                          {c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'} <small>+{c.recargo}%</small>
-                        </button>
-                      ))}
+                  <div className="co-ship-chosen">
+                    <div className="co-ship-info">
+                      <span className="co-ship-name">{pagoSel.nombre}</span>
+                      <span className="co-ship-sub">
+                        {pagoSel.sub}
+                        {recargoMonto > 0 ? ` · Total ${formatMoney(totalFinal)}${metodoPago === 'credito' && cuotas > 1 ? ` (${cuotas}× ${formatMoney(totalFinal / cuotas)})` : ''}` : ''}
+                      </span>
                     </div>
-                  )}
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPagoModal(true)}>Cambiar</button>
+                  </div>
                   {metodoPago === 'transferencia' && (
-                    <p className="hint" style={{ marginTop: 10 }}>Te pasamos los datos para transferir cuando confirmemos el stock.</p>
-                  )}
-                  {recargoMonto > 0 && (
-                    <p className="hint" style={{ marginTop: 10 }}>Recargo {recargoPct}%: +{formatMoney(recargoMonto)} · Total {formatMoney(totalFinal)}{metodoPago === 'credito' && cuotas > 1 ? ` (${cuotas} cuotas de ${formatMoney(totalFinal / cuotas)})` : ''}</p>
+                    <p className="hint" style={{ marginTop: 8 }}>Te pasamos los datos para transferir cuando confirmemos el stock.</p>
                   )}
                 </div>
 
@@ -382,6 +371,24 @@ const Cart = () => {
                   <span className="co-ship-sub">{etiquetaEntrega(r.deliveredType)}{r.meta?.dias ? ` · 🕒 ${r.meta.dias}` : ''}</span>
                 </span>
                 <span className="co-ship-price">~{formatMoney(r.price)}</span>
+              </button>
+            );
+          })}
+        </div>
+      </Modal>
+
+      {/* Modal: elegir forma de pago */}
+      <Modal open={pagoModal} onClose={() => setPagoModal(false)} title="Forma de pago" width={520}>
+        <div className="co-ship-list">
+          {PAGO_LISTA.map((p) => {
+            const sel = p.key === pagoSel.key;
+            return (
+              <button type="button" key={p.key} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => elegirPago(p)}>
+                <span className="co-ship-radio">{sel ? '●' : '○'}</span>
+                <span className="co-ship-info">
+                  <span className="co-ship-name">{p.nombre}</span>
+                  <span className="co-ship-sub">{p.sub}</span>
+                </span>
               </button>
             );
           })}
