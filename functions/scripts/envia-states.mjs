@@ -34,7 +34,7 @@ for (const base of bases) {
         console.log('Campos del primer item:', JSON.stringify(arr[0]));
         console.log('---');
         for (const s of arr) {
-          const code = s.code ?? s.code_2 ?? s.code_3 ?? s.state_code ?? s.iso ?? s.abbr ?? s.abbreviation ?? s.id ?? '?';
+          const code = s.code_2_digits ?? s.code_3_digits ?? s.code_shopify ?? s.code ?? '?';
           const name = s.name || s.state || s.description || '';
           console.log(` ${String(code).padEnd(6)} ${name}`);
         }
