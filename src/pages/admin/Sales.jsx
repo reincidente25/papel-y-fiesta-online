@@ -10,21 +10,9 @@ import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../cons
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 import { tieneVariantes as hayVariantes, varianteLabel } from '../../utils/variants';
 import MoneyInput from '../../components/common/MoneyInput';
+import { RECARGO_DEBITO, CREDITO_OPCIONES, recargoPctDe } from '../../config/recargos';
 
 const PAGE = 20;
-
-// Recargos por medio de pago
-const RECARGO_DEBITO = 7;
-const CREDITO_OPCIONES = [
-  { cuotas: 1, recargo: 15, label: '1 pago (+15%)' },
-  { cuotas: 2, recargo: 19, label: '2 pagos (+19%)' },
-  { cuotas: 3, recargo: 19, label: '3 pagos (+19%)' },
-];
-const recargoPctDe = (metodo, cuotas) => {
-  if (metodo === 'debito') return RECARGO_DEBITO;
-  if (metodo === 'credito') return CREDITO_OPCIONES.find((c) => c.cuotas === cuotas)?.recargo || 0;
-  return 0;
-};
 
 const Sales = () => {
   const [sales, setSales] = useState([]);

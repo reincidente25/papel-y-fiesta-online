@@ -9,7 +9,14 @@ import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
 import { cotizarEnvio } from '../../services/shippingService';
 import { formatMoney } from '../../utils/format';
+import { RECARGO_DEBITO, CREDITO_OPCIONES, recargoPctDe } from '../../config/recargos';
 import './store.css';
+
+const PAGO_OPCIONES = [
+  { value: 'transferencia', label: 'Transferencia', icon: '🏦', rec: 'sin recargo' },
+  { value: 'debito', label: 'Débito', icon: '💳', rec: `+${RECARGO_DEBITO}%` },
+  { value: 'credito', label: 'Crédito', icon: '💳', rec: 'en cuotas' },
+];
 
 const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
 const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
@@ -48,6 +55,8 @@ const Cart = () => {
   const [envioEstimado, setEnvioEstimado] = useState(false);
   const [envioError, setEnvioError] = useState('');
   const [envioModal, setEnvioModal] = useState(false);
+  const [metodoPago, setMetodoPago] = useState('transferencia');
+  const [cuotas, setCuotas] = useState(1);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -97,6 +106,13 @@ const Cart = () => {
   // El envío es aproximado: NO suma al total, se cobra al despachar.
   const costoEnvioAprox = form.entrega === 'envio' ? (envioSel?.price || 0) : 0;
 
+  // Recargo por medio de pago (sobre el total de productos).
+  const recargoPct = recargoPctDe(metodoPago, cuotas);
+  const recargoMonto = total * (recargoPct / 100);
+  const totalFinal = total + recargoMonto; // productos + recargo (el envío va aparte)
+
+  const cambiarMetodo = (m) => { setMetodoPago(m); setCuotas(1); };
+
   const abrirCheckout = () => setCheckout(true);
 
   const handleCheckout = async (e) => {
@@ -116,10 +132,14 @@ const Cart = () => {
           tipo: envioSel.deliveredType || 'D', precioAprox: envioSel.price || 0, aproximado: true, estimado: envioEstimado,
         } : null,
         costoEnvioAprox,
+        metodoPago,
+        cuotas: metodoPago === 'credito' ? cuotas : (metodoPago === 'debito' ? 1 : 0),
+        recargoPct,
+        recargoMonto,
         notas: form.notas,
         items,
         subtotal: total,
-        total, // el envío NO se incluye; se cobra al despachar
+        total: totalFinal, // productos + recargo (el envío va aparte, se cobra al despachar)
       });
       clearCart();
       navigate(`/pedido/${id}`);
@@ -259,6 +279,38 @@ const Cart = () => {
                 )}
 
                 <div className="co-card">
+                  <h4>💳 Forma de pago</h4>
+                  <div className="pago-tiles">
+                    {PAGO_OPCIONES.map((p) => (
+                      <button type="button" key={p.value}
+                        className={`pago-tile ${metodoPago === p.value ? 'on' : ''}`}
+                        onClick={() => cambiarMetodo(p.value)}>
+                        <span className="pago-ic">{p.icon}</span>
+                        <span className="pago-label">{p.label}</span>
+                        <span className="pago-rec">{p.rec}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {metodoPago === 'credito' && (
+                    <div className="pago-cuotas">
+                      {CREDITO_OPCIONES.map((c) => (
+                        <button type="button" key={c.cuotas}
+                          className={`chip-cuota ${cuotas === c.cuotas ? 'on' : ''}`}
+                          onClick={() => setCuotas(c.cuotas)}>
+                          {c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'} <small>+{c.recargo}%</small>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {metodoPago === 'transferencia' && (
+                    <p className="hint" style={{ marginTop: 10 }}>Te pasamos los datos para transferir cuando confirmemos el stock.</p>
+                  )}
+                  {recargoMonto > 0 && (
+                    <p className="hint" style={{ marginTop: 10 }}>Recargo {recargoPct}%: +{formatMoney(recargoMonto)} · Total {formatMoney(totalFinal)}{metodoPago === 'credito' && cuotas > 1 ? ` (${cuotas} cuotas de ${formatMoney(totalFinal / cuotas)})` : ''}</p>
+                  )}
+                </div>
+
+                <div className="co-card">
                   <h4>👤 Tus datos</h4>
                   <div className="form-grid">
                     <div className="field"><label>Nombre y apellido *</label>
@@ -284,6 +336,9 @@ const Cart = () => {
                   ))}
                 </div>
                 <div className="co-sum-row"><span className="muted">Subtotal</span><span>{formatMoney(total)}</span></div>
+                {recargoMonto > 0 && (
+                  <div className="co-sum-row"><span className="muted">Recargo ({recargoPct}%)</span><span>+ {formatMoney(recargoMonto)}</span></div>
+                )}
                 <div className="co-sum-row">
                   <span className="muted">Envío</span>
                   <span>
@@ -293,7 +348,7 @@ const Cart = () => {
                           : 'A coordinar'}
                   </span>
                 </div>
-                <div className="co-sum-total"><span>Total productos</span><span>{formatMoney(total)}</span></div>
+                <div className="co-sum-total"><span>Total productos</span><span>{formatMoney(totalFinal)}</span></div>
                 {form.entrega === 'envio' && costoEnvioAprox > 0 && (
                   <p className="hint" style={{ marginTop: 6 }}>El envío (~{formatMoney(costoEnvioAprox)}) se cobra aparte al despachar.</p>
                 )}

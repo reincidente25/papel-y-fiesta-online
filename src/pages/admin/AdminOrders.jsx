@@ -21,8 +21,9 @@ const crearVentaDesdePedido = (order) => {
     metodoPago: order.metodoPago || 'transferencia',
     cliente: order.cliente || 'Consumidor final',
     clienteId: order.clienteId || order.usuarioId || '',
-    cuotas: 0, tipoDescuento: 'Monto fijo', valorDesc: 0,
-    montoDesc: Number(order.descuento) || 0, recargoPct: 0, recargoMonto: 0,
+    cuotas: Number(order.cuotas) || 0, tipoDescuento: 'Monto fijo', valorDesc: 0,
+    montoDesc: Number(order.descuento) || 0,
+    recargoPct: Number(order.recargoPct) || 0, recargoMonto: Number(order.recargoMonto) || 0,
   });
 };
 

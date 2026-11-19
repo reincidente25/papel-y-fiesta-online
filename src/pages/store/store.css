@@ -283,6 +283,24 @@
 .co-ship-sub { font-size: .76rem; color: var(--muted); }
 .co-ship-price { font-family: var(--font-head); font-weight: 800; white-space: nowrap; }
 
+/* Forma de pago en el checkout */
+.pago-tiles { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+.pago-tile { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 10px 6px;
+  border: 1.5px solid var(--border); border-radius: 12px; background: var(--surface, #fff); cursor: pointer; text-align: center; transition: all .12s; }
+.pago-tile:hover { border-color: var(--brand-orange, #F7941E); }
+.pago-tile.on { border-color: var(--brand-orange, #F7941E); background: #fff6ec; }
+.pago-ic { font-size: 1.2rem; line-height: 1; }
+.pago-label { font-size: .82rem; font-weight: 700; }
+.pago-rec { font-size: .68rem; color: var(--muted); }
+.pago-tile.on .pago-rec { color: var(--brand-orange, #F7941E); font-weight: 700; }
+.pago-cuotas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip-cuota { display: inline-flex; align-items: center; gap: 5px; padding: 7px 12px; border: 1.5px solid var(--border);
+  border-radius: 999px; background: var(--surface, #fff); cursor: pointer; font-size: .82rem; font-weight: 600; color: var(--text-soft, #555); }
+.chip-cuota small { color: var(--muted); }
+.chip-cuota:hover { border-color: var(--brand-orange, #F7941E); }
+.chip-cuota.on { border-color: var(--brand-orange, #F7941E); background: var(--brand-orange, #F7941E); color: #fff; }
+.chip-cuota.on small { color: rgba(255,255,255,.85); }
+
 .co-sum-sticky { position: sticky; top: 8px; }
 .co-sum-row { display: flex; justify-content: space-between; font-size: .88rem; margin-top: 8px; }
 
