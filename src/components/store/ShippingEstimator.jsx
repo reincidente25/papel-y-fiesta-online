@@ -16,6 +16,15 @@ const PROVEEDOR_LABEL = {
   correo_argentino: 'Cotización de Correo Argentino.',
 };
 
+// Logo por correo (dejá los archivos en /public). Si no existe, el <img> se oculta solo.
+const CARRIER_LOGO = {
+  correoargentino: '/correo-argentino.svg',
+  andreani: '/andreani.svg',
+  oca: '/oca.svg',
+  urbano: '/urbano.svg',
+};
+const logoDe = (c) => CARRIER_LOGO[String(c || '').toLowerCase().replace(/[^a-z]/g, '')] || '';
+
 const PROVINCIAS = [
   'Buenos Aires', 'Ciudad Autónoma de Buenos Aires', 'Catamarca', 'Chaco', 'Chubut', 'Córdoba',
   'Corrientes', 'Entre Ríos', 'Formosa', 'Jujuy', 'La Pampa', 'La Rioja', 'Mendoza', 'Misiones',
@@ -94,9 +103,11 @@ const ShippingEstimator = ({ cantidad = 1 }) => {
             const servicio = r.meta?.servicio || '';
             const dias = r.meta?.dias
               || (r.deliveryTimeMin ? `${r.deliveryTimeMin}${r.deliveryTimeMax && r.deliveryTimeMax !== r.deliveryTimeMin ? `-${r.deliveryTimeMax}` : ''} días háb.` : '');
+            const logo = logoDe(r.meta?.carrier);
             return (
               <div className="ship-opt" key={i}>
-                <div>
+                {logo && <img className="ship-logo" src={logo} alt={correo} onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="ship-opt-name">{correo}{servicio ? ` · ${servicio}` : ''}</div>
                   <div className="ship-opt-sub">
                     {etiquetaEntrega(r.deliveredType)}{dias ? ` · 🕒 ${dias}` : ''}

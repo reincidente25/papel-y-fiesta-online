@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import StoreLayout from '../../components/store/StoreLayout';
 import ShippingEstimator from '../../components/store/ShippingEstimator';
+import Modal from '../../components/common/Modal';
 import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
@@ -18,6 +19,7 @@ const ProductDetail = () => {
   const [qty, setQty] = useState(1);
   const [activa, setActiva] = useState(0);
   const [varSel, setVarSel] = useState(null);
+  const [envioOpen, setEnvioOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -132,7 +134,13 @@ const ProductDetail = () => {
             </>
           )}
 
-          <ShippingEstimator cantidad={qty} />
+          <button type="button" className="btn btn-soft btn-block ship-cta" style={{ marginTop: 18 }} onClick={() => setEnvioOpen(true)}>
+            🚚 Ver precios de envío
+          </button>
+
+          <Modal open={envioOpen} onClose={() => setEnvioOpen(false)} title="Costos de envío" width={520}>
+            <ShippingEstimator cantidad={qty} />
+          </Modal>
 
           <Link to="/catalogo" className="btn btn-ghost btn-sm" style={{ marginTop: 24 }}>← Seguir comprando</Link>
         </div>

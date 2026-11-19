@@ -14,6 +14,8 @@ import './store.css';
 const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
 const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
 const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Sucursal' : '🏠 Domicilio');
+const CARRIER_LOGO = { correoargentino: '/correo-argentino.svg', andreani: '/andreani.svg', oca: '/oca.svg', urbano: '/urbano.svg' };
+const logoDe = (c) => CARRIER_LOGO[String(c || '').toLowerCase().replace(/[^a-z]/g, '')] || '';
 
 const Cart = () => {
   const { items, setQty, removeItem, total, clearCart } = useCart();
@@ -227,6 +229,7 @@ const Cart = () => {
                               return (
                                 <button type="button" key={i} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => setEnvioSel(r)}>
                                   <span className="co-ship-radio">{sel ? '●' : '○'}</span>
+                                  {logoDe(r.meta?.carrier) && <img className="co-ship-logo" src={logoDe(r.meta?.carrier)} alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />}
                                   <span className="co-ship-info">
                                     <span className="co-ship-name">{r.productName || etiquetaEntrega(r.deliveredType)}</span>
                                     <span className="co-ship-sub">{etiquetaEntrega(r.deliveredType)}{r.meta?.dias ? ` · 🕒 ${r.meta.dias}` : ''}</span>
