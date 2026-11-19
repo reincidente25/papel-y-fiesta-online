@@ -209,7 +209,7 @@
 .ship-row .select { flex: 1; min-width: 150px; }
 .ship-results { margin-top: 12px; display: flex; flex-direction: column; gap: 8px; }
 .ship-opt { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 10px; }
-.ship-logo { width: 40px; height: 40px; object-fit: contain; flex-shrink: 0; }
+.ship-logo { width: 64px; height: 40px; object-fit: contain; border-radius: 8px; flex-shrink: 0; }
 .ship-opt-name { font-weight: 600; font-size: .9rem; }
 .ship-opt-sub { font-size: .78rem; color: var(--muted); margin-top: 2px; }
 /* Opción en una sola línea */
@@ -275,7 +275,7 @@
 .co-ship-opt:hover { border-color: var(--brand-orange, #F7941E); }
 .co-ship-opt.on { border-color: var(--brand-orange, #F7941E); background: #fff6ec; }
 .co-ship-radio { color: var(--brand-orange, #F7941E); font-size: 1rem; }
-.co-ship-logo { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
+.co-ship-logo { width: 54px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
 .co-ship-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .co-ship-name { font-weight: 600; font-size: .88rem; }
 .co-ship-sub { font-size: .76rem; color: var(--muted); }

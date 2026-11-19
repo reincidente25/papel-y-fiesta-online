@@ -18,7 +18,7 @@ const PROVEEDOR_LABEL = {
 
 // Logo por correo (dejá los archivos en /public). Si no existe, el <img> se oculta solo.
 const CARRIER_LOGO = {
-  correoargentino: '/correo-argentino.svg',
+  correoargentino: '/correo-argentino.png',
   andreani: '/andreani.svg',
   oca: '/oca.svg',
   urbano: '/urbano.svg',

@@ -14,7 +14,7 @@ import './store.css';
 const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
 const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
 const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Sucursal' : '🏠 Domicilio');
-const CARRIER_LOGO = { correoargentino: '/correo-argentino.svg', andreani: '/andreani.svg', oca: '/oca.svg', urbano: '/urbano.svg' };
+const CARRIER_LOGO = { correoargentino: '/correo-argentino.png', andreani: '/andreani.svg', oca: '/oca.svg', urbano: '/urbano.svg' };
 const logoDe = (c) => CARRIER_LOGO[String(c || '').toLowerCase().replace(/[^a-z]/g, '')] || '';
 const onLogoError = (e) => {
   const img = e.currentTarget;
