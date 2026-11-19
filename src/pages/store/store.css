@@ -276,6 +276,8 @@
 .co-ship-opt.on { border-color: var(--brand-orange, #F7941E); background: #fff6ec; }
 .co-ship-radio { color: var(--brand-orange, #F7941E); font-size: 1rem; }
 .co-ship-logo { width: 54px; height: 32px; object-fit: contain; border-radius: 6px; flex-shrink: 0; }
+.co-ship-chosen { display: flex; align-items: center; gap: 10px; border: 1.5px solid var(--brand-orange, #F7941E); background: #fff6ec; border-radius: 10px; padding: 10px 12px; }
+.co-ship-chosen .co-ship-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .co-ship-info { display: flex; flex-direction: column; min-width: 0; flex: 1; }
 .co-ship-name { font-weight: 600; font-size: .88rem; }
 .co-ship-sub { font-size: .76rem; color: var(--muted); }

@@ -47,6 +47,7 @@ const Cart = () => {
   const [envioCargando, setEnvioCargando] = useState(false);
   const [envioEstimado, setEnvioEstimado] = useState(false);
   const [envioError, setEnvioError] = useState('');
+  const [envioModal, setEnvioModal] = useState(false);
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
@@ -93,8 +94,8 @@ const Cart = () => {
     return () => { cancel = true; };
   }, [checkout, form.entrega, cpDest, provDest]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const costoEnvio = form.entrega === 'envio' ? (envioSel?.price || 0) : 0;
-  const totalConEnvio = total + costoEnvio;
+  // El envío es aproximado: NO suma al total, se cobra al despachar.
+  const costoEnvioAprox = form.entrega === 'envio' ? (envioSel?.price || 0) : 0;
 
   const abrirCheckout = () => setCheckout(true);
 
@@ -112,13 +113,13 @@ const Cart = () => {
         direccionTexto: form.entrega === 'envio' ? resumenDir(domicilioElegido) : '',
         envio: form.entrega === 'envio' && envioSel ? {
           correo: envioSel.meta?.carrier || '', servicio: envioSel.meta?.servicio || envioSel.productName || '',
-          tipo: envioSel.deliveredType || 'D', precio: envioSel.price || 0, estimado: envioEstimado,
+          tipo: envioSel.deliveredType || 'D', precioAprox: envioSel.price || 0, aproximado: true, estimado: envioEstimado,
         } : null,
-        costoEnvio,
+        costoEnvioAprox,
         notas: form.notas,
         items,
         subtotal: total,
-        total: totalConEnvio,
+        total, // el envío NO se incluye; se cobra al despachar
       });
       clearCart();
       navigate(`/pedido/${id}`);
@@ -221,32 +222,30 @@ const Cart = () => {
                       <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
                     )}
 
-                    {/* Opciones de envío cotizadas */}
+                    {/* Selección de envío (aproximado) */}
                     {cpDest && (
                       <div className="co-ship">
-                        <div className="co-ship-head">🚚 Opciones de envío</div>
+                        <div className="co-ship-head">🚚 Envío</div>
                         {envioCargando && <p className="hint">Calculando envío…</p>}
                         {envioError && <p className="hint" style={{ color: 'var(--danger, #d14)' }}>{envioError}</p>}
                         {!envioCargando && envioRates && envioRates.length > 0 && (
-                          <div className="co-ship-list">
-                            {envioRates.map((r, i) => {
-                              const sel = envioSel === r;
-                              return (
-                                <button type="button" key={i} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => setEnvioSel(r)}>
-                                  <span className="co-ship-radio">{sel ? '●' : '○'}</span>
-                                  {logoDe(r.meta?.carrier) && <img className="co-ship-logo" src={logoDe(r.meta?.carrier)} alt="" onError={onLogoError} />}
-                                  <span className="co-ship-info">
-                                    <span className="co-ship-name">{r.productName || etiquetaEntrega(r.deliveredType)}</span>
-                                    <span className="co-ship-sub">{etiquetaEntrega(r.deliveredType)}{r.meta?.dias ? ` · 🕒 ${r.meta.dias}` : ''}</span>
-                                  </span>
-                                  <span className="co-ship-price">{formatMoney(r.price)}</span>
-                                </button>
-                              );
-                            })}
+                          <>
+                            {envioSel ? (
+                              <div className="co-ship-chosen">
+                                {logoDe(envioSel.meta?.carrier) && <img className="co-ship-logo" src={logoDe(envioSel.meta?.carrier)} alt="" onError={onLogoError} />}
+                                <div className="co-ship-info">
+                                  <span className="co-ship-name">{envioSel.meta?.servicio || envioSel.productName}</span>
+                                  <span className="co-ship-sub">{etiquetaEntrega(envioSel.deliveredType)}{envioSel.meta?.dias ? ` · 🕒 ${envioSel.meta.dias}` : ''} · ~{formatMoney(envioSel.price)} aprox.</span>
+                                </div>
+                                <button type="button" className="btn btn-ghost btn-sm" onClick={() => setEnvioModal(true)}>Cambiar</button>
+                              </div>
+                            ) : (
+                              <button type="button" className="btn btn-soft btn-sm btn-block" onClick={() => setEnvioModal(true)}>Elegir opción de envío</button>
+                            )}
                             <p className="hint" style={{ marginTop: 6 }}>
-                              {envioEstimado ? '📊 Valores estimados; se confirman al despachar.' : 'Cotización en vivo del correo.'}
+                              💡 El costo de envío es aproximado; se cobra al despachar con el importe exacto.
                             </p>
-                          </div>
+                          </>
                         )}
                         {!envioCargando && envioRates && envioRates.length === 0 && (
                           <p className="hint">No hay cotización para este CP. Lo coordinamos por WhatsApp.</p>
@@ -254,7 +253,7 @@ const Cart = () => {
                       </div>
                     )}
                     {form.entrega === 'envio' && !cpDest && (
-                      <p className="hint" style={{ marginTop: 8 }}>Cargá el domicilio (con código postal) para ver el costo de envío.</p>
+                      <p className="hint" style={{ marginTop: 8 }}>Cargá el domicilio (con código postal) para ver el envío.</p>
                     )}
                   </div>
                 )}
@@ -290,11 +289,14 @@ const Cart = () => {
                   <span>
                     {form.entrega === 'retiro' ? 'Retiro en local'
                       : envioCargando ? 'Calculando…'
-                        : costoEnvio > 0 ? formatMoney(costoEnvio)
+                        : costoEnvioAprox > 0 ? `~${formatMoney(costoEnvioAprox)} aprox.`
                           : 'A coordinar'}
                   </span>
                 </div>
-                <div className="co-sum-total"><span>Total</span><span>{formatMoney(form.entrega === 'envio' ? totalConEnvio : total)}</span></div>
+                <div className="co-sum-total"><span>Total productos</span><span>{formatMoney(total)}</span></div>
+                {form.entrega === 'envio' && costoEnvioAprox > 0 && (
+                  <p className="hint" style={{ marginTop: 6 }}>El envío (~{formatMoney(costoEnvioAprox)}) se cobra aparte al despachar.</p>
+                )}
                 <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 14 }} disabled={placing || !listo} onClick={handleCheckout}>
                   {placing ? 'Enviando…' : listo ? 'Confirmar pedido' : 'Completá tus datos'}
                 </button>
@@ -303,6 +305,29 @@ const Cart = () => {
             </div>
           );
         })()}
+      </Modal>
+
+      {/* Modal: elegir opción de envío (aproximado) */}
+      <Modal open={envioModal} onClose={() => setEnvioModal(false)} title="Elegí tu envío" width={620}>
+        <p className="hint" style={{ marginBottom: 12 }}>
+          💡 El costo es aproximado; se cobra al despachar con el importe exacto del correo.
+        </p>
+        <div className="co-ship-list">
+          {(envioRates || []).map((r, i) => {
+            const sel = envioSel === r;
+            return (
+              <button type="button" key={i} className={`co-ship-opt ${sel ? 'on' : ''}`} onClick={() => { setEnvioSel(r); setEnvioModal(false); }}>
+                <span className="co-ship-radio">{sel ? '●' : '○'}</span>
+                {logoDe(r.meta?.carrier) && <img className="co-ship-logo" src={logoDe(r.meta?.carrier)} alt="" onError={onLogoError} />}
+                <span className="co-ship-info">
+                  <span className="co-ship-name">{r.meta?.servicio || r.productName || etiquetaEntrega(r.deliveredType)}</span>
+                  <span className="co-ship-sub">{etiquetaEntrega(r.deliveredType)}{r.meta?.dias ? ` · 🕒 ${r.meta.dias}` : ''}</span>
+                </span>
+                <span className="co-ship-price">~{formatMoney(r.price)}</span>
+              </button>
+            );
+          })}
+        </div>
       </Modal>
     </StoreLayout>
   );
