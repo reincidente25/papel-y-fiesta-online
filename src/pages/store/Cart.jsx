@@ -129,6 +129,11 @@ const Cart = () => {
   const pagoSel = PAGO_LISTA.find((p) => p.metodo === metodoPago && (metodoPago !== 'credito' || p.cuotas === cuotas)) || PAGO_LISTA[0];
   const elegirPago = (p) => { setMetodoPago(p.metodo); setCuotas(p.cuotas || 1); setPagoModal(false); };
 
+  // Cierre del mensaje según el medio de pago elegido.
+  const pagoCierre = metodoPago === 'transferencia' ? 'te pasamos los datos para transferir'
+    : metodoPago === 'debito' ? 'coordinamos el pago con débito'
+      : 'coordinamos el pago con tarjeta de crédito';
+
   const abrirCheckout = () => setCheckout(true);
 
   const handleCheckout = async (e) => {
@@ -277,9 +282,6 @@ const Cart = () => {
                             ) : (
                               <button type="button" className="btn btn-soft btn-sm btn-block" onClick={() => setEnvioModal(true)}>Elegir opción de envío</button>
                             )}
-                            <p className="hint" style={{ marginTop: 6 }}>
-                              💡 El costo de envío es aproximado; se cobra al despachar con el importe exacto.
-                            </p>
                           </>
                         )}
                         {!envioCargando && envioRates && envioRates.length === 0 && (
@@ -352,7 +354,7 @@ const Cart = () => {
                 <button type="button" className="btn btn-primary btn-block" style={{ marginTop: 14 }} disabled={placing || !listo} onClick={handleCheckout}>
                   {placing ? 'Enviando…' : listo ? 'Confirmar pedido' : 'Completá tus datos'}
                 </button>
-                <p className="hint" style={{ marginTop: 10 }}>💡 El pago no se procesa en la web: confirmamos el stock y te pasamos los datos para transferir.</p>
+                <p className="hint" style={{ marginTop: 10 }}>💡 El pago no se procesa en la web: confirmamos el stock y {pagoCierre}.</p>
               </aside>
             </div>
           );
