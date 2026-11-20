@@ -258,7 +258,7 @@
 .co-grid { display: grid; grid-template-columns: 1fr 460px; gap: 22px; align-items: start; }
 @media (max-width: 760px) { .co-grid { grid-template-columns: 1fr; } .co-sum-sticky { position: static; } }
 .co-dom-select { max-width: 280px; }
-.co-dom-full { font-size: .85rem; color: var(--muted); margin: 8px 0 0; }
+.co-dom-full { font-size: .85rem; color: var(--muted); margin: 8px 0 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .co-cards { display: flex; flex-direction: column; gap: 10px; }
 .co-card { border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; }
 .co-card h4 { margin: 0 0 8px; font-size: .92rem; display: flex; align-items: center; gap: 8px; }

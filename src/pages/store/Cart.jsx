@@ -22,7 +22,16 @@ const PAGO_LISTA = [
   })),
 ];
 
-const resumenDir = (d) => d ? [`${d.calle || ''} ${d.numero || ''}`.trim(), d.piso && `Piso ${d.piso}`, d.localidad, d.provincia].filter(Boolean).join(' · ') : '';
+const resumenDir = (d) => {
+  if (!d) return '';
+  const calleNum = `${d.calle || ''} ${d.numero || ''}`.trim();
+  const pisoTxt = d.piso ? (/piso/i.test(String(d.piso)) ? String(d.piso) : `Piso ${d.piso}`) : '';
+  // Evita repetir localidad y provincia cuando son iguales (ej. CABA).
+  const loc = (d.localidad || '').trim();
+  const prov = (d.provincia || '').trim();
+  const lugar = loc && prov && loc.toLowerCase() !== prov.toLowerCase() ? `${loc}, ${prov}` : (loc || prov);
+  return [calleNum, pisoTxt, lugar].filter(Boolean).join(' · ');
+};
 const soloDigitos = (cp) => (String(cp || '').match(/\d{4}/) || [''])[0];
 const etiquetaEntrega = (t) => (t === 'S' ? '🏤 Sucursal' : '🏠 Domicilio');
 const CARRIER_LOGO = { correoargentino: '/correo-argentino.png', andreani: '/andreani.svg', oca: '/oca.svg', urbano: '/urbano.svg' };
