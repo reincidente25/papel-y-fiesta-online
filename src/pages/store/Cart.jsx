@@ -235,7 +235,6 @@ const Cart = () => {
                     <button type="button" className={form.entrega === 'envio' ? 'on' : ''} onClick={() => set('entrega', 'envio')}>Envío a domicilio</button>
                     <button type="button" className={form.entrega === 'retiro' ? 'on' : ''} onClick={() => set('entrega', 'retiro')}>Retiro en el local</button>
                   </div>
-                  {form.entrega === 'retiro' && <p className="hint" style={{ marginTop: 10 }}>Retirás por el local cuando esté listo. Te avisamos.</p>}
                 </div>
 
                 {form.entrega === 'envio' && (
@@ -306,9 +305,6 @@ const Cart = () => {
                     </div>
                     <button type="button" className="btn btn-ghost btn-sm" onClick={() => setPagoModal(true)}>Cambiar</button>
                   </div>
-                  {metodoPago === 'transferencia' && (
-                    <p className="hint" style={{ marginTop: 8 }}>Te pasamos los datos para transferir cuando confirmemos el stock.</p>
-                  )}
                 </div>
 
                 <div className="co-card">
