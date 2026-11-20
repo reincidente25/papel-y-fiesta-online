@@ -20,7 +20,7 @@ const htmlText = (t, vars = {}) => fill(t, vars).replace(/\n/g, '<br/>');
 // Estados de pedido → texto para el cliente (espejo de src/constants ORDER_STATUS).
 const ESTADOS = {
   pendiente:      { label: 'Pedido recibido',       desc: 'Estamos verificando la disponibilidad de stock.' },
-  confirmado:     { label: 'Confirmado — a pagar',  desc: 'Confirmamos el stock. Ya podés abonar por transferencia; te pasamos los datos.' },
+  confirmado:     { label: 'Confirmado — a pagar',  desc: 'Confirmamos el stock de tu pedido. Debajo te dejamos cómo seguir con el pago y la entrega.' },
   pago_informado: { label: 'Pago informado',        desc: 'Recibimos tu aviso de pago. Lo estamos verificando.' },
   pagado:         { label: 'Pago confirmado',       desc: '¡Confirmamos tu pago! Empezamos a preparar tu pedido.' },
   preparando:     { label: 'En preparación',        desc: 'Estamos preparando tu pedido.' },
@@ -156,23 +156,57 @@ export function orderReceivedEmail({ nombre, orden, siteUrl, o = {} }) {
   };
 }
 
+// Línea de entrega (envío con correo + aprox, o retiro).
+function entregaBloque(orden) {
+  if (orden.entrega === 'envio') {
+    const e = orden.envio || {};
+    const serv = e.servicio ? e.servicio : 'Envío a domicilio';
+    const aprox = e.precioAprox ? ` · ~${money(e.precioAprox)} aprox. (se cobra al despachar)` : '';
+    const dir = orden.direccionTexto ? `<br/><span style="color:${BRAND.muted};">${orden.direccionTexto}</span>` : '';
+    return `<strong>Entrega:</strong> ${serv}${aprox}${dir}`;
+  }
+  return `<strong>Entrega:</strong> Retiro en el local`;
+}
+
+// Bloque de pago según el medio elegido (solo en "confirmado").
+function pagoBloque(orden, transferencia) {
+  const metodo = orden.metodoPago || 'transferencia';
+  const total = money(orden.total);
+  if (metodo === 'transferencia') {
+    if (!transferencia) return '';
+    return `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
+         <strong>💳 Pago por transferencia · Total ${total}</strong><br/>${transferencia}
+         <br/><br/><span style="color:${BRAND.muted};font-size:13px;">Cuando transfieras, envianos el comprobante.</span>
+       </div>`;
+  }
+  if (metodo === 'debito') {
+    return `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
+         <strong>💳 Pago con débito · Total ${total}</strong><br/>Coordinamos el cobro con tu tarjeta de débito. Te escribimos por WhatsApp para completarlo.
+       </div>`;
+  }
+  const cuotas = Number(orden.cuotas) || 1;
+  const cuotaTxt = cuotas > 1 ? ` en ${cuotas} cuotas de ${money(orden.total / cuotas)}` : '';
+  return `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
+       <strong>💳 Pago con crédito${cuotaTxt} · Total ${total}</strong><br/>Coordinamos el cobro con tu tarjeta de crédito. Te escribimos por WhatsApp para completarlo.
+     </div>`;
+}
+
 export function orderStatusEmail({ nombre, orden, estado, siteUrl, transferencia, o = {} }) {
   const info = ESTADOS[estado] || { label: 'Actualización de tu pedido', desc: '' };
   const label = o.asunto ? fill(o.asunto, { nombre }) : info.label;
   const desc = o.cuerpo ? htmlText(o.cuerpo, { nombre }) : info.desc;
-  // En "confirmado" se agregan los datos de transferencia, si están configurados.
-  const bloqueTransfer = (estado === 'confirmado' && transferencia)
-    ? `<div style="margin-top:16px;padding:14px 16px;background:${BRAND.bg};border-radius:12px;font-size:14px;line-height:1.7;">
-         <strong>Datos para transferir:</strong><br/>${transferencia}
-         <br/><br/><span style="color:${BRAND.muted};font-size:13px;">Cuando transfieras, envianos el comprobante.</span>
-       </div>`
+  // Entrega: se muestra en todos menos cancelado.
+  const bloqueEntrega = estado !== 'cancelado'
+    ? `<div style="margin-top:14px;font-size:14px;line-height:1.6;">${entregaBloque(orden)}</div>`
     : '';
+  // Pago: solo en "confirmado — a pagar".
+  const bloquePago = estado === 'confirmado' ? pagoBloque(orden, transferencia) : '';
   return {
     subject: `Tu pedido: ${label}`,
     html: layout({
       siteUrl,
       titulo: label,
-      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${desc}${bloqueTransfer}`,
+      cuerpo: `Hola${nombre ? ' ' + nombre : ''}, tu pedido cambió de estado.<br/><br/>${desc}${bloqueEntrega}${bloquePago}`,
       cta: siteUrl && orden.id ? { url: `${siteUrl}/pedido/${orden.id}`, label: 'Ver mi pedido' } : null,
     }),
   };

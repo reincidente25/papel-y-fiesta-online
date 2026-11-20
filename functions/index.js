@@ -284,7 +284,8 @@ export const onPedidoEstadoCambiado = onDocumentUpdated(
       const code = `estado_${despues.estado}`;
       if (!cfgActivo(cfg, code)) return;
       const orden = { id: event.params.id, ...despues };
-      const transferencia = despues.estado === 'confirmado' ? await transferenciaHtml() : '';
+      const esTransfer = !despues.metodoPago || despues.metodoPago === 'transferencia';
+      const transferencia = (despues.estado === 'confirmado' && esTransfer) ? await transferenciaHtml() : '';
       const { subject, html } = orderStatusEmail({ nombre: orden.cliente, orden, estado: despues.estado, siteUrl: siteUrl(), transferencia, o: cfg[code] });
       await enviar({ to: [{ email: orden.email, name: orden.cliente || undefined }], subject, html });
     }

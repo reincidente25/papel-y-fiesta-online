@@ -78,14 +78,30 @@ const AdminOrders = () => {
       pagos.cbu && `🔢 CBU: ${pagos.cbu}`,
       pagos.alias && `🏷️ Alias: ${pagos.alias}`,
     ].filter(Boolean).join('\n') || transferenciaTexto(pagos) || '(datos a cargar)';
+
+    // Entrega y forma de pago elegidas por el cliente.
+    const metodo = detail.metodoPago || 'transferencia';
+    const cuotas = Number(detail.cuotas) || 1;
+    const entregaTxt = detail.entrega === 'envio'
+      ? `🚚 *Entrega:* ${detail.envio?.servicio || 'Envío a domicilio'}${detail.envio?.precioAprox ? ` (~${formatMoney(detail.envio.precioAprox)} aprox., se cobra al despachar)` : ''}${detail.direccionTexto ? `\n📍 ${detail.direccionTexto}` : ''}`
+      : '🏪 *Entrega:* Retiro en el local';
+    const pagoTxt = metodo === 'transferencia'
+      ? `💳 *Pago por transferencia:*\n${transf}\n\n📸 Cuando transfieras, mandanos el *comprobante* por acá y dejamos todo listo 🎁`
+      : metodo === 'debito'
+        ? '💳 *Pago con débito:* coordinamos el cobro con tu tarjeta. 📲 Te escribimos para completarlo.'
+        : `💳 *Pago con crédito${cuotas > 1 ? ` en ${cuotas} cuotas de ${formatMoney(detail.total / cuotas)}` : ''}:* coordinamos el cobro con tu tarjeta. 📲 Te escribimos para completarlo.`;
+    const pagoCorto = metodo === 'transferencia' ? 'te paso los datos para transferir 💳'
+      : metodo === 'debito' ? 'coordinamos el pago con débito 💳'
+        : 'coordinamos el pago con crédito 💳';
+
     let msg;
     if (falt.length === 0) {
       msg = `¡Hola ${nombre}! 👋🎉\n\n`
         + `¡Buenas noticias! Tu pedido en *Papel & Fiesta* ya está *confirmado* ✅\n\n`
         + `🛍️ *Esto es lo que preparamos para vos:*\n${disp.map(linea).join('\n')}\n\n`
         + `🧾 *Total a abonar:* ${formatMoney(detail.total)}\n\n`
-        + `💳 *Datos para transferir:*\n${transf}\n\n`
-        + `📸 Cuando hagas la transferencia, mandanos el *comprobante* por acá y dejamos todo listo 🎁\n\n`
+        + `${entregaTxt}\n\n`
+        + `${pagoTxt}\n\n`
         + `¡Gracias por elegirnos! 🧡🎉🎈`;
       changeStatus(detail.id, 'confirmado');
     } else {
@@ -94,8 +110,9 @@ const AdminOrders = () => {
         + `Te contamos cómo viene tu pedido en *Papel & Fiesta* 📝\n\n`
         + `✅ *Disponibles ahora:*\n${disp.map(linea).join('\n') || '— (ninguno)'}\n\n`
         + `😔 *Sin stock por el momento:*\n${falt.map((i) => `▫️ ${i.nombre}  ·  x${i.cantidad}`).join('\n')}\n\n`
+        + `${entregaTxt}\n\n`
         + `¿Querés que avancemos con lo disponible? 🛍️\n`
-        + `🧾 Serían *${formatMoney(totalDisp)}* y te paso los datos para transferir 💳\n\n`
+        + `🧾 Serían *${formatMoney(totalDisp)}* y ${pagoCorto}\n\n`
         + `¡Gracias por tu paciencia! 🧡🎈`;
     }
     const url = waLink(detail.telefono, msg);
