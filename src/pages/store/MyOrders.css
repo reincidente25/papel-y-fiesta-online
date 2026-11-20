@@ -9,6 +9,8 @@
 .order-detail { padding: 12px 18px; display: flex; flex-direction: column; gap: 8px; }
 .order-detail-item { display: flex; align-items: center; justify-content: space-between; gap: 16px; font-size: .9rem; color: var(--text-soft, #555); }
 .order-detail-item.total { border-top: 1px dashed var(--border, #ddd); padding-top: 8px; font-weight: 800; color: var(--brand-ink, #2B2B2B); }
+.order-detail-meta { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: .88rem; font-weight: 600; color: var(--brand-ink, #2B2B2B); padding-bottom: 8px; margin-bottom: 4px; border-bottom: 1px dashed var(--border, #ddd); }
+.order-detail-dir { font-size: .82rem; color: var(--text-soft, #666); margin-bottom: 8px; }
 .odi-prod { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .odi-thumb { width: 42px; height: 42px; border-radius: 8px; object-fit: cover; background: #fff; border: 1px solid var(--border, #eee); flex-shrink: 0; }
 .odi-thumb-ph { display: inline-grid; place-items: center; font-size: 1.1rem; }

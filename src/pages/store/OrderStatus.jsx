@@ -39,6 +39,16 @@ const OrderStatus = () => {
   // Mostrar datos de pago desde que se confirma el stock y hasta que se paga.
   const mostrarPago = ['confirmado', 'pago_informado'].includes(order.estado);
 
+  const metodo = order.metodoPago || 'transferencia';
+  const esTransfer = metodo === 'transferencia';
+  const cuotas = Number(order.cuotas) || 1;
+  const entregaTxt = order.entrega === 'envio'
+    ? `🚚 ${order.envio?.servicio || 'Envío a domicilio'}${order.envio?.precioAprox ? ` · ~${formatMoney(order.envio.precioAprox)} aprox.` : ''}`
+    : '🏪 Retiro en el local';
+  const pagoTxt = esTransfer ? '🏦 Transferencia'
+    : metodo === 'debito' ? '💳 Débito'
+      : `💳 Crédito${cuotas > 1 ? ` · ${cuotas} cuotas` : ''}`;
+
   return (
     <StoreLayout>
       <div className="container order-page">
@@ -71,8 +81,19 @@ const OrderStatus = () => {
           <p style={{ marginTop: 12, color: 'var(--text-soft)' }}>{st.desc}</p>
         </div>
 
+        {/* Entrega y forma de pago elegidas */}
+        {!cancelado && (
+          <div className="card order-box">
+            <div className="pay-row"><span className="k">Entrega</span><span className="v">{entregaTxt}</span></div>
+            {order.entrega === 'envio' && order.direccionTexto && (
+              <div className="pay-row"><span className="k">Domicilio</span><span className="v">{order.direccionTexto}</span></div>
+            )}
+            <div className="pay-row"><span className="k">Forma de pago</span><span className="v">{pagoTxt}</span></div>
+          </div>
+        )}
+
         {/* Datos de pago (solo cuando corresponde) */}
-        {mostrarPago && (
+        {mostrarPago && esTransfer && (
           <div className="card order-box">
             <h3 className="section-title" style={{ fontSize: '1.15rem', marginBottom: 6 }}>💳 Datos para transferir</h3>
             <p className="muted" style={{ marginBottom: 14 }}>Total a abonar: <strong style={{ color: 'var(--brand-ink)' }}>{formatMoney(order.total)}</strong></p>
@@ -89,6 +110,13 @@ const OrderStatus = () => {
             ) : (
               <p className="badge badge-muted" style={{ marginTop: 14 }}>Pago informado — verificando ✓</p>
             )}
+          </div>
+        )}
+        {mostrarPago && !esTransfer && (
+          <div className="card order-box">
+            <h3 className="section-title" style={{ fontSize: '1.15rem', marginBottom: 6 }}>💳 Pago con {metodo === 'debito' ? 'débito' : 'crédito'}{cuotas > 1 ? ` · ${cuotas} cuotas` : ''}</h3>
+            <p className="muted" style={{ marginBottom: 6 }}>Total a abonar: <strong style={{ color: 'var(--brand-ink)' }}>{formatMoney(order.total)}</strong>{cuotas > 1 ? ` (${cuotas}× ${formatMoney(order.total / cuotas)})` : ''}</p>
+            <p className="hint">Coordinamos el cobro con tu tarjeta. Te escribimos por WhatsApp para completarlo.</p>
           </div>
         )}
 

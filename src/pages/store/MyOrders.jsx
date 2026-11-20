@@ -26,6 +26,23 @@ const waInformarPago = (o) => waUrl(
   + `Te adjunto el comprobante de la transferencia 📸 ¡Gracias! 🎉`,
 );
 
+// Etiquetas de entrega y pago.
+export const entregaLabel = (o) => {
+  if (o.entrega === 'envio') {
+    const serv = o.envio?.servicio || 'Envío a domicilio';
+    const aprox = o.envio?.precioAprox ? ` · ~${formatMoney(o.envio.precioAprox)} aprox.` : '';
+    return `🚚 ${serv}${aprox}`;
+  }
+  return '🏪 Retiro en el local';
+};
+export const pagoLabel = (o) => {
+  const m = o.metodoPago || 'transferencia';
+  if (m === 'transferencia') return '🏦 Transferencia';
+  if (m === 'debito') return '💳 Débito';
+  const c = Number(o.cuotas) || 1;
+  return `💳 Crédito${c > 1 ? ` · ${c} cuotas` : ''}`;
+};
+
 const MyOrders = () => {
   const { user } = useAuth();
   const [orders, setOrders] = useState([]);
@@ -135,6 +152,13 @@ const MyOrders = () => {
                       <tr className="order-detail-row">
                         <td colSpan={6}>
                           <div className="order-detail">
+                            <div className="order-detail-meta">
+                              <span>{entregaLabel(o)}</span>
+                              <span>{pagoLabel(o)}</span>
+                            </div>
+                            {o.entrega === 'envio' && o.direccionTexto && (
+                              <div className="order-detail-dir">📍 {o.direccionTexto}</div>
+                            )}
                             {items.map((i, idx) => (
                               <div className="order-detail-item" key={idx}>
                                 <span className="odi-prod">
