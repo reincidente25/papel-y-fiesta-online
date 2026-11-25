@@ -76,6 +76,14 @@ const AdminProducts = () => {
   const allFilteredSelected = visible.length > 0 && visible.every((p) => selected.has(p.id));
   const toggleAllFiltered = () => (allFilteredSelected ? clearSel() : setSelected(new Set(visible.map((p) => p.id))));
 
+  // Mostrar/ocultar un producto de la web directo desde la tabla.
+  const toggleWeb = async (p) => {
+    const nuevo = !p.mostrarWeb;
+    setProducts((prev) => prev.map((x) => (x.id === p.id ? { ...x, mostrarWeb: nuevo, destacado: nuevo ? x.destacado : false } : x)));
+    try { await bulkUpdateProducts([p.id], nuevo ? { mostrarWeb: true } : { mostrarWeb: false, destacado: false }); }
+    catch { load(); }
+  };
+
   const applyBulk = async (data, label) => {
     const ids = [...selected];
     if (ids.length === 0) return;
@@ -201,7 +209,13 @@ const AdminProducts = () => {
                         {p.stockMinimo > 0 && <span className="stock-min">mín.{p.stockMinimo}</span>}
                       </td>
                       <td><span className={`badge ${st.badge}`}>{st.label}</span></td>
-                      <td>{p.mostrarWeb ? <span className="badge badge-success">{p.destacado ? '★' : '🌐'}</span> : <span className="muted">—</span>}</td>
+                      <td>
+                        <label className="switch" title={p.mostrarWeb ? 'En la web' : 'Oculto de la web'}>
+                          <input type="checkbox" checked={Boolean(p.mostrarWeb)} onChange={() => toggleWeb(p)} />
+                          <span className="track" />
+                          {p.destacado && p.mostrarWeb && <span className="switch-label" style={{ color: 'var(--primary)' }}>★</span>}
+                        </label>
+                      </td>
                       <td>
                         <div className="table-actions">
                           <Link to={`/admin/productos/${p.id}`} className="icon-btn" title="Editar">✏️</Link>
