@@ -1,6 +1,7 @@
 // src/context/CartContext.jsx
 import { createContext, useContext, useState, useEffect, useMemo, useRef } from 'react';
 import { useAuth } from './AuthContext';
+import { saveCart } from '../services/cartsService';
 
 const CartContext = createContext(null);
 const GUEST_KEY = 'pf_cart_guest';
@@ -25,8 +26,9 @@ const fusionar = (a = [], b = []) => {
 };
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [items, setItems] = useState(() => leer(keyFor(user)));
+  const syncTimer = useRef(null);
   const keyRef = useRef(keyFor(user));
   const listo = useRef(true);
 
@@ -65,6 +67,23 @@ export const CartProvider = ({ children }) => {
     if (!listo.current) { listo.current = true; return; }
     escribir(keyRef.current, items);
   }, [items]);
+
+  // Sincroniza el carrito del usuario logueado en Firestore (con debounce)
+  // para poder gestionarlo como "abandonado" desde el panel.
+  useEffect(() => {
+    if (!user?.uid || !items.length) return undefined;
+    if (syncTimer.current) clearTimeout(syncTimer.current);
+    syncTimer.current = setTimeout(() => {
+      saveCart(user.uid, {
+        items,
+        total: items.reduce((n, i) => n + i.precio * i.cantidad, 0),
+        cliente: [profile?.nombre, profile?.apellido].filter(Boolean).join(' ') || user.displayName || '',
+        email: user.email || profile?.email || '',
+        telefono: profile?.whatsapp || profile?.telefono || '',
+      });
+    }, 1500);
+    return () => { if (syncTimer.current) clearTimeout(syncTimer.current); };
+  }, [items, user, profile]);
 
   const addItem = (product, cantidad = 1, variante = null) => {
     // La línea del carrito es única por producto + variante.

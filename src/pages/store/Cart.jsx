@@ -8,6 +8,7 @@ import { useCart } from '../../context/CartContext';
 import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
 import { cotizarEnvio } from '../../services/shippingService';
+import { markCartConverted } from '../../services/cartsService';
 import { formatMoney } from '../../utils/format';
 import { useRecargos } from '../../hooks/useRecargos';
 import './store.css';
@@ -163,6 +164,7 @@ const Cart = () => {
         subtotal: total,
         total: totalFinal, // productos + recargo (el envío va aparte, se cobra al despachar)
       });
+      if (user?.uid) markCartConverted(user.uid);
       clearCart();
       navigate(`/pedido/${id}`);
     } finally {

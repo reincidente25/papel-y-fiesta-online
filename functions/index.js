@@ -6,10 +6,11 @@
 
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { onDocumentCreated, onDocumentUpdated } from 'firebase-functions/v2/firestore';
+import { onSchedule } from 'firebase-functions/v2/scheduler';
 import { defineString, defineSecret } from 'firebase-functions/params';
 import { logger } from 'firebase-functions';
 import { initializeApp, applicationDefault } from 'firebase-admin/app';
-import { getFirestore } from 'firebase-admin/firestore';
+import { getFirestore, Timestamp } from 'firebase-admin/firestore';
 import { getAuth } from 'firebase-admin/auth';
 import { sendEmail } from './lib/brevo.js';
 import { cotizar as cotizarCorreo } from './lib/correoArgentino.js';
@@ -340,5 +341,26 @@ export const cotizarEnvio = onCall(
 
     // 3) Estimación de respaldo.
     return estimarFallback(cpDestino, pesoGramos, 1);
+  }
+);
+
+// ── Programada: marcar carritos abandonados (cada 12 h) ─────────────────────
+// Un carrito 'activo' sin actividad por más de 12 h pasa a 'abandonado'.
+export const marcarCarritosAbandonados = onSchedule(
+  { schedule: 'every 12 hours', region: REGION, timeZone: 'America/Argentina/Buenos_Aires' },
+  async () => {
+    const corte = Timestamp.fromMillis(Date.now() - 12 * 60 * 60 * 1000);
+    const snap = await tiendaDb
+      .collection('carritos')
+      .where('estado', '==', 'activo')
+      .where('actualizadoEn', '<', corte)
+      .get();
+    if (snap.empty) { logger.info('Carritos abandonados: nada que marcar.'); return; }
+    const batch = tiendaDb.batch();
+    snap.docs.forEach((d) => {
+      if ((d.data().items?.length || 0) > 0) batch.update(d.ref, { estado: 'abandonado' });
+    });
+    await batch.commit();
+    logger.info(`Carritos marcados como abandonados: ${snap.size}`);
   }
 );

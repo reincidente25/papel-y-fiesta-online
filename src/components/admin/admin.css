@@ -463,3 +463,6 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .recargo-table tr:last-child td { border-bottom: none; }
 .recargo-table .rt-input { width: 100px; text-align: right; }
 .recargo-table .rt-sin { color: var(--muted); }
+
+/* Badge de conteo en el menú (ej. carritos abandonados) */
+.nav-count { margin-left: auto; background: var(--brand-orange, #F7941E); color: #fff; font-size: .72rem; font-weight: 800; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; }

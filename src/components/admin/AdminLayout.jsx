@@ -1,7 +1,8 @@
 // src/components/admin/AdminLayout.jsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { NavLink, Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getAbandonedCount } from '../../services/cartsService';
 import Brand from '../common/Brand';
 import './admin.css';
 
@@ -31,6 +32,9 @@ const AdminLayout = ({ children, title }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [abandonados, setAbandonados] = useState(0);
+
+  useEffect(() => { getAbandonedCount().then(setAbandonados).catch(() => {}); }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -51,6 +55,9 @@ const AdminLayout = ({ children, title }) => {
                   className={({ isActive }) => `admin-nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => setOpen(false)}>
                   <span>{item.icon}</span> {item.label}
+                  {item.path === '/admin/carritos' && abandonados > 0 && (
+                    <span className="nav-count">{abandonados}</span>
+                  )}
                 </NavLink>
               ))}
             </div>

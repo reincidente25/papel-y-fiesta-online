@@ -31,6 +31,11 @@ service cloud.firestore {
     match /proveedores/{id}  { allow read, write: if isAdmin(); }
     match /cajaSesiones/{id}  { allow read, write: if isAdmin(); }
     match /clientes/{id}      { allow read, write: if isAdmin(); }
+    // Carrito por usuario: cada uno escribe el suyo; el admin los lee/gestiona.
+    match /carritos/{uid} {
+      allow read: if isAdmin();
+      allow write: if (isSignedIn() && request.auth.uid == uid) || isAdmin();
+    }
 
     // Config de la tienda (popup promocional): lectura pública, escritura admin.
     match /config/{id} { allow read: if true; allow write: if isAdmin(); }

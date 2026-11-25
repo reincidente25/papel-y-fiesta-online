@@ -92,6 +92,7 @@ export const CUSTOMER_TYPES_LIST = Object.values(CUSTOMER_TYPES);
 
 // Estados de un carrito abandonado
 export const ABANDONED_STATUS = {
+  abandonado: { value: 'abandonado', label: 'Abandonado', badge: 'badge-warning' },
   abierto:    { value: 'abierto',    label: 'Abandonado', badge: 'badge-warning' },
   contactado: { value: 'contactado', label: 'Contactado', badge: 'badge-muted'   },
   recuperado: { value: 'recuperado', label: 'Recuperado', badge: 'badge-success' },
