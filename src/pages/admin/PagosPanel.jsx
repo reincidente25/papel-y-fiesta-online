@@ -49,23 +49,26 @@ const PagosPanel = () => {
       <div className="card" style={{ padding: 24 }}>
         <h2 className="section-title" style={{ fontSize: '1.05rem', marginBottom: 6 }}>Recargos por medio de pago</h2>
         <p className="hint" style={{ marginBottom: 16 }}>% que se aplica al total. Se usa en la venta del local, la web y el precio del producto.</p>
-        <div className="field" style={{ maxWidth: 220 }}>
-          <label>Débito (%)</label>
-          <input className="input" type="number" min="0" step="0.5" value={form.recargoDebito ?? 0}
-            onChange={(e) => set('recargoDebito', Number(e.target.value) || 0)} />
-        </div>
-        <div style={{ marginTop: 14 }}>
-          <label className="field-label" style={{ fontWeight: 600, fontSize: '.9rem' }}>Crédito (%)</label>
-          <div className="recargo-cuotas">
+        <table className="recargo-table">
+          <thead>
+            <tr><th>Medio de pago</th><th style={{ width: 120 }}>Recargo %</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>🏦 Transferencia / Efectivo</td><td className="rt-sin">0%</td></tr>
+            <tr>
+              <td>💳 Débito</td>
+              <td><input className="input rt-input" type="number" min="0" step="0.5" value={form.recargoDebito ?? 0}
+                onChange={(e) => set('recargoDebito', Number(e.target.value) || 0)} /></td>
+            </tr>
             {credito.map((c) => (
-              <div className="field" key={c.cuotas} style={{ maxWidth: 150 }}>
-                <label>{c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'}</label>
-                <input className="input" type="number" min="0" step="0.5" value={c.recargo}
-                  onChange={(e) => setCredito(c.cuotas, e.target.value)} />
-              </div>
+              <tr key={c.cuotas}>
+                <td>💳 Crédito · {c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'}</td>
+                <td><input className="input rt-input" type="number" min="0" step="0.5" value={c.recargo}
+                  onChange={(e) => setCredito(c.cuotas, e.target.value)} /></td>
+              </tr>
             ))}
-          </div>
-        </div>
+          </tbody>
+        </table>
       </div>
 
       <div className="form-actions" style={{ gridColumn: '1 / -1' }}>

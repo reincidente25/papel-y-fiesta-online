@@ -455,3 +455,11 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .pagos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; max-width: 1000px; }
 .recargo-cuotas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
 @media (max-width: 760px) { .pagos-grid { grid-template-columns: 1fr; } }
+
+/* Tabla de recargos */
+.recargo-table { width: 100%; border-collapse: collapse; }
+.recargo-table th { text-align: left; font-size: .78rem; text-transform: uppercase; letter-spacing: .03em; color: var(--text-soft); padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.recargo-table td { padding: 8px; border-bottom: 1px solid var(--border); font-size: .92rem; vertical-align: middle; }
+.recargo-table tr:last-child td { border-bottom: none; }
+.recargo-table .rt-input { width: 100px; text-align: right; }
+.recargo-table .rt-sin { color: var(--muted); }
