@@ -8,7 +8,7 @@ import Loader from '../../components/common/Loader';
 import { useCart } from '../../context/CartContext';
 import { getProductById } from '../../services/productsService';
 import { formatMoney } from '../../utils/format';
-import { RECARGO_DEBITO } from '../../config/recargos';
+import { useRecargos } from '../../hooks/useRecargos';
 import { tieneVariantes as hayVariantes, fotosProducto } from '../../utils/variants';
 import './store.css';
 
@@ -18,6 +18,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [qty, setQty] = useState(1);
+  const { recargoDebito } = useRecargos();
   const [activa, setActiva] = useState(0);
   const [varSel, setVarSel] = useState(null);
   const [envioOpen, setEnvioOpen] = useState(false);
@@ -93,10 +94,10 @@ const ProductDetail = () => {
           <div className="price-cards">
             <div className="price-card">
               <span className="pc-label">💳 Débito / Crédito</span>
-              <span className="pc-value">{formatMoney(product.precioVenta * (1 + RECARGO_DEBITO / 100))}</span>
+              <span className="pc-value">{formatMoney(product.precioVenta * (1 + recargoDebito / 100))}</span>
             </div>
             <div className="price-card main">
-              <span className="pc-badge">🔥 {RECARGO_DEBITO}% OFF</span>
+              <span className="pc-badge">🔥 {recargoDebito}% OFF</span>
               <span className="pc-label">🏦 Transferencia / Efectivo</span>
               <span className="pc-value">{formatMoney(product.precioVenta)}</span>
             </div>

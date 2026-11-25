@@ -9,18 +9,8 @@ import { useAuth } from '../../context/AuthContext';
 import { createOrder } from '../../services/ordersService';
 import { cotizarEnvio } from '../../services/shippingService';
 import { formatMoney } from '../../utils/format';
-import { RECARGO_DEBITO, CREDITO_OPCIONES, recargoPctDe } from '../../config/recargos';
+import { useRecargos } from '../../hooks/useRecargos';
 import './store.css';
-
-// Lista "aplanada" para el modal: el crédito ya viene por cuotas (un toque = elección completa).
-const PAGO_LISTA = [
-  { key: 'transferencia', metodo: 'transferencia', cuotas: 0, nombre: '🏦 Transferencia', sub: 'sin recargo' },
-  { key: 'debito', metodo: 'debito', cuotas: 1, nombre: '💳 Débito', sub: `+${RECARGO_DEBITO}%` },
-  ...CREDITO_OPCIONES.map((c) => ({
-    key: `cred${c.cuotas}`, metodo: 'credito', cuotas: c.cuotas,
-    nombre: '💳 Crédito', sub: `${c.cuotas} ${c.cuotas === 1 ? 'pago' : 'pagos'} · +${c.recargo}%`,
-  })),
-];
 
 const resumenDir = (d) => {
   if (!d) return '';
@@ -45,7 +35,18 @@ const onLogoError = (e) => {
 const Cart = () => {
   const { items, setQty, removeItem, total, clearCart } = useCart();
   const { user, profile } = useAuth();
+  const { creditoOpciones, pctDe } = useRecargos();
   const navigate = useNavigate();
+
+  // Lista de medios de pago (el crédito ya viene por cuotas, un toque = elección completa).
+  const PAGO_LISTA = [
+    { key: 'transferencia', metodo: 'transferencia', cuotas: 0, nombre: '🏦 Transferencia', sub: 'sin recargo' },
+    { key: 'debito', metodo: 'debito', cuotas: 1, nombre: '💳 Débito', sub: `+${pctDe('debito', 1)}%` },
+    ...creditoOpciones.map((c) => ({
+      key: `cred${c.cuotas}`, metodo: 'credito', cuotas: c.cuotas,
+      nombre: '💳 Crédito', sub: `${c.cuotas} ${c.cuotas === 1 ? 'pago' : 'pagos'} · +${c.recargo}%`,
+    })),
+  ];
   const [placing, setPlacing] = useState(false);
   const [checkout, setCheckout] = useState(false);
   const [form, setForm] = useState({
@@ -121,7 +122,7 @@ const Cart = () => {
   const costoEnvioAprox = form.entrega === 'envio' ? (envioSel?.price || 0) : 0;
 
   // Recargo por medio de pago (sobre el total de productos).
-  const recargoPct = recargoPctDe(metodoPago, cuotas);
+  const recargoPct = pctDe(metodoPago, cuotas);
   const recargoMonto = total * (recargoPct / 100);
   const totalFinal = total + recargoMonto; // productos + recargo (el envío va aparte)
 

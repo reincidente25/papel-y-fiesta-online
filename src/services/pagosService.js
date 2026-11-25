@@ -2,11 +2,16 @@
 // Datos de pago/transferencia editables desde el panel (config/pagos).
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { db, isFirebaseConfigured } from '../config/firebase';
+import { RECARGO_DEBITO, CREDITO_OPCIONES } from '../config/recargos';
 
 const COL = 'config';
 const DOC = 'pagos';
 
-export const PAGOS_DEFAULT = { titular: '', banco: '', cbu: '', alias: '' };
+export const PAGOS_DEFAULT = {
+  titular: '', banco: '', cbu: '', alias: '',
+  recargoDebito: RECARGO_DEBITO,
+  creditoOpciones: CREDITO_OPCIONES.map((c) => ({ ...c })),
+};
 
 export async function getPagos() {
   if (!isFirebaseConfigured) return { ...PAGOS_DEFAULT };

@@ -450,3 +450,8 @@ button.stat.is-active.info   { border-color: var(--info);    box-shadow: 0 0 0 2
 .mail-switch { margin: 0; }
 .mail-vars { font-size: .76rem; color: var(--muted); }
 .mail-vars code { background: var(--surface-alt, #f1f0ec); padding: 1px 6px; border-radius: 5px; margin-right: 5px; }
+
+/* Configuración → Pagos (datos + recargos lado a lado) */
+.pagos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; align-items: start; max-width: 1000px; }
+.recargo-cuotas { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 6px; }
+@media (max-width: 760px) { .pagos-grid { grid-template-columns: 1fr; } }

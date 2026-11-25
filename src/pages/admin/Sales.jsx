@@ -10,11 +10,12 @@ import { PAYMENT_METHODS, PAYMENT_METHODS_LIST, SALE_CHANNELS } from '../../cons
 import { formatMoney, formatDateTime, toDate } from '../../utils/format';
 import { tieneVariantes as hayVariantes, varianteLabel } from '../../utils/variants';
 import MoneyInput from '../../components/common/MoneyInput';
-import { RECARGO_DEBITO, CREDITO_OPCIONES, recargoPctDe } from '../../config/recargos';
+import { useRecargos } from '../../hooks/useRecargos';
 
 const PAGE = 20;
 
 const Sales = () => {
+  const { recargoDebito, creditoOpciones, pctDe } = useRecargos();
   const [sales, setSales] = useState([]);
   const [products, setProducts] = useState([]);
   const [customers, setCustomers] = useState([]);
@@ -115,7 +116,7 @@ const Sales = () => {
   const descValor = Number(descuento) || 0;
   const montoDesc = Math.min(descTipo === 'porcentaje' ? subtotal * (descValor / 100) : descValor, subtotal);
   const base = Math.max(0, subtotal - montoDesc);
-  const recargoPct = recargoPctDe(metodoPago, cuotas);
+  const recargoPct = pctDe(metodoPago, cuotas);
   const recargoMonto = base * (recargoPct / 100);
   const total = base + recargoMonto;
 
@@ -306,7 +307,7 @@ const Sales = () => {
             <label>Medio de pago</label>
             <div className="pay-tiles">
               {PAYMENT_METHODS_LIST.map((m) => {
-                const rec = m.value === 'debito' ? `+${RECARGO_DEBITO}%`
+                const rec = m.value === 'debito' ? `+${recargoDebito}%`
                   : m.value === 'credito' ? 'según cuotas' : 'sin recargo';
                 return (
                   <button type="button" key={m.value}
@@ -324,7 +325,7 @@ const Sales = () => {
           {metodoPago === 'credito' && (
             <div className="field"><label>Cuotas</label>
               <div className="chips">
-                {CREDITO_OPCIONES.map((c) => (
+                {creditoOpciones.map((c) => (
                   <button type="button" key={c.cuotas}
                     className={`chip ${cuotas === c.cuotas ? 'active' : ''}`}
                     onClick={() => setCuotas(c.cuotas)}>
