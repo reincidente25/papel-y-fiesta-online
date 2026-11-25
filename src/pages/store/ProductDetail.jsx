@@ -91,13 +91,14 @@ const ProductDetail = () => {
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombreWeb || product.nombre}</h1>
           <div className="price-cards">
+            <div className="price-card">
+              <span className="pc-label">💳 Débito / Crédito</span>
+              <span className="pc-value">{formatMoney(product.precioVenta * (1 + RECARGO_DEBITO / 100))}</span>
+            </div>
             <div className="price-card main">
+              <span className="pc-badge">🔥 {RECARGO_DEBITO}% OFF</span>
               <span className="pc-label">🏦 Transferencia / Efectivo</span>
               <span className="pc-value">{formatMoney(product.precioVenta)}</span>
-            </div>
-            <div className="price-card">
-              <span className="pc-label">💳 Débito</span>
-              <span className="pc-value">{formatMoney(product.precioVenta * (1 + RECARGO_DEBITO / 100))}</span>
             </div>
           </div>
           {product.descripcion
