@@ -90,10 +90,15 @@ const ProductDetail = () => {
         <div className="detail-info">
           {categoria && <span className="badge badge-muted">{categoria.name}</span>}
           <h1>{product.nombreWeb || product.nombre}</h1>
-          <div className="detail-price">{formatMoney(product.precioVenta)}</div>
-          <div className="price-breakdown">
-            <span className="pb-row"><span className="pb-k">🏦 Transferencia</span><span className="pb-v">{formatMoney(product.precioVenta)}</span></span>
-            <span className="pb-row"><span className="pb-k">💳 Débito</span><span className="pb-v">{formatMoney(product.precioVenta * (1 + RECARGO_DEBITO / 100))}</span></span>
+          <div className="price-cards">
+            <div className="price-card main">
+              <span className="pc-label">🏦 Transferencia / Efectivo</span>
+              <span className="pc-value">{formatMoney(product.precioVenta)}</span>
+            </div>
+            <div className="price-card">
+              <span className="pc-label">💳 Débito</span>
+              <span className="pc-value">{formatMoney(product.precioVenta * (1 + RECARGO_DEBITO / 100))}</span>
+            </div>
           </div>
           {product.descripcion
             ? <div className="detail-desc rte-content" dangerouslySetInnerHTML={{ __html: product.descripcion }} />
