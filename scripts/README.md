@@ -20,6 +20,25 @@ producto quedan `categoria` (slug, para filtrar) y `categoriaNombre` (para mostr
 > Las pestañas que difieren solo por acento/mayúscula (ej. `Boligrafos` y
 > `Bolígrafos`) se **unifican** en un mismo slug automáticamente.
 
+### Sincronización (crear / actualizar stock / huérfanos)
+El script compara el Excel con lo que ya hay en Firestore:
+- **Producto nuevo** (está en el Excel y no en Firestore) → se crea completo.
+- **Producto existente** (está en ambos) → se **actualiza solo el stock** (no
+  pisa nombre, precio, categoría ni las ediciones hechas desde la web).
+- **Huérfano** (está en Firestore pero **no** vino en el Excel) → según el flag:
+
+```bash
+cd scripts
+node import-productos.mjs                 # importa + actualiza stock, y SOLO reporta los huérfanos
+node import-productos.mjs --mark          # además pausa los huérfanos y los saca de la web
+node import-productos.mjs --delete        # además ELIMINA los huérfanos de Firestore
+node import-productos.mjs archivo.xlsx --mark   # con archivo explícito
+```
+
+> Cada producto tocado por el Excel queda con `enLocal: true`; los huérfanos
+> marcados con `--mark` quedan `enLocal: false`. Sin flag no se borra ni cambia
+> nada de los huérfanos: primero mirá el reporte.
+
 ## Importar ventas (historial) desde Excel
 
 Excel de **2 pestañas**: cabeceras (una fila por venta) y detalle (una fila por

@@ -42,8 +42,16 @@ if (!existsSync(keyPath)) { console.error('✗ Falta scripts/serviceAccountKey.j
 admin.initializeApp({ credential: admin.credential.cert(JSON.parse(readFileSync(keyPath, 'utf8'))) });
 const db = admin.firestore();
 
+// ---- Flags ----
+//   --mark    : marca los productos que YA NO vienen en el Excel (pausado + fuera de la web)
+//   --delete  : ELIMINA los productos que ya no vienen en el Excel
+//   (sin flag) : solo los reporta, no toca nada
+const args = process.argv.slice(2);
+const PRUNE_MARK = args.includes('--mark');
+const PRUNE_DELETE = args.includes('--delete');
+
 // ---- Localizar el Excel ----
-let file = process.argv[2];
+let file = args.find((a) => !a.startsWith('--'));
 if (!file) {
   const xls = readdirSync(__dirname).filter((f) => /\.(xlsx|xls)$/i.test(f));
   if (xls.length === 0) { console.error('✗ No encontré ningún .xlsx en scripts/.'); process.exit(1); }
@@ -128,38 +136,88 @@ console.log(`   Categorías detectadas: ${categorias.length}   ·   Productos ma
   console.log(`   ✔ Colección "${COL_CAT}" escrita (${categorias.length})`);
 }
 
-// ---- Escribir productos ----
+// ---- Productos existentes en Firestore (para decidir crear vs. actualizar) ----
+const existingSnap = await db.collection(COL_PROD).get();
+const existing = new Map(); // id -> data
+existingSnap.forEach((d) => existing.set(d.id, d.data()));
+console.log(`   Productos ya en Firestore: ${existing.size}`);
+
+// ---- Escribir productos: nuevo = completo · existente = solo stock ----
 let batch = db.batch();
-let ok = 0, skip = 0, inBatch = 0;
+let creados = 0, actualizados = 0, skip = 0, inBatch = 0;
+const excelIds = new Set();
+const commit = async () => { if (inBatch >= 450) { await batch.commit(); batch = db.batch(); inBatch = 0; process.stdout.write('.'); } };
+
 for (const row of masterRows) {
   const codigo = String(cell(row, 'codigo')).trim();
   if (!codigo) { skip++; continue; }
-  const cat = catOf[codigo] || { slug: '', nombre: '' };
-  const prod = {
-    codigo,
-    nombre:       String(cell(row, 'nombre')).trim(),
-    marca:        String(cell(row, 'marca')).trim(),
-    descripcion:  String(cell(row, 'descripcion')).trim(),
-    proveedor:    String(cell(row, 'proveedor')).trim(),
-    precioCosto:  parseNum(cell(row, 'precio compra', 'preciocompra')),
-    precioVenta:  parseNum(cell(row, 'precio venta', 'precioventa')),
-    stock:        parseInt0(cell(row, 'stock')),
-    stockMinimo:  parseInt0(cell(row, 'stock minimo', 'stockminimo')),
-    estado:       mapEstado(cell(row, 'estado')),
-    categoria:    cat.slug,          // slug para filtrar (where categoria == ...)
-    categoriaNombre: cat.nombre,     // nombre para mostrar
-    destacado:    false,
-    imagen:       '',
-    actualizadoEn: admin.firestore.FieldValue.serverTimestamp(),
-  };
-  batch.set(db.collection(COL_PROD).doc(safeId(codigo)), prod, { merge: true });
-  ok++; inBatch++;
-  if (inBatch === 450) { await batch.commit(); batch = db.batch(); inBatch = 0; process.stdout.write('.'); }
+  const id = safeId(codigo);
+  excelIds.add(id);
+  const stock = parseInt0(cell(row, 'stock'));
+
+  if (existing.has(id)) {
+    // Ya existe → actualizar SOLO la cantidad.
+    batch.set(db.collection(COL_PROD).doc(id), {
+      stock,
+      enLocal: true,
+      actualizadoEn: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    actualizados++;
+  } else {
+    // Nuevo → documento completo.
+    const cat = catOf[codigo] || { slug: '', nombre: '' };
+    batch.set(db.collection(COL_PROD).doc(id), {
+      codigo,
+      nombre:       String(cell(row, 'nombre')).trim(),
+      marca:        String(cell(row, 'marca')).trim(),
+      descripcion:  String(cell(row, 'descripcion')).trim(),
+      proveedor:    String(cell(row, 'proveedor')).trim(),
+      precioCosto:  parseNum(cell(row, 'precio compra', 'preciocompra')),
+      precioVenta:  parseNum(cell(row, 'precio venta', 'precioventa')),
+      stock,
+      stockMinimo:  parseInt0(cell(row, 'stock minimo', 'stockminimo')),
+      estado:       mapEstado(cell(row, 'estado')),
+      categoria:    cat.slug,
+      categoriaNombre: cat.nombre,
+      destacado:    false,
+      mostrarWeb:   false,
+      imagen:       '',
+      enLocal:      true,
+      creadoEn:     admin.firestore.FieldValue.serverTimestamp(),
+      actualizadoEn: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    creados++;
+  }
+  inBatch++; await commit();
 }
 if (inBatch > 0) await batch.commit();
 
-const sinCat = ok - Object.keys(catOf).length;
-console.log(`\n✅ Productos importados/actualizados: ${ok}   ·   Omitidos (sin código): ${skip}`);
-console.log(`   Con categoría: ${Object.keys(catOf).length}   ·   Sin categoría: ${sinCat >= 0 ? sinCat : 0}`);
-console.log(`   productos/{Código}  +  categorias/{slug}`);
+console.log(`\n✅ Nuevos: ${creados}   ·   Actualizados (solo stock): ${actualizados}   ·   Omitidos (sin código): ${skip}`);
+
+// ---- Cruce inverso: en Firestore pero NO en el Excel ----
+const huerfanos = [...existing.keys()].filter((id) => !excelIds.has(id));
+if (huerfanos.length === 0) {
+  console.log('   ✔ No hay productos huérfanos (todo lo de la web vino en el Excel).');
+} else {
+  console.log(`\n⚠️  ${huerfanos.length} producto(s) están en la web pero NO vinieron en el Excel:`);
+  for (const id of huerfanos) console.log(`     - ${id}  (${existing.get(id).nombre || ''})`);
+
+  if (PRUNE_DELETE) {
+    let b = db.batch(), n = 0;
+    for (const id of huerfanos) { b.delete(db.collection(COL_PROD).doc(id)); if (++n % 450 === 0) { await b.commit(); b = db.batch(); } }
+    if (n % 450 !== 0) await b.commit();
+    console.log(`   🗑️  Eliminados ${huerfanos.length} (--delete).`);
+  } else if (PRUNE_MARK) {
+    let b = db.batch(), n = 0;
+    for (const id of huerfanos) {
+      b.set(db.collection(COL_PROD).doc(id), { estado: 'pausado', mostrarWeb: false, enLocal: false, actualizadoEn: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+      if (++n % 450 === 0) { await b.commit(); b = db.batch(); }
+    }
+    if (n % 450 !== 0) await b.commit();
+    console.log(`   🚫 Marcados como pausados y fuera de la web (--mark).`);
+  } else {
+    console.log('   (solo reporte · usá --mark para pausarlos o --delete para eliminarlos)');
+  }
+}
+console.log('\n   productos/{Código}  +  categorias/{slug}');
 process.exit(0);
