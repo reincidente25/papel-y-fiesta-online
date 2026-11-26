@@ -26,7 +26,8 @@ const waLink = (cart) => {
     + `Vimos que dejaste estos productos en tu carrito:\n${lista}\n\n`
     + `Total: ${formatMoney(cart.total)}\n\n`
     + `¿Querés que te ayudemos a terminar la compra? Tenemos stock disponible.`;
-  return `https://wa.me/${cart.telefono}?text=${encodeURIComponent(msg)}`;
+  const num = String(cart.telefono).replace(/\D/g, '');
+  return `https://api.whatsapp.com/send?phone=${num}&text=${encodeURIComponent(msg)}`;
 };
 
 const AbandonedCarts = () => {
@@ -100,7 +101,7 @@ const AbandonedCarts = () => {
       )}
 
       {/* Detalle del carrito */}
-      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Carrito abandonado" width={480}>
+      <Modal open={Boolean(detail)} onClose={() => setDetail(null)} title="Carrito abandonado" width={720}>
         {detail && (() => {
           const link = waLink(detail);
           return (
