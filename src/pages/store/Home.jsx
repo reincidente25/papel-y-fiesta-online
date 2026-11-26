@@ -135,6 +135,7 @@ const Home = () => {
               <p>Globos, combos temáticos, velas y todo para que la celebración sea un éxito.</p>
               <span className="duo-link">Ver cotillón →</span>
             </div>
+            <img className="duo-img" src="/cotillon.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </Link>
           <Link to="/catalogo" className="duo-card duo-regalo">
             <div className="duo-content">
@@ -143,6 +144,7 @@ const Home = () => {
               <p>Ideas originales para regalar en cualquier ocasión, listas para entregar.</p>
               <span className="duo-link">Ver regalos →</span>
             </div>
+            <img className="duo-img" src="/regaleria.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </Link>
         </div>
       </section>
