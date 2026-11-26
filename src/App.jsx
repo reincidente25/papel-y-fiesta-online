@@ -4,6 +4,9 @@ import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { AuthModalProvider } from './context/AuthModalContext';
 import AdminRoute from './components/common/AdminRoute';
+import { useAuth } from './context/AuthContext';
+import { CONSTRUCTION_MODE } from './config/site';
+import Construccion from './pages/Construccion';
 
 // Tienda (público)
 import Home from './pages/store/Home';
@@ -34,11 +37,19 @@ import Reports from './pages/admin/Reports';
 import AbandonedCarts from './pages/admin/AbandonedCarts';
 import PromoSettings from './pages/admin/PromoSettings';
 
+// Puerta del sitio: con modo construcción y sin sesión, muestra la landing de construcción.
+const SiteGate = ({ children }) => {
+  const { user } = useAuth();
+  if (CONSTRUCTION_MODE && !user) return <Construccion />;
+  return children;
+};
+
 const App = () => (
   <AuthProvider>
     <CartProvider>
       <BrowserRouter>
         <AuthModalProvider>
+        <SiteGate>
         <Routes>
           {/* Tienda pública */}
           <Route path="/" element={<Home />} />
@@ -73,6 +84,7 @@ const App = () => (
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </SiteGate>
         </AuthModalProvider>
       </BrowserRouter>
     </CartProvider>
