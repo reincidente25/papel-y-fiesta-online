@@ -137,7 +137,7 @@ const Catalog = () => {
             <button className="btn btn-ghost btn-sm filters-toggle" onClick={() => setFiltrosOpen((v) => !v)}>
               ⚙️ Filtros{hayFiltros ? ' •' : ''}
             </button>
-            <input className="input" style={{ maxWidth: 320, flex: 1 }} placeholder="🔎 Buscar producto..."
+            <input className="input" style={{ flex: 1, minWidth: 0 }} placeholder="🔎 Buscar producto por nombre o marca..."
               value={search} onChange={(e) => setSearch(e.target.value)} />
             <select className="select" style={{ maxWidth: 220 }} value={sort} onChange={(e) => setSort(e.target.value)}>
               {Object.entries(SORTS).map(([k, v]) => <option key={k} value={k}>{v.label}</option>)}
