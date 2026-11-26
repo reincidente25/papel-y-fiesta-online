@@ -362,14 +362,16 @@
 .duo-content p { margin: 0 0 14px; line-height: 1.5; color: rgba(255,255,255,.95); }
 .duo-link { font-weight: 800; }
 
-/* Cómo comprar */
-.steps { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 760px) { .steps { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 420px) { .steps { grid-template-columns: 1fr; } }
-.step { display: flex; gap: 12px; align-items: flex-start; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 14px; padding: 16px; }
-.step-n { flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: var(--brand-orange, #F7941E); color: #fff; font-family: var(--font-head, inherit); font-weight: 800; display: grid; place-items: center; }
-.step strong { display: block; font-size: .95rem; margin-bottom: 2px; }
-.step p { margin: 0; font-size: .82rem; color: var(--muted); line-height: 1.4; }
+/* Cómo comprar (destacado) */
+.steps-big { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+@media (max-width: 860px) { .steps-big { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .steps-big { grid-template-columns: 1fr; } }
+.step-big { position: relative; background: var(--surface, #fff); border: 1px solid var(--border); border-radius: 18px; padding: 24px 20px 22px; text-align: left; transition: transform .15s ease, box-shadow .15s ease; }
+.step-big:hover { transform: translateY(-3px); box-shadow: 0 14px 30px rgba(0,0,0,.08); }
+.step-big-n { position: absolute; top: 16px; right: 18px; font-family: var(--font-head, inherit); font-weight: 800; font-size: 2.4rem; color: var(--brand-orange-soft, #ffe4c4); line-height: 1; }
+.step-big-ic { display: inline-grid; place-items: center; width: 52px; height: 52px; border-radius: 14px; background: #fff6ec; font-size: 1.6rem; margin-bottom: 14px; }
+.step-big strong { display: block; font-family: var(--font-head, inherit); font-size: 1.1rem; margin-bottom: 6px; }
+.step-big p { margin: 0; font-size: .9rem; color: var(--text-soft, #555); line-height: 1.5; }
 
 /* Popup promocional de la landing */
 .promo-pop-overlay { position: fixed; inset: 0; z-index: 1200; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; padding: 20px; animation: promoFade .2s ease; }

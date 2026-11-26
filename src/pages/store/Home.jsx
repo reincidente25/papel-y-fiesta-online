@@ -24,17 +24,8 @@ const GRADS = [
   'linear-gradient(135deg,#2d3436,#636e72)',
 ];
 
-const ms = (f) => {
-  if (!f) return 0;
-  if (typeof f === 'string') return new Date(f).getTime();
-  if (f.seconds) return f.seconds * 1000;
-  if (f.toMillis) return f.toMillis();
-  return 0;
-};
-
 const Home = () => {
   const [featured, setFeatured] = useState([]);
-  const [novedades, setNovedades] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -45,14 +36,14 @@ const Home = () => {
       .then(([pub, cats]) => {
         const dest = pub.filter((p) => p.destacado);
         setFeatured((dest.length ? dest : pub).slice(0, 10));
-        // Novedades: los más recientes (por fecha de creación).
-        const recientes = [...pub].sort((a, b) => ms(b.creadoEn) - ms(a.creadoEn)).slice(0, 10);
-        setNovedades(recientes);
-        // Cantidad de productos web por categoría.
+        // Cantidad de productos web por categoría → top 6 con más productos.
         const conteo = new Map();
         for (const p of pub) if (p.categoria) conteo.set(p.categoria, (conteo.get(p.categoria) || 0) + 1);
-        const conProd = cats.filter((c) => conteo.get(c.id)).map((c) => ({ ...c, cantidad: conteo.get(c.id) }));
-        setCategories((conProd.length ? conProd : cats).slice(0, 8));
+        const conProd = cats
+          .filter((c) => conteo.get(c.id))
+          .map((c) => ({ ...c, cantidad: conteo.get(c.id) }))
+          .sort((a, b) => b.cantidad - a.cantidad);
+        setCategories((conProd.length ? conProd : cats).slice(0, 6));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -89,6 +80,22 @@ const Home = () => {
           <div className="valor"><span>🎁</span><div><strong>Regalería para sorprender</strong><small>Ideas para cada ocasión</small></div></div>
           <div className="valor"><span>🎉</span><div><strong>Todo el cotillón</strong><small>Armamos combos a medida</small></div></div>
           <div className="valor"><span>💳</span><div><strong>Transferencia o tarjeta</strong><small>Débito y crédito en cuotas</small></div></div>
+        </div>
+      </section>
+
+      {/* Cómo comprar (destacado, arriba) */}
+      <section className="section container">
+        <div className="section-head">
+          <div>
+            <h2 className="section-title">Comprar es muy fácil</h2>
+            <p>En 4 pasos tenés tu pedido listo. No se paga en la web: coordinamos el pago con vos.</p>
+          </div>
+        </div>
+        <div className="steps-big">
+          <div className="step-big"><span className="step-big-n">1</span><span className="step-big-ic">🛒</span><strong>Elegí tus productos</strong><p>Navegá el catálogo y agregá al carrito lo que necesites. Podés ver el precio con transferencia o débito.</p></div>
+          <div className="step-big"><span className="step-big-n">2</span><span className="step-big-ic">📝</span><strong>Hacé tu pedido</strong><p>Elegí envío a domicilio o retiro en el local, y tu forma de pago (transferencia, débito o crédito en cuotas).</p></div>
+          <div className="step-big"><span className="step-big-n">3</span><span className="step-big-ic">✅</span><strong>Confirmamos el stock</strong><p>Te escribimos por WhatsApp/email, confirmamos disponibilidad y te pasamos cómo abonar.</p></div>
+          <div className="step-big"><span className="step-big-n">4</span><span className="step-big-ic">📦</span><strong>Lo recibís</strong><p>Despachamos por correo a todo el país o lo retirás por el local cuando esté listo.</p></div>
         </div>
       </section>
 
@@ -150,33 +157,6 @@ const Home = () => {
               <span className="duo-link">Ver regalos →</span>
             </div>
           </Link>
-        </div>
-      </section>
-
-      {/* Novedades */}
-      {!loading && novedades.length > 0 && (
-        <section className="section container">
-          <div className="section-head">
-            <div>
-              <h2 className="section-title">Novedades ✨</h2>
-              <p>Lo último que sumamos al catálogo.</p>
-            </div>
-            <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
-          </div>
-          <div className="product-grid">
-            {novedades.map((p) => <ProductCard key={p.id} product={p} />)}
-          </div>
-        </section>
-      )}
-
-      {/* Cómo comprar */}
-      <section className="section container">
-        <h2 className="section-title" style={{ marginBottom: 18 }}>Comprar es muy fácil</h2>
-        <div className="steps">
-          <div className="step"><span className="step-n">1</span><div><strong>Elegí tus productos</strong><p>Agregá al carrito lo que necesites.</p></div></div>
-          <div className="step"><span className="step-n">2</span><div><strong>Hacé tu pedido</strong><p>Elegí envío o retiro y forma de pago.</p></div></div>
-          <div className="step"><span className="step-n">3</span><div><strong>Confirmamos el stock</strong><p>Te avisamos y te pasamos cómo pagar.</p></div></div>
-          <div className="step"><span className="step-n">4</span><div><strong>Lo recibís</strong><p>Despachamos por correo o lo retirás.</p></div></div>
         </div>
       </section>
 
