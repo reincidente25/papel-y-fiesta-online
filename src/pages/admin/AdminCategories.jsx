@@ -4,7 +4,7 @@ import AdminLayout from '../../components/admin/AdminLayout';
 import Loader from '../../components/common/Loader';
 import Modal from '../../components/common/Modal';
 import { getCategories, createCategory, updateCategory, deleteCategory } from '../../services/categoriesService';
-import { getProducts } from '../../services/productsService';
+import { getProducts, bulkUpdateProducts, getProductsByCategory } from '../../services/productsService';
 import { uploadImage } from '../../services/storageService';
 
 const EMPTY = { nombre: '', descripcion: '', imagen: '', orden: 999, activa: true };
@@ -19,6 +19,9 @@ const AdminCategories = ({ embedded = false }) => {
   const [saving, setSaving] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
   const [search, setSearch] = useState('');
+  const [unifON, setUnifON] = useState(null); // categoría origen a unificar
+  const [unifDest, setUnifDest] = useState('');
+  const [unificando, setUnificando] = useState(false);
   const fileRef = useRef(null);
 
   const load = () => {
@@ -70,6 +73,19 @@ const AdminCategories = ({ embedded = false }) => {
     await deleteCategory(c.id); load();
   };
 
+  const abrirUnificar = (c) => { setUnifON(c); setUnifDest(''); };
+  const unificar = async () => {
+    if (!unifON || !unifDest) return;
+    const dest = cats.find((c) => c.id === unifDest);
+    setUnificando(true);
+    try {
+      const prods = await getProductsByCategory(unifON.id);
+      if (prods.length) await bulkUpdateProducts(prods.map((p) => p.id), { categoria: unifDest, categoriaNombre: dest?.name || '' });
+      await deleteCategory(unifON.id);
+      setUnifON(null); load();
+    } finally { setUnificando(false); }
+  };
+
   const totalProd = Object.values(counts).reduce((n, v) => n + v, 0);
   const q = search.trim().toLowerCase();
   const visibles = cats.filter((c) => `${c.name || ''} ${c.id || ''} ${c.descripcion || ''}`.toLowerCase().includes(q));
@@ -113,6 +129,7 @@ const AdminCategories = ({ embedded = false }) => {
                   <td>
                     <div className="table-actions">
                       <button className="btn btn-ghost btn-sm" onClick={() => openEdit(c)}>Editar</button>
+                      <button className="btn btn-ghost btn-sm" onClick={() => abrirUnificar(c)} title="Mover sus productos a otra categoría y eliminar esta">Unificar</button>
                       <button className="btn btn-danger btn-sm" onClick={() => remove(c)}>✕</button>
                     </div>
                   </td>
@@ -167,6 +184,28 @@ const AdminCategories = ({ embedded = false }) => {
             <button type="button" className="btn btn-ghost" onClick={() => setModal(false)}>Cancelar</button>
           </div>
         </form>
+      </Modal>
+
+      {/* Modal unificar categorías */}
+      <Modal open={Boolean(unifON)} onClose={() => setUnifON(null)} title="Unificar categoría" width={460}>
+        {unifON && (
+          <div>
+            <p className="hint" style={{ marginBottom: 14 }}>
+              Se van a mover los <strong>{counts[unifON.id] || 0} producto(s)</strong> de <strong>{unifON.name}</strong> a la categoría que elijas, y luego se eliminará <strong>{unifON.name}</strong>.
+            </p>
+            <div className="field">
+              <label>Mover a</label>
+              <select className="select" value={unifDest} onChange={(e) => setUnifDest(e.target.value)}>
+                <option value="">Elegí una categoría…</option>
+                {cats.filter((c) => c.id !== unifON.id).map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="form-actions">
+              <button className="btn btn-primary" onClick={unificar} disabled={!unifDest || unificando}>{unificando ? 'Unificando…' : 'Unificar'}</button>
+              <button className="btn btn-ghost" onClick={() => setUnifON(null)}>Cancelar</button>
+            </div>
+          </div>
+        )}
       </Modal>
     </Wrap>
   );

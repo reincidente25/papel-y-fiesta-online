@@ -92,6 +92,16 @@ const AdminProducts = () => {
     try { await bulkUpdateProducts(ids, data); clearSel(); load(); } finally { setBusy(false); }
   };
 
+  const moverACategoria = async (catId) => {
+    const ids = [...selected];
+    if (!ids.length) return;
+    const cat = categories.find((c) => c.id === catId);
+    if (!window.confirm(`Mover ${ids.length} producto(s) a "${cat?.name || catId}"?`)) return;
+    setBusy(true);
+    try { await bulkUpdateProducts(ids, { categoria: catId, categoriaNombre: cat?.name || '' }); clearSel(); load(); }
+    finally { setBusy(false); }
+  };
+
   const descargar = () => {
     const cols = ['codigo', 'nombre', 'nombreWeb', 'categoriaNombre', 'precioCosto', 'precioVenta', 'stock', 'stockMinimo', 'estado', 'mostrarWeb', 'destacado'];
     const esc = (v) => { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
@@ -159,6 +169,10 @@ const AdminProducts = () => {
             <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => applyBulk({ mostrarWeb: false, destacado: false }, 'Ocultar de la web')}>Ocultar</button>
             <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => applyBulk({ mostrarWeb: true, destacado: true }, 'Marcar destacado')}>★ Destacar</button>
             <button className="btn btn-ghost btn-sm" disabled={busy} onClick={() => applyBulk({ destacado: false }, 'Quitar destacado')}>Quitar destacado</button>
+            <select className="select" style={{ maxWidth: 190 }} disabled={busy} value="" onChange={(e) => { if (e.target.value) moverACategoria(e.target.value); e.target.value = ''; }}>
+              <option value="">📁 Mover a categoría…</option>
+              {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+            </select>
             <button className="btn btn-ghost btn-sm" onClick={clearSel}>Limpiar</button>
           </div>
         </div>
