@@ -24,8 +24,17 @@ const GRADS = [
   'linear-gradient(135deg,#2d3436,#636e72)',
 ];
 
+const ms = (f) => {
+  if (!f) return 0;
+  if (typeof f === 'string') return new Date(f).getTime();
+  if (f.seconds) return f.seconds * 1000;
+  if (f.toMillis) return f.toMillis();
+  return 0;
+};
+
 const Home = () => {
   const [featured, setFeatured] = useState([]);
+  const [novedades, setNovedades] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const { user } = useAuth();
@@ -36,6 +45,9 @@ const Home = () => {
       .then(([pub, cats]) => {
         const dest = pub.filter((p) => p.destacado);
         setFeatured((dest.length ? dest : pub).slice(0, 10));
+        // Novedades: los más recientes (por fecha de creación).
+        const recientes = [...pub].sort((a, b) => ms(b.creadoEn) - ms(a.creadoEn)).slice(0, 10);
+        setNovedades(recientes);
         // Cantidad de productos web por categoría.
         const conteo = new Map();
         for (const p of pub) if (p.categoria) conteo.set(p.categoria, (conteo.get(p.categoria) || 0) + 1);
@@ -48,7 +60,6 @@ const Home = () => {
   const home = LANDING;
   const heroStyle = home.heroImagen
     ? {
-      // La última capa (degradado de marca) se ve si la imagen falta.
       backgroundImage: `linear-gradient(rgba(20,16,10,.5),rgba(20,16,10,.55)), url(${home.heroImagen}), linear-gradient(135deg,#2b2b2b,#4a3a2a)`,
       backgroundPosition: `center ${home.heroPos || 'center'}`,
     }
@@ -57,6 +68,7 @@ const Home = () => {
   return (
     <StoreLayout>
       <PromoPopup />
+
       {/* Hero */}
       <section className={`hero2 ${home.heroImagen ? 'has-img' : ''}`} style={heroStyle}>
         <div className="container hero2-inner">
@@ -76,11 +88,11 @@ const Home = () => {
           <div className="valor"><span>🚚</span><div><strong>Envíos a todo el país</strong><small>Correo Argentino y retiro en el local</small></div></div>
           <div className="valor"><span>🎁</span><div><strong>Regalería para sorprender</strong><small>Ideas para cada ocasión</small></div></div>
           <div className="valor"><span>🎉</span><div><strong>Todo el cotillón</strong><small>Armamos combos a medida</small></div></div>
-          <div className="valor"><span>✏️</span><div><strong>Librería completa</strong><small>Escolar, oficina y arte</small></div></div>
+          <div className="valor"><span>💳</span><div><strong>Transferencia o tarjeta</strong><small>Débito y crédito en cuotas</small></div></div>
         </div>
       </section>
 
-      {/* Categorías (estilo recorrido) */}
+      {/* Categorías (galería moderna, nombre sobre la imagen) */}
       <section className="section container">
         <div className="section-head">
           <div>
@@ -89,16 +101,14 @@ const Home = () => {
           </div>
           <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
         </div>
-        <div className="cat-cards">
+        <div className="cat-gallery">
           {categories.map((cat, i) => (
-            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-card2">
-              <div className="cat-card2-media" style={cat.imagen ? { backgroundImage: `url(${cat.imagen})` } : { background: GRADS[i % GRADS.length] }}>
-                {!cat.imagen && <span className="cat-card2-emoji">{cat.icon || '🏷️'}</span>}
-              </div>
-              <div className="cat-card2-body">
+            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-tile"
+              style={cat.imagen ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.15) 55%, rgba(0,0,0,.05) 100%), url(${cat.imagen})` } : { backgroundImage: GRADS[i % GRADS.length] }}>
+              {!cat.imagen && <span className="cat-tile-emoji">{cat.icon || '🏷️'}</span>}
+              <div className="cat-tile-body">
                 <h3>{cat.name}</h3>
-                <p>{cat.descripcion || `Descubrí todo en ${cat.name}`}</p>
-                <span className="cat-card2-link">Ver productos →</span>
+                {cat.cantidad != null && <span className="cat-tile-count">{cat.cantidad} producto{cat.cantidad !== 1 ? 's' : ''}</span>}
               </div>
             </Link>
           ))}
@@ -121,7 +131,56 @@ const Home = () => {
         )}
       </section>
 
-      {/* Promo */}
+      {/* Banda de dos mundos */}
+      <section className="section container">
+        <div className="duo">
+          <Link to="/catalogo" className="duo-card duo-fiesta">
+            <div className="duo-content">
+              <span className="duo-eyebrow">Para tu próxima fiesta</span>
+              <h3>Cotillón & Fiesta 🎉</h3>
+              <p>Globos, combos temáticos, velas y todo para que la celebración sea un éxito.</p>
+              <span className="duo-link">Ver cotillón →</span>
+            </div>
+          </Link>
+          <Link to="/catalogo" className="duo-card duo-regalo">
+            <div className="duo-content">
+              <span className="duo-eyebrow">Para sorprender</span>
+              <h3>Regalería 🎁</h3>
+              <p>Ideas originales para regalar en cualquier ocasión, listas para entregar.</p>
+              <span className="duo-link">Ver regalos →</span>
+            </div>
+          </Link>
+        </div>
+      </section>
+
+      {/* Novedades */}
+      {!loading && novedades.length > 0 && (
+        <section className="section container">
+          <div className="section-head">
+            <div>
+              <h2 className="section-title">Novedades ✨</h2>
+              <p>Lo último que sumamos al catálogo.</p>
+            </div>
+            <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
+          </div>
+          <div className="product-grid">
+            {novedades.map((p) => <ProductCard key={p.id} product={p} />)}
+          </div>
+        </section>
+      )}
+
+      {/* Cómo comprar */}
+      <section className="section container">
+        <h2 className="section-title" style={{ marginBottom: 18 }}>Comprar es muy fácil</h2>
+        <div className="steps">
+          <div className="step"><span className="step-n">1</span><div><strong>Elegí tus productos</strong><p>Agregá al carrito lo que necesites.</p></div></div>
+          <div className="step"><span className="step-n">2</span><div><strong>Hacé tu pedido</strong><p>Elegí envío o retiro y forma de pago.</p></div></div>
+          <div className="step"><span className="step-n">3</span><div><strong>Confirmamos el stock</strong><p>Te avisamos y te pasamos cómo pagar.</p></div></div>
+          <div className="step"><span className="step-n">4</span><div><strong>Lo recibís</strong><p>Despachamos por correo o lo retirás.</p></div></div>
+        </div>
+      </section>
+
+      {/* Promo final */}
       <section className="section container">
         <div className="promo">
           <div>
