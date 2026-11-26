@@ -33,7 +33,7 @@ const AbandonedCarts = () => {
   const [carts, setCarts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [detail, setDetail] = useState(null);
-  const [filter, setFilter] = useState('abierto');
+  const [filter, setFilter] = useState('abandonado');
 
   const load = () => { setLoading(true); getAbandonedCarts().then(setCarts).finally(() => setLoading(false)); };
   useEffect(load, []);
@@ -46,7 +46,7 @@ const AbandonedCarts = () => {
   };
 
   const visible = filter === 'todos' ? carts : carts.filter((c) => c.estado === filter);
-  const abiertos = carts.filter((c) => c.estado === 'abierto');
+  const abiertos = carts.filter((c) => c.estado === 'abandonado');
   const potencial = abiertos.reduce((n, c) => n + c.total, 0);
   const recuperados = carts.filter((c) => c.estado === 'recuperado').length;
 
@@ -76,7 +76,7 @@ const AbandonedCarts = () => {
             <thead><tr><th>Cliente</th><th>Contacto</th><th>Ítems</th><th>Total</th><th>Última actividad</th><th>Estado</th><th></th></tr></thead>
             <tbody>
               {visible.map((c) => {
-                const st = ABANDONED_STATUS[c.estado] || ABANDONED_STATUS.abierto;
+                const st = ABANDONED_STATUS[c.estado] || ABANDONED_STATUS.abandonado;
                 const link = waLink(c);
                 return (
                   <tr key={c.id} style={{ cursor: 'pointer' }} onClick={() => setDetail(c)}>
@@ -109,7 +109,7 @@ const AbandonedCarts = () => {
                 <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Visitante'}</span></div>
                 <div className="ti"><span className="k">Contacto</span><span className="v">{detail.telefono || detail.email || '—'}</span></div>
                 <div className="ti"><span className="k">Última actividad</span><span className="v">{formatDate(detail.actualizadoEn)}</span></div>
-                <div className="ti"><span className="k">Estado</span><span className="v"><span className={`badge ${(ABANDONED_STATUS[detail.estado] || ABANDONED_STATUS.abierto).badge}`}>{(ABANDONED_STATUS[detail.estado] || ABANDONED_STATUS.abierto).label}</span></span></div>
+                <div className="ti"><span className="k">Estado</span><span className="v"><span className={`badge ${(ABANDONED_STATUS[detail.estado] || ABANDONED_STATUS.abandonado).badge}`}>{(ABANDONED_STATUS[detail.estado] || ABANDONED_STATUS.abandonado).label}</span></span></div>
               </div>
               <table className="table" style={{ marginBottom: 12 }}>
                 <thead><tr><th>Producto</th><th style={{ textAlign: 'center' }}>Cant.</th><th style={{ textAlign: 'right' }}>Importe</th></tr></thead>
