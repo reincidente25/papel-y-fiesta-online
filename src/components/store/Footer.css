@@ -1,14 +1,30 @@
 .footer { background: var(--surface); border-top: 1px solid var(--border); margin-top: 64px; }
+
+/* Tira de beneficios */
+.footer-bene { border-bottom: 1px solid var(--border); background: var(--surface-alt, #faf7f2); }
+.footer-bene-inner { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; padding-block: 24px; }
+.fb-item { display: flex; gap: 12px; align-items: center; }
+.fb-item span { font-size: 1.5rem; }
+.fb-item strong { display: block; font-size: .9rem; }
+.fb-item small { color: var(--muted); font-size: .8rem; }
+@media (max-width: 860px) { .footer-bene-inner { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 460px) { .footer-bene-inner { grid-template-columns: 1fr; } }
+
 .footer-inner {
-  display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 32px;
-  padding-block: 48px;
+  display: grid; grid-template-columns: 2fr 1fr 1fr 1.3fr; gap: 32px;
+  padding-block: 44px;
 }
 .footer-col { display: flex; flex-direction: column; gap: 8px; }
 .footer-col h4 { font-size: .95rem; margin-bottom: 4px; }
-.footer-col a { color: var(--text-soft); font-size: .9rem; }
+.footer-col a { color: var(--text-soft); font-size: .9rem; text-decoration: none; }
 .footer-col a:hover { color: var(--primary); }
-.footer-bottom { border-top: 1px solid var(--border); padding: 18px 0; text-align: center; font-size: .82rem; }
+.footer-brand .muted { line-height: 1.5; max-width: 320px; }
+.footer-social { display: flex; gap: 10px; margin-top: 6px; }
+.footer-social a { display: inline-grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; background: var(--surface-alt, #faf7f2); border: 1px solid var(--border); font-size: 1.1rem; }
+.footer-social a:hover { border-color: var(--primary); transform: translateY(-2px); transition: all .15s ease; }
 
-@media (max-width: 700px) {
-  .footer-inner { grid-template-columns: 1fr; gap: 24px; }
-}
+.footer-bottom { border-top: 1px solid var(--border); padding: 18px 0; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: .82rem; }
+.footer-bottom .muted:last-child { margin-left: auto; }
+
+@media (max-width: 860px) { .footer-inner { grid-template-columns: 1fr 1fr; gap: 28px; } }
+@media (max-width: 480px) { .footer-inner { grid-template-columns: 1fr; gap: 24px; } .footer-bottom { justify-content: center; text-align: center; } .footer-bottom .muted:last-child { margin-left: 0; } }
