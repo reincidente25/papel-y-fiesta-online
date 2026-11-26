@@ -8,14 +8,31 @@ import { ABANDONED_STATUS, ABANDONED_STATUS_LIST } from '../../constants';
 import { STORE_INFO } from '../../config/store';
 import { formatMoney, formatDate } from '../../utils/format';
 
-// Tiempo transcurrido desde la última actividad, legible.
+// Normaliza fecha (string / Firestore Timestamp / Date) a milisegundos.
+const aMs = (f) => {
+  if (!f) return 0;
+  if (typeof f === 'string') return new Date(f).getTime();
+  if (f.seconds) return f.seconds * 1000;
+  if (f.toMillis) return f.toMillis();
+  if (f.toDate) return f.toDate().getTime();
+  return new Date(f).getTime();
+};
+
+// Tiempo transcurrido desde la última actividad, legible (min / h / días / semanas).
 const desde = (fecha) => {
-  const ms = Date.now() - new Date(fecha).getTime();
-  const h = Math.floor(ms / 3.6e6);
-  if (h < 1) return 'hace minutos';
+  const t = aMs(fecha);
+  if (!t) return '—';
+  const min = Math.floor((Date.now() - t) / 60000);
+  if (min < 1) return 'recién';
+  if (min < 60) return `hace ${min} min`;
+  const h = Math.floor(min / 60);
   if (h < 24) return `hace ${h} h`;
   const d = Math.floor(h / 24);
-  return `hace ${d} día${d > 1 ? 's' : ''}`;
+  if (d < 7) return `hace ${d} día${d > 1 ? 's' : ''}`;
+  const sem = Math.floor(d / 7);
+  if (sem < 5) return `hace ${sem} semana${sem > 1 ? 's' : ''}`;
+  const meses = Math.floor(d / 30);
+  return `hace ${meses} mes${meses > 1 ? 'es' : ''}`;
 };
 
 // Arma el mensaje de WhatsApp para recuperar el carrito.
