@@ -29,11 +29,17 @@ El script compara el Excel con lo que ya hay en Firestore:
 
 ```bash
 cd scripts
+node import-productos.mjs --dry-run        # SIMULACIÓN: no escribe nada, solo muestra qué haría
 node import-productos.mjs                 # importa + actualiza stock, y SOLO reporta los huérfanos
 node import-productos.mjs --mark          # además pausa los huérfanos y los saca de la web
 node import-productos.mjs --delete        # además ELIMINA los huérfanos de Firestore
 node import-productos.mjs archivo.xlsx --mark   # con archivo explícito
 ```
+
+> Probá siempre primero con **`--dry-run`**: lee el Excel y lo compara con
+> Firestore, te dice cuántos crearía/actualizaría y lista los huérfanos, pero
+> **no toca la base**. Podés combinarlo, ej. `--dry-run --delete` para ver qué
+> borraría sin borrar.
 
 > Cada producto tocado por el Excel queda con `enLocal: true`; los huérfanos
 > marcados con `--mark` quedan `enLocal: false`. Sin flag no se borra ni cambia

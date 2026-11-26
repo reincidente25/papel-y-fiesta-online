@@ -49,6 +49,8 @@ const db = admin.firestore();
 const args = process.argv.slice(2);
 const PRUNE_MARK = args.includes('--mark');
 const PRUNE_DELETE = args.includes('--delete');
+const DRY_RUN = args.includes('--dry-run') || args.includes('--dry');
+if (DRY_RUN) console.log('🧪 DRY-RUN: simulación, NO se escribe nada en Firestore.\n');
 
 // ---- Localizar el Excel ----
 let file = args.find((a) => !a.startsWith('--'));
@@ -130,10 +132,10 @@ console.log(`   Categorías detectadas: ${categorias.length}   ·   Productos ma
       nombre: c.nombre, slug: c.slug, orden: c.orden, activa: true, cantidad: catCount[c.slug] || 0,
       actualizadoEn: admin.firestore.FieldValue.serverTimestamp(),
     }, { merge: true });
-    if (++i === 450) { await batch.commit(); batch = db.batch(); i = 0; }
+    if (++i === 450) { if (!DRY_RUN) await batch.commit(); batch = db.batch(); i = 0; }
   }
-  if (i > 0) await batch.commit();
-  console.log(`   ✔ Colección "${COL_CAT}" escrita (${categorias.length})`);
+  if (i > 0 && !DRY_RUN) await batch.commit();
+  console.log(`   ${DRY_RUN ? '(simulado)' : '✔'} Colección "${COL_CAT}": ${categorias.length}`);
 }
 
 // ---- Productos existentes en Firestore (para decidir crear vs. actualizar) ----
@@ -146,7 +148,7 @@ console.log(`   Productos ya en Firestore: ${existing.size}`);
 let batch = db.batch();
 let creados = 0, actualizados = 0, skip = 0, inBatch = 0;
 const excelIds = new Set();
-const commit = async () => { if (inBatch >= 450) { await batch.commit(); batch = db.batch(); inBatch = 0; process.stdout.write('.'); } };
+const commit = async () => { if (inBatch >= 450) { if (!DRY_RUN) await batch.commit(); batch = db.batch(); inBatch = 0; process.stdout.write('.'); } };
 
 for (const row of masterRows) {
   const codigo = String(cell(row, 'codigo')).trim();
@@ -190,9 +192,9 @@ for (const row of masterRows) {
   }
   inBatch++; await commit();
 }
-if (inBatch > 0) await batch.commit();
+if (inBatch > 0 && !DRY_RUN) await batch.commit();
 
-console.log(`\n✅ Nuevos: ${creados}   ·   Actualizados (solo stock): ${actualizados}   ·   Omitidos (sin código): ${skip}`);
+console.log(`\n${DRY_RUN ? '🧪 (simulado) ' : '✅ '}Nuevos: ${creados}   ·   Actualizados (solo stock): ${actualizados}   ·   Omitidos (sin código): ${skip}`);
 
 // ---- Cruce inverso: en Firestore pero NO en el Excel ----
 const huerfanos = [...existing.keys()].filter((id) => !excelIds.has(id));
@@ -202,7 +204,9 @@ if (huerfanos.length === 0) {
   console.log(`\n⚠️  ${huerfanos.length} producto(s) están en la web pero NO vinieron en el Excel:`);
   for (const id of huerfanos) console.log(`     - ${id}  (${existing.get(id).nombre || ''})`);
 
-  if (PRUNE_DELETE) {
+  if (DRY_RUN) {
+    console.log(`   🧪 (simulado) ${PRUNE_DELETE ? 'se eliminarían' : PRUNE_MARK ? 'se marcarían como pausados' : 'solo reporte'}.`);
+  } else if (PRUNE_DELETE) {
     let b = db.batch(), n = 0;
     for (const id of huerfanos) { b.delete(db.collection(COL_PROD).doc(id)); if (++n % 450 === 0) { await b.commit(); b = db.batch(); } }
     if (n % 450 !== 0) await b.commit();
