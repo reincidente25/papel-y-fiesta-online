@@ -43,7 +43,7 @@ const Home = () => {
           .filter((c) => conteo.get(c.id))
           .map((c) => ({ ...c, cantidad: conteo.get(c.id) }))
           .sort((a, b) => b.cantidad - a.cantidad);
-        setCategories((conProd.length ? conProd : cats).slice(0, 6));
+        setCategories(conProd.length ? conProd : cats);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -73,16 +73,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Tiras de valor */}
-      <section className="container">
-        <div className="valores">
-          <div className="valor"><span>🚚</span><div><strong>Envíos a todo el país</strong><small>Correo Argentino y retiro en el local</small></div></div>
-          <div className="valor"><span>🎁</span><div><strong>Regalería para sorprender</strong><small>Ideas para cada ocasión</small></div></div>
-          <div className="valor"><span>🎉</span><div><strong>Todo el cotillón</strong><small>Armamos combos a medida</small></div></div>
-          <div className="valor"><span>💳</span><div><strong>Transferencia o tarjeta</strong><small>Débito y crédito en cuotas</small></div></div>
-        </div>
-      </section>
-
       {/* Cómo comprar (destacado, arriba) */}
       <section className="section container">
         <div className="section-head">
@@ -108,15 +98,12 @@ const Home = () => {
           </div>
           <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
         </div>
-        <div className="cat-gallery">
+        <div className="cat-mini-grid">
           {categories.map((cat, i) => (
-            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-tile"
-              style={cat.imagen ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.72) 0%, rgba(0,0,0,.15) 55%, rgba(0,0,0,.05) 100%), url(${cat.imagen})` } : { backgroundImage: GRADS[i % GRADS.length] }}>
-              {!cat.imagen && <span className="cat-tile-emoji">{cat.icon || '🏷️'}</span>}
-              <div className="cat-tile-body">
-                <h3>{cat.name}</h3>
-                {cat.cantidad != null && <span className="cat-tile-count">{cat.cantidad} producto{cat.cantidad !== 1 ? 's' : ''}</span>}
-              </div>
+            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-mini"
+              style={cat.imagen ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.05) 60%), url(${cat.imagen})` } : { backgroundImage: GRADS[i % GRADS.length] }}>
+              {!cat.imagen && <span className="cat-mini-emoji">{cat.icon || '🏷️'}</span>}
+              <span className="cat-mini-name">{cat.name}</span>
             </Link>
           ))}
         </div>

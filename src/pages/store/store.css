@@ -336,18 +336,17 @@
 .valor strong { display: block; font-size: .92rem; }
 .valor small { color: var(--muted); font-size: .8rem; }
 
-/* Categorías — galería moderna (nombre sobre la imagen) */
-.cat-gallery { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
-@media (max-width: 920px) { .cat-gallery { grid-template-columns: repeat(2, 1fr); } }
-@media (max-width: 460px) { .cat-gallery { grid-template-columns: 1fr 1fr; gap: 12px; } }
-.cat-tile { position: relative; display: flex; align-items: flex-end; aspect-ratio: 4/5; border-radius: 16px; overflow: hidden;
+/* Categorías — grilla de cuadraditos (imagen + nombre) */
+.cat-mini-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; }
+@media (max-width: 1100px) { .cat-mini-grid { grid-template-columns: repeat(6, 1fr); } }
+@media (max-width: 760px) { .cat-mini-grid { grid-template-columns: repeat(4, 1fr); gap: 10px; } }
+@media (max-width: 460px) { .cat-mini-grid { grid-template-columns: repeat(3, 1fr); gap: 8px; } }
+.cat-mini { position: relative; display: flex; align-items: flex-end; aspect-ratio: 1/1; border-radius: 12px; overflow: hidden;
   text-decoration: none; color: #fff; background-size: cover; background-position: center;
-  box-shadow: 0 2px 10px rgba(0,0,0,.08); transition: transform .18s ease, box-shadow .18s ease; }
-.cat-tile:hover { transform: translateY(-4px); box-shadow: 0 16px 34px rgba(0,0,0,.18); }
-.cat-tile-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 3.2rem; filter: drop-shadow(0 2px 8px rgba(0,0,0,.3)); }
-.cat-tile-body { position: relative; z-index: 2; padding: 16px; width: 100%; }
-.cat-tile-body h3 { margin: 0 0 6px; font-family: var(--font-head, inherit); font-size: 1.12rem; line-height: 1.15; text-shadow: 0 2px 10px rgba(0,0,0,.4); }
-.cat-tile-count { display: inline-block; font-size: .74rem; font-weight: 700; background: rgba(255,255,255,.22); backdrop-filter: blur(4px); padding: 3px 10px; border-radius: 999px; }
+  box-shadow: 0 1px 6px rgba(0,0,0,.08); transition: transform .15s ease, box-shadow .15s ease; }
+.cat-mini:hover { transform: translateY(-3px); box-shadow: 0 10px 22px rgba(0,0,0,.18); }
+.cat-mini-emoji { position: absolute; inset: 0; display: grid; place-items: center; font-size: 2rem; filter: drop-shadow(0 2px 6px rgba(0,0,0,.3)); }
+.cat-mini-name { position: relative; z-index: 2; width: 100%; padding: 8px 10px; font-family: var(--font-head, inherit); font-weight: 700; font-size: .82rem; line-height: 1.15; text-shadow: 0 1px 6px rgba(0,0,0,.5); }
 
 /* Banda de dos mundos */
 .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
