@@ -14,7 +14,7 @@ import { calcMargin, formatMoney } from '../../utils/format';
 import { nuevaVarianteId, limpiarVariantes } from '../../utils/variants';
 
 const EMPTY = {
-  codigo: '', nombre: '', nombreWeb: '', descripcion: '', categoria: '',
+  codigo: '', nombre: '', nombreWeb: '', descripcion: '', categoria: '', marca: '',
   precioCosto: '', precioVenta: '', stock: '', estado: 'activo',
   mostrarWeb: false, destacado: false, imagen: '', imagenes: [],
   tieneVariantes: false, variantes: [],
@@ -132,6 +132,10 @@ const ProductForm = () => {
                   <option value="">Sin categoría</option>
                   {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
+              </div>
+              <div className="field">
+                <label>Marca</label>
+                <input className="input" value={form.marca} onChange={(e) => set('marca', e.target.value)} placeholder="Ej. Maped, Faber-Castell…" />
               </div>
               <div className="field">
                 <label>Estado</label>
