@@ -12,17 +12,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useAuthModal } from '../../context/AuthModalContext';
 import './store.css';
 
-// Degradados de respaldo para categorías sin foto (se asigna por posición).
-const GRADS = [
-  'linear-gradient(135deg,#F7941E,#ffb45e)',
-  'linear-gradient(135deg,#6c5ce7,#a29bfe)',
-  'linear-gradient(135deg,#00b894,#55efc4)',
-  'linear-gradient(135deg,#e17055,#fab1a0)',
-  'linear-gradient(135deg,#0984e3,#74b9ff)',
-  'linear-gradient(135deg,#d63031,#ff7675)',
-  'linear-gradient(135deg,#fdcb6e,#ffeaa7)',
-  'linear-gradient(135deg,#2d3436,#636e72)',
-];
+// Pasteles de respaldo para categorías sin foto (se rota por posición).
+const PASTELS = ['#F8D5E4', '#E4D8F7', '#D4EBE1', '#FFE9AC'];
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);
@@ -100,9 +91,10 @@ const Home = () => {
         </div>
         <div className="cat-mini-grid">
           {categories.map((cat, i) => (
-            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`} className="cat-mini"
-              style={cat.imagen ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.05) 60%), url(${cat.imagen})` } : { backgroundImage: GRADS[i % GRADS.length] }}>
-              {!cat.imagen && <span className="cat-mini-emoji">{cat.icon || '🏷️'}</span>}
+            <Link key={cat.id} to={`/catalogo?cat=${cat.id}`}
+              className={`cat-mini ${cat.imagen ? '' : 'cat-mini--pastel'}`}
+              style={cat.imagen ? { backgroundImage: `linear-gradient(to top, rgba(0,0,0,.7) 0%, rgba(0,0,0,.05) 60%), url(${cat.imagen})` } : { background: PASTELS[i % PASTELS.length] }}>
+              {!cat.imagen && <span className="cat-mini-emoji">{cat.icon || '🎁'}</span>}
               <span className="cat-mini-name">{cat.name}</span>
             </Link>
           ))}
