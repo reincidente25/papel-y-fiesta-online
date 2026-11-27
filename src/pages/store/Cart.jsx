@@ -90,7 +90,8 @@ const Cart = () => {
   }, [profile]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Domicilio final según la selección.
-  const domicilioElegido = form.entrega !== 'envio'
+  const conDomicilio = form.entrega === 'envio' || form.entrega === 'cadeteria';
+  const domicilioElegido = !conDomicilio
     ? null
     : (domSel && domSel !== 'otra' ? domicilios.find((d) => d.id === domSel) : otraDir);
 
@@ -148,8 +149,8 @@ const Cart = () => {
         email: form.email,
         telefono: form.telefono,
         entrega: form.entrega,
-        domicilio: form.entrega === 'envio' ? (domicilioElegido || null) : null,
-        direccionTexto: form.entrega === 'envio' ? resumenDir(domicilioElegido) : '',
+        domicilio: conDomicilio ? (domicilioElegido || null) : null,
+        direccionTexto: conDomicilio ? resumenDir(domicilioElegido) : '',
         envio: form.entrega === 'envio' && envioSel ? {
           correo: envioSel.meta?.carrier || '', servicio: envioSel.meta?.servicio || envioSel.productName || '',
           tipo: envioSel.deliveredType || 'D', precioAprox: envioSel.price || 0, aproximado: true, estimado: envioEstimado,
@@ -232,6 +233,7 @@ const Cart = () => {
         {(() => {
           const listo = form.nombre.trim() && form.telefono.trim()
             && (form.entrega === 'retiro'
+              || (form.entrega === 'cadeteria' && domicilioElegido?.calle)
               || (form.entrega === 'envio' && domicilioElegido?.calle && (envioSel || (envioRates && envioRates.length === 0))));
           return (
             <div className="co-grid">
@@ -240,12 +242,13 @@ const Cart = () => {
                 <div className="co-card">
                   <h4>🚚 Entrega</h4>
                   <div className="co-seg">
-                    <button type="button" className={form.entrega === 'envio' ? 'on' : ''} onClick={() => set('entrega', 'envio')}>Envío a domicilio</button>
+                    <button type="button" className={form.entrega === 'envio' ? 'on' : ''} onClick={() => set('entrega', 'envio')}>Envío (correo)</button>
+                    <button type="button" className={form.entrega === 'cadeteria' ? 'on' : ''} onClick={() => set('entrega', 'cadeteria')}>Cadetería (CABA)</button>
                     <button type="button" className={form.entrega === 'retiro' ? 'on' : ''} onClick={() => set('entrega', 'retiro')}>Retiro en el local</button>
                   </div>
                 </div>
 
-                {form.entrega === 'envio' && (
+                {conDomicilio && (
                   <div className="co-card">
                     <h4>📍 Domicilio</h4>
                     {domicilios.length > 0 && (
@@ -265,8 +268,13 @@ const Cart = () => {
                       <AddressAutocomplete value={otraDir} onChange={setOtraDir} />
                     )}
 
+                    {/* Cadetería CABA */}
+                    {form.entrega === 'cadeteria' && (
+                      <p className="hint" style={{ marginTop: 10 }}>🛵 Entrega puerta a puerta por cadetería de confianza (CABA). Coordinamos el costo y el horario por WhatsApp.</p>
+                    )}
+
                     {/* Selección de envío (aproximado) */}
-                    {cpDest && (
+                    {form.entrega === 'envio' && cpDest && (
                       <div className="co-ship">
                         <div className="co-ship-head">🚚 Envío</div>
                         {envioCargando && <p className="hint">Calculando envío…</p>}
@@ -345,9 +353,10 @@ const Cart = () => {
                   <span className="muted">Envío</span>
                   <span>
                     {form.entrega === 'retiro' ? 'Retiro en local'
-                      : envioCargando ? 'Calculando…'
-                        : costoEnvioAprox > 0 ? `~${formatMoney(costoEnvioAprox)} aprox.`
-                          : 'A coordinar'}
+                      : form.entrega === 'cadeteria' ? 'Cadetería CABA (a coordinar)'
+                        : envioCargando ? 'Calculando…'
+                          : costoEnvioAprox > 0 ? `~${formatMoney(costoEnvioAprox)} aprox.`
+                            : 'A coordinar'}
                   </span>
                 </div>
                 <div className="co-sum-total"><span>Total productos</span><span>{formatMoney(totalFinal)}</span></div>

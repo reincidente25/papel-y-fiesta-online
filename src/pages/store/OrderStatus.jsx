@@ -44,7 +44,8 @@ const OrderStatus = () => {
   const cuotas = Number(order.cuotas) || 1;
   const entregaTxt = order.entrega === 'envio'
     ? `🚚 ${order.envio?.servicio || 'Envío a domicilio'}${order.envio?.precioAprox ? ` · ~${formatMoney(order.envio.precioAprox)} aprox.` : ''}`
-    : '🏪 Retiro en el local';
+    : order.entrega === 'cadeteria' ? '🛵 Cadetería CABA (a coordinar)'
+      : '🏪 Retiro en el local';
   const pagoTxt = esTransfer ? '🏦 Transferencia'
     : metodo === 'debito' ? '💳 Débito'
       : `💳 Crédito${cuotas > 1 ? ` · ${cuotas} cuotas` : ''}`;

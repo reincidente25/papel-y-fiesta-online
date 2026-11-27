@@ -158,13 +158,14 @@ export function orderReceivedEmail({ nombre, orden, siteUrl, o = {} }) {
 
 // Línea de entrega (envío con correo + aprox, o retiro).
 function entregaBloque(orden) {
+  const dir = orden.direccionTexto ? `<br/><span style="color:${BRAND.muted};">${orden.direccionTexto}</span>` : '';
   if (orden.entrega === 'envio') {
     const e = orden.envio || {};
     const serv = e.servicio ? e.servicio : 'Envío a domicilio';
     const aprox = e.precioAprox ? ` · ~${money(e.precioAprox)} aprox. (se cobra al despachar)` : '';
-    const dir = orden.direccionTexto ? `<br/><span style="color:${BRAND.muted};">${orden.direccionTexto}</span>` : '';
     return `<strong>Entrega:</strong> ${serv}${aprox}${dir}`;
   }
+  if (orden.entrega === 'cadeteria') return `<strong>Entrega:</strong> Cadetería CABA (a coordinar)${dir}`;
   return `<strong>Entrega:</strong> Retiro en el local`;
 }
 

@@ -82,9 +82,12 @@ const AdminOrders = () => {
     // Entrega y forma de pago elegidas por el cliente.
     const metodo = detail.metodoPago || 'transferencia';
     const cuotas = Number(detail.cuotas) || 1;
+    const dirLinea = detail.direccionTexto ? `\n📍 ${detail.direccionTexto}` : '';
     const entregaTxt = detail.entrega === 'envio'
-      ? `🚚 *Entrega:* ${detail.envio?.servicio || 'Envío a domicilio'}${detail.envio?.precioAprox ? ` (~${formatMoney(detail.envio.precioAprox)} aprox., se cobra al despachar)` : ''}${detail.direccionTexto ? `\n📍 ${detail.direccionTexto}` : ''}`
-      : '🏪 *Entrega:* Retiro en el local';
+      ? `🚚 *Entrega:* ${detail.envio?.servicio || 'Envío a domicilio'}${detail.envio?.precioAprox ? ` (~${formatMoney(detail.envio.precioAprox)} aprox., se cobra al despachar)` : ''}${dirLinea}`
+      : detail.entrega === 'cadeteria'
+        ? `🛵 *Entrega:* Cadetería CABA (coordinamos costo y horario)${dirLinea}`
+        : '🏪 *Entrega:* Retiro en el local';
     const pagoTxt = metodo === 'transferencia'
       ? `💳 *Pago por transferencia:*\n${transf}\n\n📸 Cuando transfieras, mandanos el *comprobante* por acá y dejamos todo listo 🎁`
       : metodo === 'debito'

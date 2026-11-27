@@ -33,6 +33,7 @@ export const entregaLabel = (o) => {
     const aprox = o.envio?.precioAprox ? ` · ~${formatMoney(o.envio.precioAprox)} aprox.` : '';
     return `🚚 ${serv}${aprox}`;
   }
+  if (o.entrega === 'cadeteria') return '🛵 Cadetería CABA (a coordinar)';
   return '🏪 Retiro en el local';
 };
 export const pagoLabel = (o) => {
