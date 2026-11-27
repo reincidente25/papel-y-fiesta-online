@@ -61,6 +61,7 @@ const Home = () => {
             <Link to={home.ctaLink || '/catalogo'} className="btn btn-primary btn-lg">{home.ctaTexto || 'Ver catálogo'}</Link>
             {!user && <button className="btn btn-light" onClick={() => openAuth('register')}>Crear cuenta</button>}
           </div>
+          {home.heroNota && <p className="hero2-nota">🚚 {home.heroNota}</p>}
         </div>
       </section>
 

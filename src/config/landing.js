@@ -11,8 +11,9 @@ export const LANDING = {
   heroPos: 'center', // alineación vertical de la imagen: 'top' | 'center' | 'bottom'
 
   heroEyebrow: 'Librería · Juguetería didáctica · Regalería · Cotillón',
-  heroTitulo: 'Todo para tu día a día, tus festejos y tus regalos',
-  heroSubtitulo: 'Útiles escolares, oficina, arte, juguetes didácticos, cotillón. Envíos a todo el país.',
-  ctaTexto: 'Ver catálogo',
+  heroTitulo: 'Todo para crear, celebrar y regalar.',
+  heroSubtitulo: 'Descubrí productos que inspiran tu creatividad, acompañan tu día a día y hacen especial cada momento.',
+  ctaTexto: 'Explorá nuestra tienda',
   ctaLink: '/catalogo',
+  heroNota: 'Envíos a todo el país',
 };
