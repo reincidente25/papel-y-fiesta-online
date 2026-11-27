@@ -33,6 +33,8 @@ const Sales = () => {
   const [descTipo, setDescTipo] = useState('monto'); // 'monto' | 'porcentaje'
   const [cuotas, setCuotas] = useState(1);
   const [metodoPago, setMetodoPago] = useState('efectivo');
+  const [combinado, setCombinado] = useState(false);
+  const [pagos, setPagos] = useState([]); // [{ metodo, cuotas, monto }]  monto = base asignado
   const [canal, setCanal] = useState('local');
   const [clienteId, setClienteId] = useState('');
   const [query, setQuery] = useState('');
@@ -73,6 +75,7 @@ const Sales = () => {
   const openNew = () => {
     setLines([]); setDescuento(0); setDescTipo('monto'); setCuotas(1);
     setMetodoPago('efectivo'); setCanal('local'); setClienteId(''); setQuery('');
+    setCombinado(false); setPagos([]);
     setModal(true);
   };
 
@@ -116,19 +119,43 @@ const Sales = () => {
   const descValor = Number(descuento) || 0;
   const montoDesc = Math.min(descTipo === 'porcentaje' ? subtotal * (descValor / 100) : descValor, subtotal);
   const base = Math.max(0, subtotal - montoDesc);
-  const recargoPct = pctDe(metodoPago, cuotas);
-  const recargoMonto = base * (recargoPct / 100);
+
+  // Pago combinado: cada línea lleva un recargo sobre su monto base asignado.
+  const pagosCalc = pagos.map((p) => {
+    const monto = Number(p.monto) || 0;
+    const pct = pctDe(p.metodo, p.cuotas);
+    return { ...p, monto, recargoPct: pct, recargoMonto: monto * (pct / 100) };
+  });
+  const asignado = pagosCalc.reduce((n, p) => n + p.monto, 0);
+  const faltaAsignar = Math.round((base - asignado) * 100) / 100;
+
+  const recargoPct = combinado ? 0 : pctDe(metodoPago, cuotas);
+  const recargoMonto = combinado
+    ? pagosCalc.reduce((n, p) => n + p.recargoMonto, 0)
+    : base * (recargoPct / 100);
   const total = base + recargoMonto;
 
+  const addPago = () => setPagos((ps) => [...ps, { metodo: 'efectivo', cuotas: 1, monto: Math.max(0, faltaAsignar) }]);
+  const setPago = (i, patch) => setPagos((ps) => ps.map((p, idx) => (idx === i ? { ...p, ...patch } : p)));
+  const delPago = (i) => setPagos((ps) => ps.filter((_, idx) => idx !== i));
+  const toggleCombinado = (on) => {
+    setCombinado(on);
+    setPagos(on ? [{ metodo: 'efectivo', cuotas: 1, monto: base }] : []);
+  };
+
+  const combinadoOk = !combinado || (pagos.length >= 1 && Math.abs(faltaAsignar) < 0.5);
+
   const save = async () => {
-    if (lines.length === 0) return;
+    if (lines.length === 0 || !combinadoOk) return;
     setSaving(true);
     try {
       const cli = customers.find((c) => c.id === clienteId);
       await createSale({
-        canal, items: lines, metodoPago,
+        canal, items: lines,
+        metodoPago: combinado ? 'combinado' : metodoPago,
+        pagos: combinado ? pagosCalc.map((p) => ({ metodo: p.metodo, cuotas: p.metodo === 'credito' ? p.cuotas : 0, monto: p.monto, recargoPct: p.recargoPct, recargoMonto: p.recargoMonto })) : null,
         cliente: cli?.nombre || 'Consumidor final', clienteId,
-        cuotas: metodoPago === 'credito' ? cuotas : (metodoPago === 'debito' ? 1 : 0),
+        cuotas: combinado ? 0 : (metodoPago === 'credito' ? cuotas : (metodoPago === 'debito' ? 1 : 0)),
         tipoDescuento: descTipo === 'porcentaje' ? 'Porcentaje' : 'Monto fijo',
         valorDesc: descValor, montoDesc, recargoPct, recargoMonto,
       });
@@ -304,25 +331,33 @@ const Sales = () => {
           </div>
 
           <div className="field">
-            <label>Medio de pago</label>
-            <div className="pay-tiles">
-              {PAYMENT_METHODS_LIST.map((m) => {
-                const rec = m.value === 'debito' ? `+${recargoDebito}%`
-                  : m.value === 'credito' ? 'según cuotas' : 'sin recargo';
-                return (
-                  <button type="button" key={m.value}
-                    className={`pay-tile ${metodoPago === m.value ? 'active' : ''}`}
-                    onClick={() => cambiarMetodo(m.value)}>
-                    <span className="pt-ic">{m.icon}</span>
-                    <span className="pt-label">{m.label}</span>
-                    <span className="pt-rec">{rec}</span>
-                  </button>
-                );
-              })}
+            <div className="spread" style={{ alignItems: 'center' }}>
+              <label style={{ margin: 0 }}>Medio de pago</label>
+              <label className="row gap-8" style={{ cursor: 'pointer', fontSize: '.82rem' }}>
+                <input type="checkbox" checked={combinado} onChange={(e) => toggleCombinado(e.target.checked)} /> Combinado
+              </label>
             </div>
+
+            {!combinado && (
+              <div className="pay-tiles" style={{ marginTop: 8 }}>
+                {PAYMENT_METHODS_LIST.map((m) => {
+                  const rec = m.value === 'debito' ? `+${recargoDebito}%`
+                    : m.value === 'credito' ? 'según cuotas' : 'sin recargo';
+                  return (
+                    <button type="button" key={m.value}
+                      className={`pay-tile ${metodoPago === m.value ? 'active' : ''}`}
+                      onClick={() => cambiarMetodo(m.value)}>
+                      <span className="pt-ic">{m.icon}</span>
+                      <span className="pt-label">{m.label}</span>
+                      <span className="pt-rec">{rec}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
           </div>
 
-          {metodoPago === 'credito' && (
+          {!combinado && metodoPago === 'credito' && (
             <div className="field"><label>Cuotas</label>
               <div className="chips">
                 {creditoOpciones.map((c) => (
@@ -332,6 +367,32 @@ const Sales = () => {
                     {c.cuotas} {c.cuotas === 1 ? 'pago' : 'pagos'}<small>+{c.recargo}%</small>
                   </button>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {combinado && (
+            <div className="field">
+              <div className="pago-comb">
+                {pagosCalc.map((p, i) => (
+                  <div className="pago-comb-row" key={i}>
+                    <select className="select" value={p.metodo} onChange={(e) => setPago(i, { metodo: e.target.value, cuotas: 1 })}>
+                      {PAYMENT_METHODS_LIST.map((m) => <option key={m.value} value={m.value}>{m.icon} {m.label}</option>)}
+                    </select>
+                    {p.metodo === 'credito' && (
+                      <select className="select" style={{ maxWidth: 90 }} value={p.cuotas} onChange={(e) => setPago(i, { cuotas: Number(e.target.value) })}>
+                        {creditoOpciones.map((c) => <option key={c.cuotas} value={c.cuotas}>{c.cuotas}x</option>)}
+                      </select>
+                    )}
+                    <div style={{ flex: 1 }}><MoneyInput value={p.monto} onChange={(n) => setPago(i, { monto: n })} /></div>
+                    <button type="button" className="btn btn-ghost btn-sm" onClick={() => delPago(i)}>✕</button>
+                  </div>
+                ))}
+                <button type="button" className="btn btn-ghost btn-sm" onClick={addPago}>+ Agregar pago</button>
+                <p className="hint" style={{ margin: '6px 0 0', color: Math.abs(faltaAsignar) < 0.5 ? 'var(--success)' : 'var(--danger)' }}>
+                  Asignado {formatMoney(asignado)} de {formatMoney(base)}
+                  {faltaAsignar > 0.5 ? ` · faltan ${formatMoney(faltaAsignar)}` : faltaAsignar < -0.5 ? ` · sobran ${formatMoney(-faltaAsignar)}` : ' · ✓ completo'}
+                </p>
               </div>
             </div>
           )}
@@ -373,7 +434,7 @@ const Sales = () => {
             )}
           </div>
 
-          <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0}>
+          <button className="btn btn-primary btn-block" onClick={save} disabled={saving || lines.length === 0 || !combinadoOk}>
             {saving ? 'Registrando...' : `Registrar venta · ${formatMoney(total)}`}
           </button>
           <button className="btn btn-ghost btn-block" onClick={() => setModal(false)}>Cancelar</button>
@@ -398,7 +459,11 @@ const Sales = () => {
               <div className="ticket-info">
                 <div className="ti"><span className="k">Cliente</span><span className="v">{detail.cliente || 'Consumidor final'}</span></div>
                 <div className="ti"><span className="k">Canal</span><span className="v"><span className={`badge ${SALE_CHANNELS[detail.canal]?.badge || 'badge-muted'}`}>{SALE_CHANNELS[detail.canal]?.label || detail.canal}</span></span></div>
-                <div className="ti"><span className="k">Medio de pago</span><span className="v">{payChip(detail.metodoPago)}{detail.cuotas > 0 ? ` · ${detail.cuotas} cuota${detail.cuotas > 1 ? 's' : ''}` : ''}</span></div>
+                <div className="ti"><span className="k">Medio de pago</span><span className="v">
+                  {detail.metodoPago === 'combinado' && detail.pagos?.length
+                    ? <span>{detail.pagos.map((p) => `${PAYMENT_METHODS[p.metodo]?.label || p.metodo}${p.metodo === 'credito' && p.cuotas > 1 ? ` ${p.cuotas}x` : ''}: ${formatMoney(p.monto + (p.recargoMonto || 0))}`).join(' · ')}</span>
+                    : <>{payChip(detail.metodoPago)}{detail.cuotas > 0 ? ` · ${detail.cuotas} cuota${detail.cuotas > 1 ? 's' : ''}` : ''}</>}
+                </span></div>
                 <div className="ti"><span className="k">Unidades</span><span className="v">{unidades} ({detail.items.length} ítem/s)</span></div>
               </div>
 

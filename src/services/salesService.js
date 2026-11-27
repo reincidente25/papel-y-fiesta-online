@@ -116,7 +116,7 @@ export async function createSale(sale) {
     montoDesc, descuento: montoDesc,
     recargoPct: Number(sale.recargoPct) || 0, recargoMonto,
     cuotas: Number(sale.cuotas) || 0,
-    total, metodoPago: sale.metodoPago, cliente: sale.cliente || '', clienteId: sale.clienteId || '',
+    total, metodoPago: sale.metodoPago, pagos: sale.pagos || null, cliente: sale.cliente || '', clienteId: sale.clienteId || '',
     cantItems: items.reduce((n, i) => n + i.cantidad, 0),
     estado: 'completada', migrado: false,
   };
