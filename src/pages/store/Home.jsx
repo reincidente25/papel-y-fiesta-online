@@ -74,7 +74,7 @@ const Home = () => {
           </div>
         </div>
         <div className="steps-big">
-          <div className="step-big"><span className="step-big-n">1</span><span className="step-big-ic">🛒</span><strong>Elegí tus productos</strong><p>Navegá el catálogo y agregá al carrito lo que necesites. Podés ver el precio con transferencia o débito.</p></div>
+          <div className="step-big"><span className="step-big-n">1</span><span className="step-big-ic">🛒</span><strong>Elegí tus productos</strong><p>Navegá el catálogo y agregá al carrito lo que necesites.</p></div>
           <div className="step-big"><span className="step-big-n">2</span><span className="step-big-ic">📝</span><strong>Hacé tu pedido</strong><p>Elegí envío a domicilio o retiro en el local, y tu forma de pago (transferencia, débito o crédito en cuotas).</p></div>
           <div className="step-big"><span className="step-big-n">3</span><span className="step-big-ic">✅</span><strong>Confirmamos el stock</strong><p>Te escribimos por WhatsApp/email, confirmamos disponibilidad y te pasamos cómo abonar.</p></div>
           <div className="step-big"><span className="step-big-n">4</span><span className="step-big-ic">📦</span><strong>Lo recibís</strong><p>Despachamos por correo a todo el país, cadetería en CABA, o lo retirás por el local.</p></div>
