@@ -123,21 +123,21 @@ const Home = () => {
         <div className="duo">
           <Link to="/catalogo" className="duo-card duo-fiesta">
             <div className="duo-content">
-              <span className="duo-eyebrow">Para tu próxima fiesta</span>
-              <h3>Cotillón & Fiesta 🎉</h3>
-              <p>Globos, combos temáticos, velas y todo para que la celebración sea un éxito.</p>
-              <span className="duo-link">Ver cotillón →</span>
+              <span className="duo-eyebrow">Para aprender jugando</span>
+              <h3>Juguetes didácticos 🧩</h3>
+              <p>Juegos que estimulan la creatividad, la lógica y el aprendizaje en cada etapa.</p>
+              <span className="duo-link">Ver juguetes →</span>
             </div>
-            <img className="duo-img" src="/cotillon.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <img className="duo-img" src="/juguetes.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </Link>
           <Link to="/catalogo" className="duo-card duo-regalo">
             <div className="duo-content">
-              <span className="duo-eyebrow">Para sorprender</span>
-              <h3>Regalería 🎁</h3>
-              <p>Ideas originales para regalar en cualquier ocasión, listas para entregar.</p>
-              <span className="duo-link">Ver regalos →</span>
+              <span className="duo-eyebrow">Para tu día a día</span>
+              <h3>Librería diferente ✏️</h3>
+              <p>Útiles escolares, oficina y arte, con cosas lindas que no encontrás en cualquier lado.</p>
+              <span className="duo-link">Ver librería →</span>
             </div>
-            <img className="duo-img" src="/regaleria.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
+            <img className="duo-img" src="/libreria.jpg" alt="" onError={(e) => { e.currentTarget.style.display = 'none'; }} />
           </Link>
         </div>
       </section>
