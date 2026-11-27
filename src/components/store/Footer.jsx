@@ -11,7 +11,7 @@ const Footer = () => (
     {/* Tira de beneficios */}
     <div className="footer-bene">
       <div className="container footer-bene-inner">
-        <div className="fb-item"><span>🚚</span><div><strong>Envíos a todo el país</strong><small>Correo Argentino o retiro en el local</small></div></div>
+        <div className="fb-item"><span>🚚</span><div><strong>Envíos a todo el país</strong><small>Correo Argentino, cadetería en CABA o retiro en el local</small></div></div>
         <div className="fb-item"><span>💳</span><div><strong>Múltiples formas de pago</strong><small>Transferencia, débito y crédito en cuotas</small></div></div>
         <div className="fb-item"><span>🔒</span><div><strong>Compra segura</strong><small>Te acompañamos en todo el proceso</small></div></div>
         <div className="fb-item"><span>💬</span><div><strong>Atención personalizada</strong><small>Escribinos por WhatsApp</small></div></div>
