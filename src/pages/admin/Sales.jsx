@@ -108,7 +108,7 @@ const Sales = () => {
   const delLine = (key) => setLines((ls) => ls.filter((l) => l.key !== key));
 
   const results = query.trim()
-    ? products.filter((p) => `${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
+    ? products.filter((p) => `${p.codigo || ''} ${p.nombre || ''} ${p.nombreWeb || ''} ${p.categoriaNombre || ''} ${p.marca || ''}`.toLowerCase().includes(query.toLowerCase())).slice(0, 12)
     : [];
   const totalItems = lines.reduce((n, l) => n + l.cantidad, 0);
 
