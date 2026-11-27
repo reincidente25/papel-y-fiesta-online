@@ -15,7 +15,7 @@ import { nuevaVarianteId, limpiarVariantes } from '../../utils/variants';
 
 const EMPTY = {
   codigo: '', nombre: '', nombreWeb: '', descripcion: '', categoria: '', marca: '',
-  precioCosto: '', precioVenta: '', stock: '', estado: 'activo',
+  precioCosto: '', precioVenta: '', stock: '', stockMinimo: '', estado: 'activo',
   mostrarWeb: false, destacado: false, imagen: '', imagenes: [],
   tieneVariantes: false, variantes: [],
 };
@@ -158,6 +158,11 @@ const ProductForm = () => {
                     <label>Stock</label>
                     <input className="input" type="number" min="0" value={form.stock}
                       onChange={(e) => set('stock', e.target.value)} placeholder="0" />
+                  </div>
+                  <div className="field">
+                    <label>Stock mínimo</label>
+                    <input className="input" type="number" min="0" value={form.stockMinimo}
+                      onChange={(e) => set('stockMinimo', e.target.value)} placeholder="0" title="Avisa stock bajo cuando el stock llega a este valor" />
                   </div>
                 </div>
                 {form.precioVenta > 0 && (
