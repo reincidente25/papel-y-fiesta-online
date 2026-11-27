@@ -427,7 +427,7 @@ const Sales = () => {
           <div className="pos-summary">
             <div className="spread"><span className="muted">Subtotal</span><span>{formatMoney(subtotal)}</span></div>
             {montoDesc > 0 && <div className="spread desc"><span>Descuento{descTipo === 'porcentaje' ? ` (${descValor}%)` : ''}</span><span>− {formatMoney(montoDesc)}</span></div>}
-            {recargoMonto > 0 && <div className="spread rec"><span>Recargo ({recargoPct}%)</span><span>+ {formatMoney(recargoMonto)}</span></div>}
+            {recargoMonto > 0 && <div className="spread rec"><span>Recargo{combinado ? '' : ` (${recargoPct}%)`}</span><span>+ {formatMoney(recargoMonto)}</span></div>}
             <div className="pos-total" style={{ marginTop: 0 }}><span>Total</span><span>{formatMoney(total)}</span></div>
             {cuotas > 1 && metodoPago === 'credito' && (
               <p className="hint" style={{ textAlign: 'right', margin: '4px 0 0' }}>{cuotas} cuotas de {formatMoney(total / cuotas)}</p>
@@ -494,7 +494,7 @@ const Sales = () => {
               <div className="sale-totals">
                 <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Subtotal</span><span>{formatMoney(detail.subtotal)}</span></div>
                 {descuento > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Descuento</span><span>− {formatMoney(descuento)}</span></div>}
-                {detail.recargoMonto > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Recargo ({detail.recargoPct}%)</span><span>+ {formatMoney(detail.recargoMonto)}</span></div>}
+                {detail.recargoMonto > 0 && <div className="spread" style={{ marginBottom: 8, fontSize: '.98rem' }}><span className="muted">Recargo{detail.metodoPago === 'combinado' || !detail.recargoPct ? '' : ` (${detail.recargoPct}%)`}</span><span>+ {formatMoney(detail.recargoMonto)}</span></div>}
                 <div className="pos-total" style={{ marginTop: 4 }}><span>Total</span><span>{formatMoney(detail.total)}</span></div>
               </div>
 
