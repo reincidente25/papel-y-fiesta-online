@@ -13,7 +13,7 @@ import { useAuthModal } from '../../context/AuthModalContext';
 import './store.css';
 
 // Pasteles de respaldo para categorías sin foto (se rota por posición).
-const PASTELS = ['#F8D5E4', '#E4D8F7', '#D4EBE1', '#FFE9AC'];
+const PASTELS = ['#F7A8CB', '#C3ABEF', '#9FE0C4', '#FFD873'];
 
 const Home = () => {
   const [featured, setFeatured] = useState([]);

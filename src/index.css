@@ -13,11 +13,11 @@
   --brand-gray:        #6D6E71;
   --brand-ink:         #2B2B2B;
 
-  /* Pasteles de apoyo (30%) */
-  --pastel-rosa:     #F8D5E4;
-  --pastel-lila:     #E4D8F7;
-  --pastel-menta:    #D4EBE1;
-  --pastel-amarillo: #FFE9AC;
+  /* Pasteles de apoyo (30%) — versión con más color */
+  --pastel-rosa:     #F7A8CB;
+  --pastel-lila:     #C3ABEF;
+  --pastel-menta:    #9FE0C4;
+  --pastel-amarillo: #FFD873;
 
   /* Superficies (tema claro) */
   --bg:            #FFFCF7;
