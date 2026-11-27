@@ -85,8 +85,8 @@ const Home = () => {
       <section className="section container">
         <div className="section-head">
           <div>
-            <h2 className="section-title">Explorá por categoría</h2>
-            <p>Encontrá rápido lo que buscás, sea para estudiar, festejar o regalar.</p>
+            <h2 className="section-title">Encontrá todo lo que te encanta</h2>
+            <p>Un mundo de productos para crear, aprender, festejar y regalar.</p>
           </div>
           <Link to="/catalogo" className="btn btn-ghost btn-sm">Ver todo</Link>
         </div>
