@@ -10,7 +10,7 @@ export const LANDING = {
   heroImagen: '/hero.jpg',
   heroPos: 'center', // alineación vertical de la imagen: 'top' | 'center' | 'bottom'
 
-  heroEyebrow: 'Librería · Cotillón · Regalería',
+  heroEyebrow: 'Librería · Juguetería didáctica · Regalería · Cotillón',
   heroTitulo: 'Todo para tu día a día, tus festejos y tus regalos',
   heroSubtitulo: 'Útiles escolares, oficina, arte, cotillón para tu próxima fiesta y regalería para sorprender. Envíos a todo el país.',
   ctaTexto: 'Ver catálogo',
