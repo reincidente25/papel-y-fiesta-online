@@ -7,18 +7,24 @@
 
 :root {
   /* Marca */
-  --brand-orange:      #F7941E;
-  --brand-orange-dark: #E07E0A;
-  --brand-orange-soft: #FEF1E1;
+  --brand-orange:      #FF7926;
+  --brand-orange-dark: #E85F0C;
+  --brand-orange-soft: #FFE7D3;
   --brand-gray:        #6D6E71;
-  --brand-ink:         #262322;
+  --brand-ink:         #2B2B2B;
+
+  /* Pasteles de apoyo (30%) */
+  --pastel-rosa:     #F8D5E4;
+  --pastel-lila:     #E4D8F7;
+  --pastel-menta:    #D4EBE1;
+  --pastel-amarillo: #FFE9AC;
 
   /* Superficies (tema claro) */
-  --bg:            #FAFAF8;
+  --bg:            #FFFCF7;
   --surface:       #FFFFFF;
-  --surface-alt:   #F4F4F1;
-  --border:        #E7E6E1;
-  --border-strong: #D6D5CF;
+  --surface-alt:   #FAF6EE;
+  --border:        #EDE8DF;
+  --border-strong: #DAD4C8;
 
   /* Texto */
   --text:      #262322;
